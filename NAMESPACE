@@ -1,0 +1,5 @@
+
+useDynLib("RVowpalWabbit", .registration=TRUE)
+
+importFrom("Rcpp", "evalCpp")
+export("vw")

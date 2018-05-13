@@ -1,0 +1,215 @@
+2018-02-01  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.0.12
+
+	* src/active_interactor.cc: Minor edit to squash g++ warning
+	* src/bfgs.cc: Idem
+
+2018-01-30  Dirk Eddelbuettel  <edd@debian.org>
+
+	* tests/test1.r: Output written by -f to be witin tempdir() [CRAN]
+	* tests/test5.r: Idem
+	* tests/test7.r: Idem
+	* demo/vw.R: Idem
+	* man/vw.Rd: Idem (in example)
+
+2018-01-23  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.0.11
+
+	* tests/test1.r: Set --cache_file to be witin tempdir() [CRAN request]
+	* tests/test2.r: Idem
+	* tests/test5.r: Idem
+	* tests/test6.r: Idem
+	* tests/test8.r: Idem
+	* demo/vw.R: Idem
+	* man/vw.Rd: Idem (in example)
+
+2017-12-12  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.0.10
+
+	* man/vw.Rd: Refer to some files directly [CRAN request]
+	* tests/test1.r: Idem
+	* tests/test2.r: Idem
+	* tests/test5.r: Idem
+	* tests/test6.r: Idem
+	* tests/test7.r: Idem
+	* tests/test8.r: Idem
+	* demo/vw.R: Idem
+
+2017-03-05  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.0.9
+
+	* src/R_vw.cpp (Rvw): Simplified via Rcpp Attributes
+	* R/vw.R (vw): Now calls auto-exported function
+
+	* src/init.c (R_init_RVowpalWabbit): Call R_registerRoutines() and
+	R_useDynamicSymbols()
+
+	* NAMESPACE: Use .registration=TRUE on useDynLib
+
+	* .travis.yml: Switch to using run.sh for Travis CI
+
+2016-10-16  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION: Version 0.0.8
+
+	* tests/test2.r: Write prediction to tempdir() not /tmp
+	* tests/test6.r: Ditto
+	* tests/test8.r: Ditto
+
+2016-07-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION: Version 0.0.7
+
+	* src/allreduce.cc (all_reduce_init): Use ::bind()
+	* src/parse_regressor.cc (save_predictor): Use delete[] with new[]
+
+2015-10-12  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/R_vw.cpp: Comment-out gd.h header which is not needed
+
+2015-10-11  Dirk Eddelbuettel  <edd@debian.org>
+
+	* .travis.yml: Updated to use sudo, and install Rcpp via apt
+
+2015-10-10  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/lda_core.cc: Do not use #warning as it is gcc specific
+
+	* src/parser.cc: Replace rand() with drand48() [properly scaled]
+	* src/parse_regressor.cc: Ditto
+
+2015-10-09  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION: Updates to DESCRIPTION (per R CMD check)
+	* NAMESPACE: Ditto
+
+2014-01-07  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION: Version 0.0.6
+
+	* configure.in: Update autoconf macros ax_boost_base and
+	ax_boost_program_options to current versions in order to also find
+	Boost libraries in /usr/lib/${ARCH}/ under current Debian / Ubuntu
+
+	* config.guess: Added to keep configure happy
+	* config.sub: Idem
+	* install-sh: Idem
+
+	* src/bfgs.cc: Switch from isnan() to ISNAN() (defined by R) to
+	permit compilation under `-std=c++11` where isnan() is also defined.
+	* src/gd.cc: Idem
+	* src/parse_example.cc: Idem
+
+2012-05-20  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION: Version 0.0.5
+
+	* src/*: Massively invasive changes to get rid of stdout, stderr,
+	std::cout, std::cerr and exit() as now required by CRAN
+
+	* configure.in: Changed per CRAN request ever where this conflicts
+	with preferences by upstream: no more -ffast-math and -march=native
+
+	* cleanup: Also remove src/symbols.rds
+
+2012-05-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/*: Added 'unistd.h' and 'cstring' includes to a number of files
+	to permit compilation under g++-4.7
+
+2011-09-27  Dirk Eddelbuettel  <edd@debian.org>
+
+	* configure.in: Do not set 'march=nocona' on g++ 4.2 as it upsets the
+	ppc architecture builds on OS X
+
+	* cleanup: Also remove autom4te.cache
+
+2011-09-25  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION: Set Version: to 0.0.4
+
+	* src/*: Updated to current version of vowpal's git repo
+
+2011-09-23  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/*: Updated to current version of vowpal's git repo
+	which includes fixes for isnan not compiling on OS X
+
+2011-09-22  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/R_vw.cpp: Cast total_features to double
+
+	* configure.in: More cleanup / reindentation
+
+2011-09-21  Dirk Eddelbuettel  <edd@debian.org>
+
+	* configure.in: Also look for dylib versions of the
+	Boost.Program_Options library to better support OS X
+
+2011-09-20  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION: Set Version: to 0.0.3
+
+	* src/*: Updated to current version of vowpal's git repo which
+	compiles cleanly under -pedantic too (with thanks to John et al)
+
+	* configure.in: Better gcc version test to decide when to use
+	-march=native (on 4.3 or later) borrowing line from John
+
+2011-09-12  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/R_vw.cpp: Wrap a try/catch block around main function
+
+	* man/vw.Rd: Added a \note{} about the need to setwd() accordingly if
+	relative paths are used
+
+2011-09-07  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/*: Updated to current version of vowpal's git repo which no
+	longer requires -std=c++0x (via uint64_t instead of u. long long)
+
+	* configure.in: Updated to no longer add -std=c++0x
+
+2011-09-02  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/Makevars.in: Also set -lz -lpthread in PKG_LIBS
+
+	* cleanup: Remove src/Makevars too
+
+2011-09-01  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/*: Updated to current version of vowpal's git repo which now
+	compiles cleanly using -std=c++0x
+
+	* configure.in: Added more stringent test for Boost Program_Options
+	library re-using two macros by Thomas Porschberg from the autoconf
+	archive.
+
+2011-08-31  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION: Set Version: to 0.0.2
+
+	* DESCRIPTION: Set SVN $Date$ property
+
+	* src/*: Updated to current version of vowpal's git repo
+
+2011-08-18  Dirk Eddelbuettel  <edd@debian.org>
+
+	* man/vw.Rd: Added minimal manual page for vw() function
+
+	* inst/test/: Copied upstream regression test input data, models and
+	reference output here
+
+	* demo/vw.R: Collected upstream tests in a demo file vw.R
+
+	* src/accumulate.{cc,h},src/lda_core.cc: Applied dos2unix
+
+2011-08-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* Initial test package version 0.0.1 replicating the results of the
+	upstream RunTests script using the the upstream vw binary
+
