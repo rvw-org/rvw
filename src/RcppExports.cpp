@@ -5,14 +5,24 @@
 
 using namespace Rcpp;
 
-// Rvw
-Rcpp::DataFrame Rvw(SEXP args);
-RcppExport SEXP RVowpalWabbit_Rvw(SEXP argsSEXP) {
+// create_cache
+void create_cache(Rcpp::String data, Rcpp::String dir);
+RcppExport SEXP _rvwgsoc_create_cache(SEXP dataSEXP, SEXP dirSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type args(argsSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rvw(args));
-    return rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::String >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type dir(dirSEXP);
+    create_cache(data, dir);
+    return R_NilValue;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_rvwgsoc(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

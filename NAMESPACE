@@ -1,5 +1,3 @@
-
-useDynLib("RVowpalWabbit", .registration=TRUE)
-
-importFrom("Rcpp", "evalCpp")
-export("vw")
+useDynLib(rvwgsoc, .registration=TRUE)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)

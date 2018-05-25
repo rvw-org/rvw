@@ -1,24 +1,11 @@
-Package: RVowpalWabbit
-Title: R Interface to the Vowpal Wabbit
-Version: 0.0.12
-Date: 2018-02-01
-Maintainer: Dirk Eddelbuettel <edd@debian.org>
-Author: Dirk Eddelbuettel <edd@debian.org>
-Description: The 'Vowpal Wabbit' project is a fast out-of-core learning
- system sponsored by Microsoft Research (having started at Yahoo! Research)
- and written by John Langford along with a number of contributors. This R
- package does not include the distributed computing implementation of the
- cluster/ directory of the upstream sources. Use of the software as a network
- service is also not directly supported as the aim is a simpler direct call
- from R for validation and comparison. Note that this package contains an
- embedded older version of 'Vowpal Wabbit'. The package 'rvw' at the GitHub
- repo <https://github.com/eddelbuettel/rvw> can provide an alternative using 
- an external 'Vowpal Wabbit' library installation.
-Depends: R (>= 2.12.0)
-Imports: Rcpp
-LinkingTo: Rcpp
-SystemRequirements: The Boost 'program_options' library (http://boost.org) is required.
-OS_type: unix
+Package: rvwgsoc
+Type: Package
+Title: What the Package Does in One 'Title Case' Line
+Version: 1.0
+Date: 2018-05-22
+Author: Your Name
+Maintainer: Your Name <your@email.com>
+Description: One paragraph description of what the package does as one or more full sentences.
 License: GPL (>= 2)
-URL: https://github.com/JohnLangford/vowpal_wabbit/ http://dirk.eddelbuettel.com/code/rcpp.html
-BugReports: https://github.com/eddelbuettel/rvowpalwabbit/issues
+Imports: Rcpp (>= 0.12.16)
+LinkingTo: Rcpp

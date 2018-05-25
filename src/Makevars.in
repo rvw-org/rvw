@@ -1,6 +1,0 @@
-## see configure.in
-PKG_CXXFLAGS=@CXXFLAGS@ -I. -D_FILE_OFFSET_BITS=64 
-PKG_LIBS=@LDFLAGS@ -lz -lpthread
-
-
-
