@@ -5,9 +5,9 @@ vw_setup <- function(learning_mode = "binary",
                      optimization_params = list(),
                      learning_params = list(),
                      dir = tempdir(),
-                     train_data = NULL,
-                     test_data = NULL,
-                     model = NULL,
+                     train_data = "",
+                     test_data = "",
+                     model = "mdl.vw",
                      eval = FALSE,
                      cache = TRUE
 ) {
@@ -16,21 +16,16 @@ vw_setup <- function(learning_mode = "binary",
   test_cache = ""
   eval_results = ""
   
-  print("here1")
   params <- list(learning_mode = learning_mode,
                 general_params = general_params,
                 learning_params = learning_params,
                 optimization_params = optimization_params
                 )
-  print("here2")
   # Parse parameters and write them to string
   # Check parameters
   params <- .check_parameters(params)
-  print("here2.5")
   # Write to string
-  parameters_string <- .create_parameters_string(params)
-  
-  print("here3")
+  params_str <- .create_parameters_string(params)
   # Create cache
   if (cache) {
     # If have data, create cache
@@ -41,24 +36,37 @@ vw_setup <- function(learning_mode = "binary",
       test_cache <- .create_cache(test_data, dir)
     }
   }
-
-  print("here4")
   if(eval) {
     eval_results = "palaceholder for eveluation results"
   }
-  
-  print("here5")
   vwmodel <- list(params = params,
                   dir = dir,
                   model = model,
-                  cache = list(train = train_cache,
-                               test = test_cache),
+                  params_str = params_str,
+                  data = list(train = train_data,
+                               test = test_data),
                   eval = eval_results)
-  
+  class(vwmodel) <- "vw"
   return(vwmodel)
 }
 
 
+print.vw <- function(vwmodel) {
+  cat("\tVowpal Wabbit model\n")
+  cat("Learning mode:  ", vwmodel$learning_mode, "\n")
+  cat("Working directory:  ", vwmodel$dir, "\n")
+  cat("General parameters:", "\n")
+  sapply(names(vwmodel$params$general_params), FUN = function(i) cat("\t", i, ":  ", vwmodel$params$general_params[[i]], "\n"))
+  cat("Learning parameters:", "\n")
+  sapply(names(vwmodel$params$learning_params), FUN = function(i) cat("\t", i, ":  ", vwmodel$params$learning_params[[i]], "\n"))
+  cat("Optimization parameters:", "\n")
+  sapply(names(vwmodel$params$optimization_params), FUN = function(i) cat("\t", i, ":  ", vwmodel$params$optimization_params[[i]], "\n"))
+  cat("Data:", "\n")
+  cat("\tTrain data file path:  ", vwmodel$data$train, "\n")
+  cat("\tTest data file path:  ", vwmodel$data$test, "\n")
+  }
+
+# Helper functions
 .check_parameters <- function(params) {
   # Helper function to check parameters
   check_param_values <- function(input, check) {
@@ -79,7 +87,7 @@ vw_setup <- function(learning_mode = "binary",
                         cubic="logical",
                         interactions="character",
                         permutations="logical",
-                        holdout="double",
+                        holdout_period="double",
                         early_terminate="double",
                         sort_features="logical",
                         noconstant="logical",
@@ -98,7 +106,8 @@ vw_setup <- function(learning_mode = "binary",
                     lda_rho="double",
                     lda_D="double",
                     lda_epsilon="double",
-                    math_mode="double")
+                    math_mode="double",
+                    minibatch="double")
   factorization_check <- list(rank="double")
   bootstrap_check <- list(rounds="double",
                           type="character")
@@ -107,14 +116,15 @@ vw_setup <- function(learning_mode = "binary",
                    multitask="logical",
                    dropout="logical",
                    meanfield="logical")
-  optimization_check <- list(optimizer="character",
+  optimization_check <- list(
+                             # optimizer="character",
                              adaptive="logical",
                              normalized="logical",
                              invariant="logical",
-                             ftrl_alpha="double",
-                             ftrl_beta="double",
-                             mem="double",
-                             termination="double",
+                             # ftrl_alpha="double",
+                             # ftrl_beta="double",
+                             # mem="double",
+                             # termination="double",
                              hessian="logical",
                              initial_pass_length="double",
                              l1="double",
@@ -124,8 +134,7 @@ vw_setup <- function(learning_mode = "binary",
                              power_t="double",
                              learning_rate="double",
                              loss_function="character",
-                             quantile_tau="double",
-                             minibatch="double")
+                             quantile_tau="double")
   
   
   
@@ -148,7 +157,8 @@ vw_setup <- function(learning_mode = "binary",
                                        lda_rho=0.100000001,
                                        lda_D=10000,
                                        lda_epsilon=0.00100000005,
-                                       math_mode=0),
+                                       math_mode=0,
+                                       minibatch=1),
                               factorization=list(rank=0),
                               bootstrap=list(rounds=NA,
                                              type="mean"),
@@ -166,7 +176,7 @@ vw_setup <- function(learning_mode = "binary",
                            cubic=FALSE,
                            interactions=NA,
                            permutations=FALSE,
-                           holdout=10,
+                           holdout_period=10,
                            early_terminate=3,
                            sort_features=FALSE,
                            noconstant=FALSE,
@@ -179,14 +189,15 @@ vw_setup <- function(learning_mode = "binary",
                            initial_weight=0)
   }
   if(length(params$optimization_params) == 0) {
-    params$optimization_params <- list(optimizer="sgd",
+    params$optimization_params <- list(
+                                # optimizer="sgd",
                                 adaptive=TRUE,
                                 normalized=TRUE,
                                 invariant=TRUE,
-                                ftrl_alpha=0.005,
-                                ftrl_beta=0.1,
-                                mem=15,
-                                termination=0.001,
+                                # ftrl_alpha=0.005,
+                                # ftrl_beta=0.1,
+                                # mem=15,
+                                # termination=0.001,
                                 hessian=FALSE,
                                 initial_pass_length=NA,
                                 l1=0,
@@ -196,8 +207,7 @@ vw_setup <- function(learning_mode = "binary",
                                 power_t=0.5,
                                 learning_rate=0.5,
                                 loss_function="squared",
-                                quantile_tau=0.5,
-                                minibatch=1)
+                                quantile_tau=0.5)
   }
   
   # Check general parameters
@@ -248,7 +258,6 @@ vw_setup <- function(learning_mode = "binary",
   temp_params <- flatten(params[-1])
   # Convert parameters list to "--arg _" list
   temp_params <- sapply(names(temp_params), FUN = function(i) {
-    print(temp_params[i])
     if(is.na(temp_params[i]) | temp_params[i] == "") {
       return("")
     };
@@ -268,4 +277,6 @@ vw_setup <- function(learning_mode = "binary",
   
   return(parameters_string)
 }
+
+
   

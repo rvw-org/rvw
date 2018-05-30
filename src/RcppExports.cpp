@@ -16,9 +16,21 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// vw_train
+void vw_train(Rcpp::List vwmodel, std::string data);
+RcppExport SEXP _rvwgsoc_vw_train(SEXP vwmodelSEXP, SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
+    Rcpp::traits::input_parameter< std::string >::type data(dataSEXP);
+    vw_train(vwmodel, data);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 2},
+    {"_rvwgsoc_vw_train", (DL_FUNC) &_rvwgsoc_vw_train, 2},
     {NULL, NULL, 0}
 };
 
