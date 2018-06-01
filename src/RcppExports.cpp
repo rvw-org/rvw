@@ -16,21 +16,35 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// vw_train
-void vw_train(Rcpp::List vwmodel, std::string data);
-RcppExport SEXP _rvwgsoc_vw_train(SEXP vwmodelSEXP, SEXP dataSEXP) {
+// vwtrain
+void vwtrain(Rcpp::List vwmodel, std::string data);
+RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP dataSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
     Rcpp::traits::input_parameter< std::string >::type data(dataSEXP);
-    vw_train(vwmodel, data);
+    vwtrain(vwmodel, data);
     return R_NilValue;
+END_RCPP
+}
+// vwtest
+Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data, std::string probs_file);
+RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_fileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
+    Rcpp::traits::input_parameter< std::string >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< std::string >::type probs_file(probs_fileSEXP);
+    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data, probs_file));
+    return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 2},
-    {"_rvwgsoc_vw_train", (DL_FUNC) &_rvwgsoc_vw_train, 2},
+    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 2},
+    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 3},
     {NULL, NULL, 0}
 };
 
