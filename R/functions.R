@@ -1,6 +1,6 @@
 
 
-vw_setup <- function(learning_mode = "binary",
+vwsetup <- function(learning_mode = "binary",
                      general_params = list(),
                      optimization_params = list(),
                      learning_params = list(),
@@ -245,15 +245,17 @@ print.vw <- function(vwmodel) {
   
   temp_params <- params
   #Set learning mode string argument
-  parameters_string <- switch (temp_params$learning_mode,
+  print(temp_params$learning_mode)
+  mode_string <- switch (temp_params$learning_mode,
     # binary = "--binary",
-    multiclass = {paste0("--", temp_params$learning_params$reduction, " ", temp_params$learning_params$num_classes); 
-      temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA;},
-    lda = {paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA},
-    factorization = {paste0("--rank ", temp_params$learning_params$rank); temp_params$learning_params$rank <- NA},
-    bootstrap = {paste0("--bootstrap ", temp_params$learning_params$rounds); temp_params$learning_params$rounds <- NA},
-    nn = {paste0("--nn ", temp_params$learning_params$hidden); temp_params$learning_params$hidden <- NA}
+    multiclass = {tmp <- paste0("--", temp_params$learning_params$reduction, " ", temp_params$learning_params$num_classes); 
+      temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA; return(tmp)},
+    lda = {tmp <- paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA; return(tmp)},
+    factorization = {tmp <- paste0("--rank ", temp_params$learning_params$rank); temp_params$learning_params$rank <- NA; return(tmp)},
+    bootstrap = {tmp <- paste0("--bootstrap ", temp_params$learning_params$rounds); temp_params$learning_params$rounds <- NA; return(tmp)},
+    nn = {tmp <- paste0("--nn ", temp_params$learning_params$hidden); temp_params$learning_params$hidden <- NA; return(tmp)}
   )
+  print(mode_string)
   # Flatten list
   temp_params <- flatten(params[-1])
   # Convert parameters list to "--arg _" list
@@ -274,6 +276,7 @@ print.vw <- function(vwmodel) {
   temp_params <- Filter(temp_params, f = function(x) nchar(x) > 0)
   # Create string "--passes 0 --bit_precision 18" for parser
   parameters_string <- paste0(temp_params, collapse = " ")
+  parameters_string <- paste0(mode_string, parameters_string, collapse = " ")
   
   return(parameters_string)
 }
