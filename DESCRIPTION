@@ -27,6 +27,9 @@ Imports: Rcpp (>= 0.12.16)
 LinkingTo: Rcpp
 Suggests: testthat
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
+=======
 >>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
 =======
 >>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
