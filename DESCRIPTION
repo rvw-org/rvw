@@ -1,5 +1,6 @@
 Package: rvw
 Type: Package
+<<<<<<< HEAD
 Title: Minimal Interface Between R and Vowpal Wabbit
 Version: 0.1.1.1
 Date: 2017-03-19
@@ -14,3 +15,15 @@ Imports: pROC, data.table, ggplot2
 Suggests: yaml, caret, earth, randomForest, ranger, party, gbm, xgboost,
     testthat
 RoxygenNote: 6.0.1
+=======
+Title: What the Package Does in One 'Title Case' Line
+Version: 1.0
+Date: 2018-05-22
+Author: Your Name
+Maintainer: Your Name <your@email.com>
+Description: One paragraph description of what the package does as one or more full sentences.
+License: GPL (>= 2)
+Imports: Rcpp (>= 0.12.16)
+LinkingTo: Rcpp
+Suggests: testthat
+>>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.

@@ -1,6 +1,7 @@
 
 
 vwsetup <- function(learning_mode = "binary",
+                    algorithm = "sgd",
                      general_params = list(),
                      optimization_params = list(),
                      learning_params = list(),
@@ -11,12 +12,12 @@ vwsetup <- function(learning_mode = "binary",
                      eval = FALSE,
                      cache = TRUE
 ) {
-  
   train_cache = ""
   test_cache = ""
   eval_results = ""
   
   params <- list(learning_mode = learning_mode,
+                 algorithm = algorithm,
                 general_params = general_params,
                 learning_params = learning_params,
                 optimization_params = optimization_params
@@ -53,7 +54,8 @@ vwsetup <- function(learning_mode = "binary",
 
 print.vw <- function(vwmodel) {
   cat("\tVowpal Wabbit model\n")
-  cat("Learning mode:  ", vwmodel$learning_mode, "\n")
+  cat("Learning mode:  ", vwmodel$params$learning_mode, "\n")
+  cat("Learning algorithm:  ", vwmodel$params$algorithm, "\n")
   cat("Working directory:  ", vwmodel$dir, "\n")
   cat("General parameters:", "\n")
   sapply(names(vwmodel$params$general_params), FUN = function(i) cat("\t", i, ":  ", vwmodel$params$general_params[[i]], "\n"))
@@ -116,11 +118,14 @@ print.vw <- function(vwmodel) {
                    multitask="logical",
                    dropout="logical",
                    meanfield="logical")
+  # Learning algorithm check
+  sgd_check <- list(adaptive="logical",
+           normalized="logical",
+           invariant="logical")
+  bfgs_check <- list(conjugate_gradient="logical")
+  ftrl_check <- list(ftrl_alpha="double",
+            ftrl_beta="double")
   optimization_check <- list(
-                             # optimizer="character",
-                             adaptive="logical",
-                             normalized="logical",
-                             invariant="logical",
                              # ftrl_alpha="double",
                              # ftrl_beta="double",
                              # mem="double",
@@ -144,6 +149,14 @@ print.vw <- function(vwmodel) {
   } 
   if(is.null(params$learning_mode)) {
     stop("learning_mode not specified")
+  }
+  
+  # Check learning algorithm
+  if(!(params$algorithm %in% c("sgd", "bfgs", "ftrl"))) {
+    stop("Wrong learning algorithm!")
+  } 
+  if(is.null(params$learning_mode)) {
+    stop("learning algorithm not specified")
   }
   
   # Create default parameters list if no parameters provided
@@ -188,16 +201,10 @@ print.vw <- function(vwmodel) {
                            sparse_weights=FALSE,
                            initial_weight=0)
   }
+  # Create empty list in case user provided anything in optimization_params
+  algorithm_parameters <- list()
   if(length(params$optimization_params) == 0) {
     params$optimization_params <- list(
-                                # optimizer="sgd",
-                                adaptive=TRUE,
-                                normalized=TRUE,
-                                invariant=TRUE,
-                                # ftrl_alpha=0.005,
-                                # ftrl_beta=0.1,
-                                # mem=15,
-                                # termination=0.001,
                                 hessian=FALSE,
                                 initial_pass_length=NA,
                                 l1=0,
@@ -208,6 +215,14 @@ print.vw <- function(vwmodel) {
                                 learning_rate=0.5,
                                 loss_function="squared",
                                 quantile_tau=0.5)
+    algorithm_parameters <- switch(params$algorithm,
+                                   sgd=list(adaptive=TRUE,
+                                            normalized=TRUE,
+                                            invariant=TRUE),
+                                   bfgs=list(conjugate_gradient=FALSE),
+                                   ftrl=list(ftrl_alpha=0.005,
+                                             ftrl_beta=0.1)
+    )
   }
   
   # Check general parameters
@@ -221,18 +236,20 @@ print.vw <- function(vwmodel) {
          bootstrap=check_param_values(input = params$learning_params, check = bootstrap_check),
          nn=check_param_values(input = params$learning_params, check = nn_check)
   )
-  # Check optimization parameters
-  check_param_values(input = params$optimization_params, check = optimization_check)
+  # Check learning algorithm parameters and optimization parameters
+  params$optimization_params <- c(algorithm_parameters, params$optimization_params)
+  switch(params$algorithm,
+         sgd=check_param_values(input =  params$optimization_params, check = c(sgd_check, optimization_check)),
+         bfgs=check_param_values(input =  params$optimization_params, check = c(bfgs_check, optimization_check)),
+         ftrl=check_param_values(input =  params$optimization_params, check = c(ftrl_check, optimization_check))
+  )
   
   # Return validated parameters
-  general_params <- params$general_params
-  learning_params <- params$learning_params
-  optimization_params <- params$optimization_params
-  
   return(list(learning_mode = params$learning_mode,
-              general_params = general_params,
-              learning_params = learning_params,
-              optimization_params = optimization_params))
+              algorithm = params$algorithm,
+              general_params = params$general_params,
+              learning_params = params$learning_params,
+              optimization_params = params$optimization_params))
 }
 
 .create_parameters_string <- function(params) {
@@ -242,22 +259,26 @@ print.vw <- function(vwmodel) {
       x <- Reduce(c, x)
     }
   }
-  
   temp_params <- params
   #Set learning mode string argument
-  print(temp_params$learning_mode)
   mode_string <- switch (temp_params$learning_mode,
-    # binary = "--binary",
+    binary = {tmp <- "--binary"; tmp},
     multiclass = {tmp <- paste0("--", temp_params$learning_params$reduction, " ", temp_params$learning_params$num_classes); 
-      temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA; return(tmp)},
-    lda = {tmp <- paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA; return(tmp)},
-    factorization = {tmp <- paste0("--rank ", temp_params$learning_params$rank); temp_params$learning_params$rank <- NA; return(tmp)},
-    bootstrap = {tmp <- paste0("--bootstrap ", temp_params$learning_params$rounds); temp_params$learning_params$rounds <- NA; return(tmp)},
-    nn = {tmp <- paste0("--nn ", temp_params$learning_params$hidden); temp_params$learning_params$hidden <- NA; return(tmp)}
+      temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA; tmp},
+    lda = {tmp <- paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA; tmp},
+    factorization = {tmp <- paste0("--rank ", temp_params$learning_params$rank); temp_params$learning_params$rank <- NA; tmp},
+    bootstrap = {tmp <- paste0("--bootstrap ", temp_params$learning_params$rounds); temp_params$learning_params$rounds <- NA; tmp},
+    nn = {tmp <- paste0("--nn ", temp_params$learning_params$hidden); temp_params$learning_params$hidden <- NA; tmp}
   )
-  print(mode_string)
+  #Set learning mode string argument
+  algorithm_string <- switch (temp_params$algorithm,
+                              sgd = {tmp <- ""; tmp},
+                              bfgs = {tmp <- "--bfgs"; tmp},
+                              ftrl = {tmp <- "--ftrl"; tmp}
+
+  )
   # Flatten list
-  temp_params <- flatten(params[-1])
+  temp_params <- flatten(temp_params[-c(1,2)])
   # Convert parameters list to "--arg _" list
   temp_params <- sapply(names(temp_params), FUN = function(i) {
     if(is.na(temp_params[i]) | temp_params[i] == "") {
@@ -276,7 +297,7 @@ print.vw <- function(vwmodel) {
   temp_params <- Filter(temp_params, f = function(x) nchar(x) > 0)
   # Create string "--passes 0 --bit_precision 18" for parser
   parameters_string <- paste0(temp_params, collapse = " ")
-  parameters_string <- paste0(mode_string, parameters_string, collapse = " ")
+  parameters_string <- paste(mode_string, algorithm_string, parameters_string, sep = " ")
   
   return(parameters_string)
 }
