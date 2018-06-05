@@ -57,14 +57,18 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data="", std::string 
   VW::finish(*predict_model);
 
   Rcpp::NumericVector data_vec(num_of_examples);
-  // std::ifstream probs_stream (probs_str);
-  // std::string line;
-  // for (int i = 0; i < num_of_examples; ++i)
-  // {
-  //   getline(probs_stream, line);
-  //   Rcpp::Rcout << line << std::endl;
-  //   // data_vec[i] = std::stof(line);
-  // }
+  std::ifstream probs_stream (probs_str);
+  std::string line;
+  for (int i = 0; i < num_of_examples; ++i)
+  {
+    getline(probs_stream, line);
+    if (!line.empty())
+    {
+      data_vec[i] = std::stof(line);
+    } else {
+      data_vec[i] = R_NaReal;
+    }
+  }
   return data_vec;
 }
 
