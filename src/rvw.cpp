@@ -25,12 +25,19 @@ void vwtrain(Rcpp::List vwmodel, std::string data="") {
   Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
   vw* train_model = VW::initialize(train_init_str);
   VW::start_parser(*train_model);
-  std::cerr << "average  since         example        example  current  current  current" << std::endl;
-  std::cerr << "loss     last          counter         weight    label  predict features" << std::endl;
+      // Try to redirect cerr
+  std::stringstream new_buf;
+  auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
+
+  Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
+  Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
   LEARNER::generic_driver(*train_model);
   VW::end_parser(*train_model);
   VW::save_predictor(*train_model, model_str);
   VW::finish(*train_model);
+
+  Rcpp::Rcout << new_buf.str() << std::endl;
+  std::cerr.rdbuf(old_buf);
 }
 
 // [[Rcpp::export]]
@@ -49,12 +56,19 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data="", std::string 
   Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
   vw* predict_model = VW::initialize(train_init_str);
   VW::start_parser(*predict_model);
-  std::cerr << "average  since         example        example  current  current  current" << std::endl;
-  std::cerr << "loss     last          counter         weight    label  predict features" << std::endl;
+      // Try to redirect cerr
+  std::stringstream new_buf;
+  auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
+
+  Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
+  Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
   LEARNER::generic_driver(*predict_model);
   VW::end_parser(*predict_model);
   int num_of_examples = get_num_example(*predict_model);
   VW::finish(*predict_model);
+
+  Rcpp::Rcout << new_buf.str() << std::endl;
+  std::cerr.rdbuf(old_buf);
 
   Rcpp::NumericVector data_vec(num_of_examples);
   std::ifstream probs_stream (probs_str);
