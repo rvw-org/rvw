@@ -1,7 +1,7 @@
 
 
-vwsetup <- function(learning_mode = "binary",
-                    algorithm = "sgd",
+vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorization", "bootstrap", "nn"),
+                    algorithm = c("sgd", "bfgs", "ftrl"),
                      general_params = list(),
                      optimization_params = list(),
                      learning_params = list(),
@@ -15,6 +15,9 @@ vwsetup <- function(learning_mode = "binary",
   train_cache = ""
   test_cache = ""
   eval_results = ""
+  
+  learning_mode <- match.arg(learning_mode)
+  algorithm <- match.arg(algorithm)
   
   params <- list(learning_mode = learning_mode,
                  algorithm = algorithm,
@@ -141,23 +144,6 @@ print.vw <- function(vwmodel) {
                              loss_function="character",
                              quantile_tau="double")
   
-  
-  
-  # Check learning mode
-  if(!(params$learning_mode %in% c("binary", "multiclass", "lda", "factorization", "bootstrap", "nn"))) {
-    stop("Wrong learning_mode!")
-  } 
-  if(is.null(params$learning_mode)) {
-    stop("learning_mode not specified")
-  }
-  
-  # Check learning algorithm
-  if(!(params$algorithm %in% c("sgd", "bfgs", "ftrl"))) {
-    stop("Wrong learning algorithm!")
-  } 
-  if(is.null(params$learning_mode)) {
-    stop("learning algorithm not specified")
-  }
   
   # Create default parameters list if no parameters provided
   if(length(params$learning_params) == 0) {
