@@ -23,7 +23,8 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
                  algorithm = algorithm,
                 general_params = general_params,
                 learning_params = learning_params,
-                optimization_params = optimization_params
+                optimization_params = optimization_params,
+                cache = cache
                 )
   # Parse parameters and write them to string
   # Check parameters
@@ -33,11 +34,13 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
   # Create cache
   if (cache) {
     # If have data, create cache
-    if (!is.null(train_data)) {
-      train_cache <- .create_cache(train_data, dir)
+    if (nchar(train_data) != 0) {
+      train_cache <- paste0(train_data, ".cache")
+      .create_cache(dir=dir, data_file=train_data, cache_file=train_cache)
     }
-    if (!is.null(test_data)) {
-      test_cache <- .create_cache(test_data, dir)
+    if (nchar(test_data) != 0) {
+      test_cache <- paste0(test_data, ".cache")
+      .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
     }
   }
   if(eval) {
@@ -49,6 +52,8 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
                   params_str = params_str,
                   data = list(train = train_data,
                                test = test_data),
+                  cache = list(train = train_cache,
+                              test = test_cache),
                   eval = eval_results)
   class(vwmodel) <- "vw"
   return(vwmodel)
@@ -69,6 +74,11 @@ print.vw <- function(vwmodel) {
   cat("Data:", "\n")
   cat("\tTrain data file path:  ", vwmodel$data$train, "\n")
   cat("\tTest data file path:  ", vwmodel$data$test, "\n")
+  if (vwmodel$params$general_params$cache) {
+    cat("Cache:", "\n")
+    cat("\tTrain data file path:  ", vwmodel$cache$train, "\n")
+    cat("\tTest data file path:  ", vwmodel$cache$test, "\n")
+  }
   }
 
 # Helper functions
@@ -86,7 +96,8 @@ print.vw <- function(vwmodel) {
     }
   }
   # Initialise check lists
-  general_check <- list(passes="double",
+  general_check <- list(cache="logical",
+                        passes="double",
                         bit_precision="double",
                         qudratic="logical",
                         cubic="logical",
@@ -169,7 +180,8 @@ print.vw <- function(vwmodel) {
     )
   }
   if(length(params$general_params) == 0) {
-    params$general_params <- list(passes=1,
+    params$general_params <- list(cache=params$cache,
+                           passes=1,
                            bit_precision=18,
                            qudratic=FALSE,
                            cubic=FALSE,
@@ -186,6 +198,8 @@ print.vw <- function(vwmodel) {
                            random_weights=FALSE,
                            sparse_weights=FALSE,
                            initial_weight=0)
+  } else {
+    params$general_params <- c(params$cache, params$general_params)
   }
   # Create empty list in case user provided anything in optimization_params
   algorithm_parameters <- list()
