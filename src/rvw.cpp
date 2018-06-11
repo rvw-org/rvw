@@ -45,7 +45,7 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 void vwtrain(Rcpp::List vwmodel, std::string data_path="") {
   // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
   // Rcpp::Rcout << vwmodel.attr("class") << std::endl;
-  std::string data_str = check_data(vwmodel, data_path);
+  std::string data_str = check_data(vwmodel, data_path, "train");
   std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
 
   Rcpp::Rcout << "Starting VW training session" << std::endl;
@@ -74,12 +74,19 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="") {
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::string probs_file = "probs_out.vw") {
+Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::string probs_path = "") {
   // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
   // Rcpp::Rcout << vwmodel.attr("class") << std::endl;
-  std::string data_str = check_data(vwmodel, data_path);
+  std::string data_str = check_data(vwmodel, data_path, "test");
   std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
-  std::string probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + probs_file;
+  std::string probs_str;
+
+  // If no probs_path was provided we should create temporary here and then delete
+  if (probs_path.empty()) {
+    probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + std::to_string(std::time(nullptr)) + "_probs_out.vw";
+  } else {
+    probs_str = probs_path;
+  }
 
   Rcpp::Rcout << "Starting VW test session" << std::endl;
   Rcpp::Rcout << "Using data file: " << data_str << std::endl;
@@ -89,11 +96,11 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
   std::stringstream new_buf;
   auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
   
-  std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
-  train_init_str += " -d " + data_str + " -p " + probs_str;
-  Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
+  std::string test_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
+  test_init_str += " -t -d " + data_str + " -p " + probs_str + " -i " + model_str;
+  Rcpp::Rcout << "Command line parameters: " << std::endl << test_init_str << std::endl;
 
-  vw* predict_model = VW::initialize(train_init_str);
+  vw* predict_model = VW::initialize(test_init_str);
   VW::start_parser(*predict_model);
   new_buf << "average  since         example        example  current  current  current" << std::endl;
   new_buf << "loss     last          counter         weight    label  predict features" << std::endl;
@@ -117,6 +124,10 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     } else {
       data_vec[i] = R_NaReal;
     }
+  }
+  // Delete temporary probs file
+  if (probs_path.empty()) {
+    remove(probs_str.c_str());
   }
   return data_vec;
 }

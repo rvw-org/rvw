@@ -10,7 +10,7 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
                      test_data = "",
                      model = "mdl.vw",
                      eval = FALSE,
-                     cache = TRUE
+                     cache = FALSE
 ) {
   train_cache = ""
   test_cache = ""
@@ -262,7 +262,6 @@ print.vw <- function(vwmodel) {
   temp_params <- params
   #Set learning mode string argument
   mode_string <- switch (temp_params$learning_mode,
-    binary = {tmp <- "--binary"; tmp},
     multiclass = {tmp <- paste0("--", temp_params$learning_params$reduction, " ", temp_params$learning_params$num_classes); 
       temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA; tmp},
     lda = {tmp <- paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA; tmp},

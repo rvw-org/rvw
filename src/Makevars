@@ -1,0 +1,3 @@
+PKG_CPPFLAGS = -I/usr/local/include/
+PKG_LIBS = -lvw
+CXX_STD = CXX11

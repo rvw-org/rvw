@@ -28,8 +28,12 @@ LinkingTo: Rcpp
 Suggests: testthat
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
 =======
 >>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
 =======
 >>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
+=======
+SystemRequirements: C++11
+>>>>>>> b9b2609... Add testing against CL version.
