@@ -29,15 +29,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtest
-Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path, std::string probs_file);
-RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP probs_fileSEXP) {
+Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path, std::string probs_path);
+RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP probs_pathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
     Rcpp::traits::input_parameter< std::string >::type data_path(data_pathSEXP);
-    Rcpp::traits::input_parameter< std::string >::type probs_file(probs_fileSEXP);
-    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data_path, probs_file));
+    Rcpp::traits::input_parameter< std::string >::type probs_path(probs_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data_path, probs_path));
     return rcpp_result_gen;
 END_RCPP
 }

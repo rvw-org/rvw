@@ -3,7 +3,7 @@ library(rvwgsoc)
 
 test_model <- list(params = list(learning_mode = "binary",
                                  algorithm = "sgd",
-                                 general_params = list(cache = TRUE,
+                                 general_params = list(cache = FALSE,
                                                        passes=1,
                                                        bit_precision=18,
                                                        qudratic=FALSE,
@@ -39,7 +39,7 @@ test_model <- list(params = list(learning_mode = "binary",
 ),
 dir = "../my_tmp/",
 model = "mdl.vw",
-params_str = paste("--binary  --cache --passes 1 --bit_precision 18 --holdout_period 10 --early_terminate 3 ",
+params_str = paste("  --passes 1 --bit_precision 18 --holdout_period 10 --early_terminate 3 ",
                    "--initial_weight 0 --adaptive --normalized --invariant --l1 0 --l2 0 --decay_learning_rate 1",
                    " --initial_t 0 --power_t 0.5 --learning_rate 0.5 --loss_function squared --quantile_tau 0.5", sep = ""),
 data = list(train = "",
@@ -57,7 +57,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
                                            multitask=FALSE,
                                            dropout=FALSE,
                                            meanfield=FALSE);
-  test_model$params_str = paste("--nn 3  --cache --passes 1 --bit_precision 18 --holdout_period 10 --early_terminate 3 ",
+  test_model$params_str = paste("--nn 3  --passes 1 --bit_precision 18 --holdout_period 10 --early_terminate 3 ",
                                 "--initial_weight 0 --adaptive --normalized --invariant --l1 0 --l2 0 --decay_learning_rate 1",
                                 " --initial_t 0 --power_t 0.5 --learning_rate 0.5 --loss_function squared --quantile_tau 0.5", sep = "");
   test_model})
@@ -69,7 +69,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
                                            lda_epsilon=0.00100000005,
                                            math_mode=0,
                                            minibatch=1);
-  test_model$params_str = paste("--lda 0  --cache --passes 1 --bit_precision 18 --holdout_period 10 --early_terminate 3 ",
+  test_model$params_str = paste("--lda 0  --passes 1 --bit_precision 18 --holdout_period 10 --early_terminate 3 ",
                                 "--initial_weight 0 --lda_alpha 0.100000001 --lda_rho 0.100000001 --lda_D 10000",
                                 " --lda_epsilon 0.00100000005 --math_mode 0 --minibatch 1 --adaptive --normalized",
                                 " --invariant --l1 0 --l2 0 --decay_learning_rate 1 --initial_t 0 --power_t 0.5",

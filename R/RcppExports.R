@@ -9,7 +9,7 @@ vwtrain <- function(vwmodel, data_path = "") {
     invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path))
 }
 
-vwtest <- function(vwmodel, data_path = "", probs_file = "probs_out.vw") {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data_path, probs_file)
+vwtest <- function(vwmodel, data_path = "", probs_path = "") {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data_path, probs_path)
 }
 

@@ -1,7 +1,7 @@
 #include "vowpalwabbit/vw.h"
 #include <Rcpp.h>
 
-std::string check_data(Rcpp::List & vwmodel, std::string & data_path) {
+std::string check_data(Rcpp::List & vwmodel, std::string & data_path, std::string mode="train") {
   Rcpp::List vwmodel_data = vwmodel["data"];
   std::string valid_data_str;
   // // DEBUG
@@ -10,12 +10,19 @@ std::string check_data(Rcpp::List & vwmodel, std::string & data_path) {
   // Rcpp::Rcout << Rcpp::as<std::string>(vwmodel_data["train"]) << std::endl;
   // Rcpp::Rcout << data_path << std::endl;
   // // END DEBUG
-  
+
+  std::string vwmodel_data_file;
+  if (mode == "test") {
+    vwmodel_data_file = Rcpp::as<std::string>(vwmodel_data["test"]);
+  } else {
+    vwmodel_data_file = Rcpp::as<std::string>(vwmodel_data["train"]);
+  }
+
   if(data_path.empty()) {
-    if(Rcpp::as<std::string>(vwmodel_data["train"]).empty()) {
+    if(vwmodel_data_file.empty()) {
       std::cerr << "No data provided" << std::endl;
     } else {
-      valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel_data["train"]);
+      valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + vwmodel_data_file;
     }
   } else {
     // valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + data;
