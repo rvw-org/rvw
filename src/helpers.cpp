@@ -33,5 +33,5 @@ std::string check_data(Rcpp::List & vwmodel, std::string & data_path, std::strin
 
 // Get number of examples used in model
 int get_num_example(vw& all) {
-    return all.sd->example_number / all.current_pass;
+    return all.sd->example_number + all.sd->weighted_holdout_examples;
   }

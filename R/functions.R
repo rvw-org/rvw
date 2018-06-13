@@ -66,11 +66,29 @@ print.vw <- function(vwmodel) {
   cat("Learning algorithm:  ", vwmodel$params$algorithm, "\n")
   cat("Working directory:  ", vwmodel$dir, "\n")
   cat("General parameters:", "\n")
-  sapply(names(vwmodel$params$general_params), FUN = function(i) cat("\t", i, ":  ", vwmodel$params$general_params[[i]], "\n"))
+  sapply(names(vwmodel$params$general_params), FUN = function(i) {
+    if(vwmodel$params$general_params[[i]] == "") {
+      cat("\t", i, ":  Not defined\n")
+    } else {
+      cat("\t", i, ":  ", vwmodel$params$general_params[[i]], "\n")
+    }
+  })
   cat("Learning parameters:", "\n")
-  sapply(names(vwmodel$params$learning_params), FUN = function(i) cat("\t", i, ":  ", vwmodel$params$learning_params[[i]], "\n"))
+  sapply(names(vwmodel$params$learning_params), FUN = function(i) {
+    if(vwmodel$params$learning_params[[i]] == "") {
+      cat("\t", i, ":  Not defined\n")
+    } else {
+      cat("\t", i, ":  ", vwmodel$params$learning_params[[i]], "\n")
+    }
+  })
   cat("Optimization parameters:", "\n")
-  sapply(names(vwmodel$params$optimization_params), FUN = function(i) cat("\t", i, ":  ", vwmodel$params$optimization_params[[i]], "\n"))
+  sapply(names(vwmodel$params$optimization_params), FUN = function(i) {
+    if(vwmodel$params$optimization_params[[i]] == "") {
+      cat("\t", i, ":  Not defined\n")
+    } else {
+      cat("\t", i, ":  ", vwmodel$params$optimization_params[[i]], "\n")
+    }
+  })
   cat("Data:", "\n")
   cat("\tTrain data file path:  ", vwmodel$data$train, "\n")
   cat("\tTest data file path:  ", vwmodel$data$test, "\n")
@@ -85,163 +103,133 @@ print.vw <- function(vwmodel) {
 .check_parameters <- function(params) {
   # Helper function to check parameters
   check_param_values <- function(input, check) {
-    if(!all(sort(names(input)) == sort(names(check)))) {
-      stop("Wrong learning parameters!")
+    if(!all(names(input) %in% names(check))) {
+      stop("Wrong argument names!")
     }
     
+    valid_input <- check
     if(!all(sapply(names(input), FUN = function(i) {
-      (typeof(input[[i]]) == check[[i]]) | (is.na(input[[i]]))
+      # First check if types of input argument values are correct (same as of check lists)
+      bool_check <- (typeof(input[[i]]) == typeof(check[[i]])) | (is.na(input[[i]]))
+      # Replace default/check values with values from input
+      valid_input[[i]] <<- input[[i]]
+      # And return bool values to raise errors
+      bool_check
     }))) {
-      stop("Wrong learning parameters!")
+      stop("Wrong argument values!")
     }
+    
+    # Return check with modified values
+    return(valid_input)
   }
-  # Initialise check lists
-  general_check <- list(cache="logical",
-                        passes="double",
-                        bit_precision="double",
-                        qudratic="logical",
-                        cubic="logical",
-                        interactions="character",
-                        permutations="logical",
-                        holdout_period="double",
-                        early_terminate="double",
-                        sort_features="logical",
-                        noconstant="logical",
-                        ngram="double",
-                        skips="double",
-                        hash="character",
-                        affix="character",
-                        random_weights="logical",
-                        sparse_weights="logical",
-                        initial_weight="double")
-  binary_check <- list(binary="logical")
-  multiclass_check <- list(reduction="character",
-                           num_classes="double")
-  lda_check <- list(num_topics="double",
-                    lda_alpha="double",
-                    lda_rho="double",
-                    lda_D="double",
-                    lda_epsilon="double",
-                    math_mode="double",
-                    minibatch="double")
-  factorization_check <- list(rank="double")
-  bootstrap_check <- list(rounds="double",
-                          type="character")
-  nn_check <- list(hidden="double",
-                   inpass="logical",
-                   multitask="logical",
-                   dropout="logical",
-                   meanfield="logical")
-  # Learning algorithm check
-  sgd_check <- list(adaptive="logical",
-           normalized="logical",
-           invariant="logical")
-  bfgs_check <- list(conjugate_gradient="logical")
-  ftrl_check <- list(ftrl_alpha="double",
-            ftrl_beta="double")
-  optimization_check <- list(
-                             # ftrl_alpha="double",
-                             # ftrl_beta="double",
-                             # mem="double",
-                             # termination="double",
-                             hessian="logical",
-                             initial_pass_length="double",
-                             l1="double",
-                             l2="double",
-                             decay_learning_rate="double",
-                             initial_t="double",
-                             power_t="double",
-                             learning_rate="double",
-                             loss_function="character",
-                             quantile_tau="double")
-  
+  # Initialise default/check lists 
+  general_check <- list(cache=params$cache,
+                        passes=1,
+                        bit_precision=18,
+                        qudratic=FALSE,
+                        cubic=FALSE,
+                        interactions="",
+                        permutations=FALSE,
+                        holdout_period=10,
+                        early_terminate=3,
+                        sort_features=FALSE,
+                        noconstant=FALSE,
+                        ngram="",
+                        skips="",
+                        hash="",
+                        affix="",
+                        random_weights=FALSE,
+                        sparse_weights=FALSE,
+                        initial_weight=0)
+  binary_check <- list(binary=FALSE)
+  multiclass_check <- list(reduction="csoaa",
+                           num_classes="3")
+  lda_check <- list(num_topics=0,
+                    lda_alpha=0.100000001,
+                    lda_rho=0.100000001,
+                    lda_D=10000,
+                    lda_epsilon=0.00100000005,
+                    math_mode=0,
+                    minibatch=1)
+  factorization_check <- list(rank=0)
+  bootstrap_check <- list(rounds="",
+                          type="mean")
+  nn_check <- list(hidden=3,
+                   inpass=FALSE,
+                   multitask=FALSE,
+                   dropout=FALSE,
+                   meanfield=FALSE)
+  # Learning algorithm default/check lists
+  sgd_check <- list(adaptive=TRUE,
+                    normalized=TRUE,
+                    invariant=TRUE)
+  bfgs_check <- list(conjugate_gradient=FALSE)
+  ftrl_check <- list(ftrl_alpha=0.005,
+                     ftrl_beta=0.1)
+  optimization_check <- list(hessian=FALSE,
+                             initial_pass_length="",
+                             l1=0,
+                             l2=0,
+                             decay_learning_rate=1,
+                             initial_t=0,
+                             power_t=0.5,
+                             learning_rate=0.5,
+                             loss_function="squared",
+                             quantile_tau=0.5)
   
   # Create default parameters list if no parameters provided
   if(length(params$learning_params) == 0) {
     params$learning_params <- switch(params$learning_mode,
-                              binary=list(binary=FALSE),
-                              multiclass=list(reduction="csoaa",
-                                              num_classes=3),
-                              lda=list(num_topics=0,
-                                       lda_alpha=0.100000001,
-                                       lda_rho=0.100000001,
-                                       lda_D=10000,
-                                       lda_epsilon=0.00100000005,
-                                       math_mode=0,
-                                       minibatch=1),
-                              factorization=list(rank=0),
-                              bootstrap=list(rounds=NA,
-                                             type="mean"),
-                              nn=list(hidden=3,
-                                      inpass=FALSE,
-                                      multitask=FALSE,
-                                      dropout=FALSE,
-                                      meanfield=FALSE)
+                              binary=binary_check,
+                              multiclass=multiclass_check,
+                              lda=lda_check,
+                              factorization=factorization_check,
+                              bootstrap=bootstrap_check,
+                              nn=nn_check
     )
   }
   if(length(params$general_params) == 0) {
-    params$general_params <- list(cache=params$cache,
-                           passes=1,
-                           bit_precision=18,
-                           qudratic=FALSE,
-                           cubic=FALSE,
-                           interactions=NA,
-                           permutations=FALSE,
-                           holdout_period=10,
-                           early_terminate=3,
-                           sort_features=FALSE,
-                           noconstant=FALSE,
-                           ngram=NA,
-                           skips=NA,
-                           hash=NA,
-                           affix=NA,
-                           random_weights=FALSE,
-                           sparse_weights=FALSE,
-                           initial_weight=0)
+    params$general_params <- general_check
   } else {
-    params$general_params <- c(params$cache, params$general_params)
+    params$general_params <- c(list(cache=params$cache), params$general_params)
   }
   # Create empty list in case user provided anything in optimization_params
   algorithm_parameters <- list()
   if(length(params$optimization_params) == 0) {
-    params$optimization_params <- list(
-                                hessian=FALSE,
-                                initial_pass_length=NA,
-                                l1=0,
-                                l2=0,
-                                decay_learning_rate=1,
-                                initial_t=0,
-                                power_t=0.5,
-                                learning_rate=0.5,
-                                loss_function="squared",
-                                quantile_tau=0.5)
+    params$optimization_params <- optimization_check
     algorithm_parameters <- switch(params$algorithm,
-                                   sgd=list(adaptive=TRUE,
-                                            normalized=TRUE,
-                                            invariant=TRUE),
-                                   bfgs=list(conjugate_gradient=FALSE),
-                                   ftrl=list(ftrl_alpha=0.005,
-                                             ftrl_beta=0.1)
+                                   sgd=sgd_check,
+                                   bfgs=bfgs_check,
+                                   ftrl=ftrl_check
     )
   }
   
   # Check general parameters
-  check_param_values(input = params$general_params, check = general_check)
+  params$general_params <- check_param_values(input = params$general_params, check = general_check)
   # Check learning parameters
   switch(params$learning_mode,
-         binary=check_param_values(input = params$learning_params, check = binary_check),
-         multiclass=check_param_values(input = params$learning_params, check = multiclass_check),
-         lda=check_param_values(input = params$learning_params, check = lda_check),
-         factorization=check_param_values(input = params$learning_params, check = factorization_check),
-         bootstrap=check_param_values(input = params$learning_params, check = bootstrap_check),
-         nn=check_param_values(input = params$learning_params, check = nn_check)
+         binary={params$learning_params <- check_param_values(input = params$learning_params,
+                                                              check = binary_check)},
+         multiclass={params$learning_params <- check_param_values(input = params$learning_params,
+                                                                  check = multiclass_check)},
+         lda={params$learning_params <- check_param_values(input = params$learning_params,
+                                                           check = lda_check)},
+         factorization={params$learning_params <- check_param_values(input = params$learning_params,
+                                                                     check = factorization_check)},
+         bootstrap={params$learning_params <- check_param_values(input = params$learning_params,
+                                                                 check = bootstrap_check)},
+         nn={params$learning_params <- check_param_values(input = params$learning_params,
+                                                          check = nn_check)}
   )
   # Check learning algorithm parameters and optimization parameters
   params$optimization_params <- c(algorithm_parameters, params$optimization_params)
   switch(params$algorithm,
-         sgd=check_param_values(input =  params$optimization_params, check = c(sgd_check, optimization_check)),
-         bfgs=check_param_values(input =  params$optimization_params, check = c(bfgs_check, optimization_check)),
-         ftrl=check_param_values(input =  params$optimization_params, check = c(ftrl_check, optimization_check))
+         sgd={params$optimization_params <- check_param_values(input =  params$optimization_params,
+                                                               check = c(sgd_check, optimization_check))},
+         bfgs={params$optimization_params <- check_param_values(input =  params$optimization_params,
+                                                                check = c(bfgs_check, optimization_check))},
+         ftrl={params$optimization_params <- check_param_values(input =  params$optimization_params,
+                                                                check = c(ftrl_check, optimization_check))}
   )
   
   # Return validated parameters
@@ -274,7 +262,6 @@ print.vw <- function(vwmodel) {
                               sgd = {tmp <- ""; tmp},
                               bfgs = {tmp <- "--bfgs"; tmp},
                               ftrl = {tmp <- "--ftrl"; tmp}
-
   )
   # Flatten list
   temp_params <- flatten(temp_params[-c(1,2)])
