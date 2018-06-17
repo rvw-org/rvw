@@ -1,6 +1,7 @@
 Package: rvw
 Type: Package
 <<<<<<< HEAD
+<<<<<<< HEAD
 Title: Minimal Interface Between R and Vowpal Wabbit
 Version: 0.1.1.1
 Date: 2017-03-19
@@ -18,14 +19,19 @@ RoxygenNote: 6.0.1
 =======
 Title: What the Package Does in One 'Title Case' Line
 Version: 1.0
+=======
+Title: R interface for Vowpal Wabbit
+Version: 0.1
+>>>>>>> ee9a862... Fix redundancy in the arguments parser. Prepare for the first package release.
 Date: 2018-05-22
-Author: Your Name
-Maintainer: Your Name <your@email.com>
-Description: One paragraph description of what the package does as one or more full sentences.
+Author: Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
+Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
+Description: R interface for Vowpal Wabbit using Rcpp and libvw for GSoC 2018.
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.16)
 LinkingTo: Rcpp
 Suggests: testthat
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37,3 +43,7 @@ Suggests: testthat
 =======
 SystemRequirements: C++11
 >>>>>>> b9b2609... Add testing against CL version.
+=======
+SystemRequirements: C++11, Vowpal Wabbit library
+RoxygenNote: 6.0.1
+>>>>>>> ee9a862... Fix redundancy in the arguments parser. Prepare for the first package release.
