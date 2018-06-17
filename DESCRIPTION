@@ -1,13 +1,14 @@
 Package: rvwgsoc
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
-Version: 1.0
+Title: R interface for Vowpal Wabbit
+Version: 0.1
 Date: 2018-05-22
-Author: Your Name
-Maintainer: Your Name <your@email.com>
-Description: One paragraph description of what the package does as one or more full sentences.
+Author: Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
+Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
+Description: R interface for Vowpal Wabbit using Rcpp and libvw for GSoC 2018.
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.16)
 LinkingTo: Rcpp
 Suggests: testthat
-SystemRequirements: C++11
+SystemRequirements: C++11, Vowpal Wabbit library
+RoxygenNote: 6.0.1

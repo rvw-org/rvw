@@ -20,7 +20,7 @@ std::string check_data(Rcpp::List & vwmodel, std::string & data_path, std::strin
 
   if(data_path.empty()) {
     if(vwmodel_data_file.empty()) {
-      std::cerr << "No data provided" << std::endl;
+      Rcpp::Rcerr << "No data provided" << std::endl;
     } else {
       valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + vwmodel_data_file;
     }

@@ -3,20 +3,19 @@
 \alias{rvwgsoc}
 \docType{package}
 \title{
-  A short title line describing what the package does
+  R interface for Vowpal Wabbit
 }
 \description{
-  A more detailed description of what the package does. A length
-  of about one to five lines is recommended.
+  R interface for Vowpal Wabbit using Rcpp and libvw for GSoC 2018.
 }
 \details{
   This section should provide a more detailed overview of how to use the
   package, including the most important functions.
 }
 \author{
-Your Name, email optional.
+Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
 
-Maintainer: Your Name <your@email.com>
+Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
 }
 \references{
   This optional section can contain literature or other references for
