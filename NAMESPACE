@@ -1,0 +1,8 @@
+
+export("vw",
+       "dt2vw")
+
+importFrom("utils", "write.table")
+importFrom("data.table", "data.table", "setDT", "setnames", "fread", "set")
+importFrom("pROC", "roc", "plot.roc")
+importFrom("ggplot2", "ggplot", "aes", "geom_density")

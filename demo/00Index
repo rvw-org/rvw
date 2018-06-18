@@ -1,0 +1,5 @@
+vw_example		diamonds data set example
+vw_example_2            smaller diamonds example
+vw_example_3            even smaller diamonds example
+vw_example_4            classification example with Titanic dataset
+vw_example_5            regression example with Boston housing dataset

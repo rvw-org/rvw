@@ -1,0 +1,111 @@
+2017-03-19  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll minor version 
+
+	* R/dt2vw.R (dt2vw): Make a copy of the dataset;
+	test for NA values in input data set
+
+2017-03-12  Selim Raboudi  <selim.raboudi@axa.com>
+
+	* R/dt2vw.R (dt2vw): Allow for escaped variable names
+
+2016-09-02  Dirk Eddelbuettel  <edd@debian.org>
+
+	* demo/vw_example_4.R: Added Rborist
+
+2016-08-30  Dirk Eddelbuettel  <edd@debian.org>
+
+	* demo/vw_example_4.R: Added ranger
+
+2016-08-29  Dirk Eddelbuettel  <edd@debian.org>
+
+	* README.md: Added
+
+2016-08-23  Dirk Eddelbuettel  <edd@debian.org>
+
+	* demo/vw_example_4.R: Rewritten/extended, now with ctree and gbm
+
+	* demo/vw_example_5.R: Plot predicted vs actual for regression example
+
+	* R/vw.R (vw): Set a AUC fallback value
+
+2016-08-22  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (License): Use dual license with GPL (>= 2) for my code,
+	and BSD 3-clause for existing code
+
+	* NAMESPACE: All importing now via importFrom()
+
+	* demo/vw_example_4.R: Add library(pROC), add a legend to ROC plot
+	* demo/00Index: Add vw_example4
+
+	* R/plot.R (plotDensity): add utils::globalVariables() for R CMD check
+
+	* R/dt2vw.R (dt2vw): If dependent variable is numeric, do not
+	check factor levels
+
+	* demo/vw_example_5.R: New regression example
+
+2016-08-21  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Suggests): Added caret (confusion matrix), ggplot2
+	and earth (etitanic data)
+
+	* R/vw.R (vw): Steps towards richer return objects, more arguments
+	documented, all temp files now in current directory, new option to
+	keep files
+	* man/vw.Rd: Updated accordingly
+
+	* R/plot.R: New simple density plot function
+	* man/plotDensity.Rd: Documentation
+
+	* demo/vw_example_4.R: Now plots ROC curve with (up to) three models
+
+2016-08-20  Dirk Eddelbuettel  <edd@debian.org>
+
+	* R/init.R (.getVW,.getPerf): Helper accessors for vw and perf
+	binaries
+
+	* R/vw.R (vw): Use vw and perf binaries stored in package
+	environment, ouput simplification
+
+2016-08-19  Dirk Eddelbuettel  <edd@debian.org>
+
+	* R/vw.R (vw): Test for vw and perf binaries
+
+2016-08-18  Dirk Eddelbuettel  <edd@debian.org>
+
+	* R/init.R (.onAttach): Startup code to look for 'vw' and 'perf'
+
+	* R/vw.R: Reindented and other whitespace changes, now uses '<-'
+	assignments and TRUE/FALSE not T/F, removed @export/@import
+	* R/dt2vw.R: Ditto
+
+2016-08-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (License): Changed to BSD_3_clause which is what
+	vowpal wabbit itself uses
+	* LICENSE: Ditto
+
+	* demo/vw_example.R: Updated (old) example, no longer uses system,
+	files in R's temp directory
+
+	* demo/vw_example_2.R: Updated (old) example_2
+
+	* inst/examples/bostonHousing/: New (simple) regression example
+
+2016-08-16  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version): 0.1.1 now passes R CMD check
+
+	* DESCRIPTION: Rewritten / adapted to current standards
+	* NAMESPACE: Updated
+	* LICENSE: Added per BSD_2_clause requirements
+	* R/vw.R: Roxygen documentation update, minimal changes
+	* R/dt2vw.R: Ditto
+	* man/vw.Rd: Updated
+	* man/dt2vw.Rd: Ditto
+
+	* DESCRIPTION (Version): 0.1.0 committed 'as is' as intial commit
+
+

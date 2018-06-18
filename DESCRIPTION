@@ -1,0 +1,16 @@
+Package: rvw
+Type: Package
+Title: Minimal Interface Between R and Vowpal Wabbit
+Version: 0.1.1.1
+Date: 2017-03-19
+Author: Dirk Eddelbuettel, Selim Raboudi (initial version of package,
+ including functions dt2vw and vw)
+Maintainer: Dirk Eddelbuettel <edd@debian.org>
+Description: A basic R interface to the Vowpal Wabbit fast on-line learner
+ is provided.
+SystemRequirements: The Vowpal Wabbit binary 'vw' has to be in the path.
+License: GPL (>= 2) | BSD_3_clause + file LICENSE
+Imports: pROC, data.table, ggplot2
+Suggests: yaml, caret, earth, randomForest, ranger, party, gbm, xgboost,
+    testthat
+RoxygenNote: 6.0.1
