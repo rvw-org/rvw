@@ -13,8 +13,8 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
   // Rcpp::Rcout << "Creating cache from: " << data_str << std::endl;
 
     // Redirect cerr
-  std::stringstream new_buf;
-  auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
+  // std::stringstream new_buf;
+  // auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
 
   std::string cache_init_str = "-d " + data_str + " -c --cache_file " + cache_str;
   vw* cache_model = VW::initialize(cache_init_str);
@@ -34,7 +34,7 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
   VW::end_parser(*cache_model);
   VW::finish(*cache_model);
 
-  std::cerr.rdbuf(old_buf);
+  // std::cerr.rdbuf(old_buf);
 
   // Rcpp::Rcout << "Cache file created: " << cache_str << std::endl;
 
@@ -53,8 +53,8 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="") {
   Rcpp::Rcout << "Using model file: " << model_str << std::endl;
 
   // Redirect cerr
-  std::stringstream new_buf;
-  auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
+  // std::stringstream new_buf;
+  // auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
 
   std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
   train_init_str += " -d " + data_str;
@@ -62,15 +62,15 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="") {
 
   vw* train_model = VW::initialize(train_init_str);
   VW::start_parser(*train_model);
-  new_buf << "average  since         example        example  current  current  current" << std::endl;
-  new_buf << "loss     last          counter         weight    label  predict features" << std::endl;
+  Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
+  Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
   LEARNER::generic_driver(*train_model);
   VW::end_parser(*train_model);
   VW::save_predictor(*train_model, model_str);
   VW::finish(*train_model);
 
-  Rcpp::Rcout <<  new_buf.str() << std::endl;
-  std::cerr.rdbuf(old_buf);
+  // Rcpp::Rcout <<  new_buf.str() << std::endl;
+  // std::cerr.rdbuf(old_buf);
 }
 
 // [[Rcpp::export]]
@@ -93,8 +93,8 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
   Rcpp::Rcout << "Using model file: " << model_str << std::endl;
 
   // Redirect cerr
-  std::stringstream new_buf;
-  auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
+  // std::stringstream new_buf;
+  // auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
   
   std::string test_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
   test_init_str += " -t -d " + data_str + " -p " + probs_str + " -i " + model_str;
@@ -102,15 +102,15 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
 
   vw* predict_model = VW::initialize(test_init_str);
   VW::start_parser(*predict_model);
-  new_buf << "average  since         example        example  current  current  current" << std::endl;
-  new_buf << "loss     last          counter         weight    label  predict features" << std::endl;
+  Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
+  Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
   LEARNER::generic_driver(*predict_model);
   VW::end_parser(*predict_model);
   int num_of_examples = get_num_example(*predict_model);
   VW::finish(*predict_model);
 
-  Rcpp::Rcout << new_buf.str() << std::endl;
-  std::cerr.rdbuf(old_buf);
+  // Rcpp::Rcout << new_buf.str() << std::endl;
+  // std::cerr.rdbuf(old_buf);
 
   Rcpp::NumericVector data_vec(num_of_examples);
   std::ifstream probs_stream (probs_str);
