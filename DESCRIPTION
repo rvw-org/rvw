@@ -1,28 +1,7 @@
-Package: rvw
+Package: rvwgsoc
 Type: Package
-<<<<<<< HEAD
-<<<<<<< HEAD
-Title: Minimal Interface Between R and Vowpal Wabbit
-Version: 0.1.1.1
-Date: 2017-03-19
-Author: Dirk Eddelbuettel, Selim Raboudi (initial version of package,
- including functions dt2vw and vw)
-Maintainer: Dirk Eddelbuettel <edd@debian.org>
-Description: A basic R interface to the Vowpal Wabbit fast on-line learner
- is provided.
-SystemRequirements: The Vowpal Wabbit binary 'vw' has to be in the path.
-License: GPL (>= 2) | BSD_3_clause + file LICENSE
-Imports: pROC, data.table, ggplot2
-Suggests: yaml, caret, earth, randomForest, ranger, party, gbm, xgboost,
-    testthat
-RoxygenNote: 6.0.1
-=======
-Title: What the Package Does in One 'Title Case' Line
-Version: 1.0
-=======
 Title: R interface for Vowpal Wabbit
 Version: 0.1
->>>>>>> ee9a862... Fix redundancy in the arguments parser. Prepare for the first package release.
 Date: 2018-05-22
 Author: Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
 Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
@@ -31,19 +10,5 @@ License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.16)
 LinkingTo: Rcpp
 Suggests: testthat
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
-=======
->>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
-=======
->>>>>>> 9915602... Fix error in optimisation parameters with different learning algorithms. Add protection from possible bugs in nn parameter. Set up package testing.
-=======
-SystemRequirements: C++11
->>>>>>> b9b2609... Add testing against CL version.
-=======
 SystemRequirements: C++11, Vowpal Wabbit library
 RoxygenNote: 6.0.1
->>>>>>> ee9a862... Fix redundancy in the arguments parser. Prepare for the first package release.
