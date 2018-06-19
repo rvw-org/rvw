@@ -106,7 +106,7 @@ Create Vowpal Wabbit model, setup model parameters and data
 }
 \examples{
 vwsetup(
- dir = "../my_tmp/",
+ dir = tempdir(),
  train_data = "X_train.vw",
  test_data = "X_valid.vw",
  model = "pk_mdl.vw",
