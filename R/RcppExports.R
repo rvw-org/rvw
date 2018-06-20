@@ -5,11 +5,11 @@
     invisible(.Call(`_rvwgsoc_create_cache`, dir, data_file, cache_file))
 }
 
-vwtrain <- function(vwmodel, data_path = "") {
-    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path))
+vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE) {
+    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path, readable_model, quiet))
 }
 
-vwtest <- function(vwmodel, data_path = "", probs_path = "") {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data_path, probs_path)
+vwtest <- function(vwmodel, data_path = "", probs_path = "", readable_model = NULL, quiet = FALSE) {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data_path, probs_path, readable_model, quiet)
 }
 
