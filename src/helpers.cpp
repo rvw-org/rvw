@@ -17,16 +17,16 @@ std::string check_data(Rcpp::List & vwmodel, std::string & data_path, std::strin
   } else {
     vwmodel_data_file = Rcpp::as<std::string>(vwmodel_data["train"]);
   }
-
+  
   if(data_path.empty()) {
-    if(vwmodel_data_file.empty()) {
-      Rcpp::Rcerr << "No data provided" << std::endl;
-    } else {
-      valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + vwmodel_data_file;
-    }
+      if(vwmodel_data_file.empty()) {
+          Rcpp::stop("No data provided");
+      } else {
+          valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + vwmodel_data_file;
+      }
   } else {
-    // valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + data;
-    valid_data_str = data_path;
+      // valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + data;
+      valid_data_str = data_path;
   }
   return valid_data_str;
 }

@@ -41,6 +41,17 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
         
 }
 
+//'Train Vowpal Wabbit model
+//'
+//'@param vwmodel Model of vw class to train
+//'@param data_path Path to training data in .vw plain text format
+//'@param readable_model Print trained model in human readable format ("hashed") 
+//'and also with human readable features ("inverted")
+//'@param quiet Do not print anything to the console 
+//'@examples
+//'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+//'test_vwmodel <- vwsetup()
+//'vwtrain(test_vwmodel, data_path = ext_train_data)
 // [[Rcpp::export]]
 void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false) {
     // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
@@ -48,13 +59,6 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     std::string data_str = check_data(vwmodel, data_path, "train");
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
-    
-    // Output buffer to control "quiet" function execution easily
-    std::stringstream output_buf;
-    
-    output_buf << "Starting VW training session" << std::endl;
-    output_buf << "Using data file: " << data_str << std::endl;
-    output_buf << "Using model file: " << model_str << std::endl;
     
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     train_init_str += " -d " + data_str;
@@ -74,17 +78,23 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     }
 
     // Ignore output from VW
-    if (quiet)
+    if (!quiet)
     {
+        Rcpp::Rcout << "Starting VW training session" << std::endl;
+        Rcpp::Rcout << "Using data file: " << data_str << std::endl;
+        Rcpp::Rcout << "Using model file: " << model_str << std::endl;
+        Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
+    } else {
         train_init_str += " --quiet";
     }
     
-    output_buf << "Command line parameters: " << std::endl << train_init_str << std::endl;
-    
     vw* train_model = VW::initialize(train_init_str);
     VW::start_parser(*train_model);
-    output_buf << "average  since         example        example  current  current  current" << std::endl;
-    output_buf << "loss     last          counter         weight    label  predict features" << std::endl;
+    if (!quiet)
+    {
+        Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
+        Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
+    }
     LEARNER::generic_driver(*train_model);
     VW::end_parser(*train_model);
     VW::save_predictor(*train_model, model_str);
@@ -97,19 +107,33 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
         std::string readable_model_line;
         if (readable_model_stream.is_open())
         {
-            output_buf << "Readable model from file: " + readable_model_str << std::endl;
+            Rcpp::Rcout << std::endl << "Readable model from file: " + readable_model_str << std::endl;
             while ( getline (readable_model_stream, readable_model_line) )
             {
-                output_buf << readable_model_line << std::endl;
+                Rcpp::Rcout << readable_model_line << std::endl;
             }
             readable_model_stream.close();
+            Rcpp::Rcout << std::endl;
         }
-        
-        Rcpp::Rcout << output_buf.str() << std::endl;
     }
     
 }
 
+//'Compute predictions using Vowpal Wabbit model
+//'
+//'@param vwmodel Model of vw class to train
+//'@param data_path Path to training data in .vw plain text format
+//'@param probs_path Path to file where to save predictions
+//'@param readable_model Print trained model in human readable format ("hashed") 
+//'and also with human readable features ("inverted")
+//'@param quiet Do not print anything to the console 
+//'@return Numerical vector containing predictions
+//'@examples
+//'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+//'ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc") 
+//'test_vwmodel <- vwsetup()
+//'vwtrain(test_vwmodel, data_path = ext_train_data)
+//'vwtrain(test_vwmodel, data_path = ext_test_data)
 // [[Rcpp::export]]
 Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false) {
     // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
@@ -119,20 +143,12 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     std::string probs_str;
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
     
-    // Output buffer to control "quiet" function execution easily
-    std::stringstream output_buf;
-    
     // If no probs_path was provided we should create temporary here and then delete
     if (probs_path.empty()) {
         probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + std::to_string(std::time(nullptr)) + "_probs_out.vw";
     } else {
         probs_str = probs_path;
     }
-    
-    output_buf << "Starting VW test session" << std::endl;
-    output_buf << "Using data file: " << data_str << std::endl;
-    output_buf << "Using model file: " << model_str << std::endl;
-    
     
     std::string test_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     test_init_str += " -t -d " + data_str + " -p " + probs_str + " -i " + model_str;
@@ -153,17 +169,23 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     }
     
     // Ignore output from VW
-    if (quiet)
+    if (!quiet)
     {
+        Rcpp::Rcout << "Starting VW training session" << std::endl;
+        Rcpp::Rcout << "Using data file: " << data_str << std::endl;
+        Rcpp::Rcout << "Using model file: " << model_str << std::endl;
+        Rcpp::Rcout << "Command line parameters: " << std::endl << test_init_str << std::endl;
+    } else {
         test_init_str += " --quiet";
     }
     
-    output_buf << "Command line parameters: " << std::endl << test_init_str << std::endl;
-    
     vw* predict_model = VW::initialize(test_init_str);
     VW::start_parser(*predict_model);
-    output_buf << "average  since         example        example  current  current  current" << std::endl;
-    output_buf << "loss     last          counter         weight    label  predict features" << std::endl;
+    if (!quiet)
+    {
+        Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
+        Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
+    }
     LEARNER::generic_driver(*predict_model);
     VW::end_parser(*predict_model);
     int num_of_examples = get_num_example(*predict_model);
@@ -194,16 +216,15 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
         std::ifstream readable_model_stream (readable_model_str);
         std::string readable_model_line;
         if (readable_model_stream.is_open())
-        {
-            output_buf << "Readable model from file: " + readable_model_str << std::endl;
+        {   
+            Rcpp::Rcout << std::endl << "Readable model from file: " + readable_model_str << std::endl;
             while ( getline (readable_model_stream, readable_model_line) )
             {
-                output_buf << readable_model_line << std::endl;
+                Rcpp::Rcout << readable_model_line << std::endl;
             }
             readable_model_stream.close();
+            Rcpp::Rcout << std::endl;
         }
-        
-        Rcpp::Rcout << output_buf.str() << std::endl;
     }
     
     return data_vec;

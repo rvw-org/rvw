@@ -14,4 +14,12 @@ test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
 vwtrain(test_vwmodel, data_path = ext_train_data)
 vw_output <- vwtest(test_vwmodel, data_path = ext_test_data, probs_path = "./probs.vw")
 
+# Printing readable model
+test_vwmodel <- vwsetup()
+vwtrain(test_vwmodel, data_path = ext_train_data, readable_model = "hashed")
+vwtest(test_vwmodel, data_path = ext_test_data, readable_model = "inverted")
+# No console output
+vwtrain(test_vwmodel, data_path = ext_train_data, quiet = T)
+vwtest(test_vwmodel, data_path = ext_train_data, quiet = T)
+
 setwd(curr_dir)
