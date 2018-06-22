@@ -107,7 +107,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
   custom_test_model$params$general_params$passes = 10
   custom_test_model$params$optimization_params$adaptive = FALSE
   custom_test_model$params$learning_params$binary = TRUE
-  custom_test_model$params_str <- paste("  --cache --passes 10 --bit_precision 18",
+  custom_test_model$params_str <- paste("  --passes 10 --bit_precision 18",
                                  " --holdout_period 10 --early_terminate 3",
                                  " --initial_weight 0 --binary --normalized",
                                  " --invariant --l1 0 --l2 0 --decay_learning_rate 1",
@@ -116,8 +116,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
   # Package vwmodel setup
   test_vwmodel <- vwsetup(
     dir = "../my_tmp/",
-    cache = TRUE,
-    general_params = list(passes=10),
+    general_params = list(cache = TRUE, passes=10),
     optimization_params = list(adaptive=FALSE),
     learning_params = list(binary=TRUE)
   )

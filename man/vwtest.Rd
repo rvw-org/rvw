@@ -23,7 +23,7 @@ and also with human readable features ("inverted")}
 Numerical vector containing predictions
 }
 \description{
-Compute predictions using Vowpal Wabbit model
+vwtest computes predictions using VW model from \code{\link{vwsetup}}
 }
 \examples{
 ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")

@@ -10,38 +10,31 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
     std::string data_str = dir + data_file;
     std::string cache_str = dir + cache_file;
     
-    // Rcpp::Rcout << "Creating cache from: " << data_str << std::endl;
-    
-    // Redirect cerr
-    // std::stringstream new_buf;
-    // auto old_buf = std::cerr.rdbuf(new_buf.rdbuf());
-    
-    std::string cache_init_str = "-d " + data_str + " -c --cache_file " + cache_str;
+    std::string cache_init_str = "-d " + data_str + " --cache_file " + cache_str;
     vw* cache_model = VW::initialize(cache_init_str);
     VW::start_parser(*cache_model);
     
     // Modified version of LEARNER::generic_driver that only creates cache and doesn't train
     example* ec = nullptr;
-    while ( cache_model->early_terminate == false )
+    while (cache_model->early_terminate == false) {
         if ((ec = VW::get_example(cache_model->p)) != nullptr) {
             VW::finish_example(*cache_model, ec);
         } else {
             break;
         }
-        if (cache_model->early_terminate) //drain any extra examples from parser.
-            while ((ec = VW::get_example(cache_model->p)) != nullptr)
-                VW::finish_example(*cache_model, ec);
-        VW::end_parser(*cache_model);
-        VW::finish(*cache_model);
-        
-        // std::cerr.rdbuf(old_buf);
-        
-        // Rcpp::Rcout << "Cache file created: " << cache_str << std::endl;
-        
-        
+    }
+    if (cache_model->early_terminate) { //drain any extra examples from parser.
+        while ((ec = VW::get_example(cache_model->p)) != nullptr) {
+            VW::finish_example(*cache_model, ec);
+        }
+    } 
+    VW::end_parser(*cache_model);
+    VW::finish(*cache_model);
 }
 
 //'Train Vowpal Wabbit model
+//'
+//'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 //'
 //'@param vwmodel Model of vw class to train
 //'@param data_path Path to training data in .vw plain text format
@@ -59,6 +52,8 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     std::string data_str = check_data(vwmodel, data_path, "train");
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    Rcpp::List vwmodel_params = vwmodel["params"];
+    Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
     
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     train_init_str += " -d " + data_str;
@@ -76,7 +71,11 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
             return;
         }
     }
-
+    // Use correct cache file
+    if (vwmodel_general_params["cache"]) {
+        std::string cache_str = Rcpp::as<std::string>(vwmodel["dir"]) + data_str.substr(data_str.find_last_of("\\/") + 1) + ".cache";
+        train_init_str += " --cache_file " + cache_str;
+    }
     // Ignore output from VW
     if (!quiet)
     {
@@ -121,6 +120,8 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
 
 //'Compute predictions using Vowpal Wabbit model
 //'
+//'vwtest computes predictions using VW model from \code{\link{vwsetup}}
+//'
 //'@param vwmodel Model of vw class to train
 //'@param data_path Path to training data in .vw plain text format
 //'@param probs_path Path to file where to save predictions
@@ -142,6 +143,8 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string probs_str;
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    Rcpp::List vwmodel_params = vwmodel["params"];
+    Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
     
     // If no probs_path was provided we should create temporary here and then delete
     if (probs_path.empty()) {
@@ -167,7 +170,11 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
             return data_vec;
         }
     }
-    
+    // Use correct cache file
+    if (vwmodel_general_params["cache"]) {
+        std::string cache_str = Rcpp::as<std::string>(vwmodel["dir"]) + data_str.substr(data_str.find_last_of("\\/") + 1) + ".cache";
+        test_init_str += " --cache_file " + cache_str;
+    }
     // Ignore output from VW
     if (!quiet)
     {

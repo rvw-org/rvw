@@ -78,8 +78,7 @@ test_that("vwsetup with custom arguments and cache works as CL version", {
   test_vwmodel <- vwsetup(
     dir = "./",
     model = "pk_mdl.vw",
-    cache = TRUE,
-    general_params = list(passes=10),
+    general_params = list(cache = TRUE, passes=10),
     optimization_params = list(adaptive=FALSE),
     learning_params = list(binary=TRUE)
   )

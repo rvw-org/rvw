@@ -1,10 +1,11 @@
 #'Create Vowpal Wabbit model, setup model parameters and data
 #'
+#'Sets up VW model together with parameters and data
+#'
 #'@param dir Working directory, default is tempdir()
 #'@param train_data Train data file name. File should be in .vw plain text format
 #'@param test_data Validation data file name. File should be in .vw plain text format
 #'@param model File name for model weights
-#'@param cache Create cache files
 #'@param eval Compute model evaluation
 #'@param learning_mode Learning method or reduction:
 #'binary
@@ -17,7 +18,7 @@
 #'boosting - online boosting with  weak learners
 #'@param algorithm Optimzation algorithm
 #'@param general_params List of parameters:
-#'cache - Use a cache
+#'cache - Create and use cache files
 #'passes - Number of Training Passes
 #'bit_precision - number of bits in the feature table
 #'quadratic - Create and use quadratic features
@@ -83,8 +84,7 @@
 #'  train_data = "X_train.vw",
 #'  test_data = "X_valid.vw",
 #'  model = "pk_mdl.vw",
-#'  cache = TRUE,
-#'  general_params = list(passes=10),
+#'  general_params = list(cache = TRUE, passes=10),
 #'  optimization_params = list(adaptive=FALSE),
 #'  learning_params = list(binary=TRUE)
 #')
@@ -98,8 +98,7 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
                     train_data = "",
                     test_data = "",
                     model = "mdl.vw",
-                    eval = FALSE,
-                    cache = FALSE
+                    eval = FALSE
 ) {
   train_cache = ""
   test_cache = ""
@@ -115,8 +114,7 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
                  algorithm = algorithm,
                  general_params = general_params,
                  learning_params = learning_params,
-                 optimization_params = optimization_params,
-                 cache = cache
+                 optimization_params = optimization_params
   )
   # Parse parameters and write them to string
   # Check parameters
@@ -124,7 +122,7 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
   # Write to string
   params_str <- .create_parameters_string(params)
   # Create cache
-  if (cache) {
+  if (params$general_params$cache) {
     # If have data, create cache
     if (nchar(train_data) != 0) {
       train_cache <- paste0(train_data, ".cache")
@@ -223,7 +221,7 @@ print.vw <- function(x, ...) {
     return(valid_input)
   }
   # Initialise default/check lists 
-  general_check <- list(cache=params$cache,
+  general_check <- list(cache=FALSE,
                         passes=1,
                         bit_precision=18,
                         quadratic=FALSE,
@@ -292,24 +290,29 @@ print.vw <- function(x, ...) {
     )
   }
   if(length(params$general_params) == 0) {
-    params$general_params <- general_check
+      params$general_params <- general_check
   } else {
-    params$general_params <- check_param_values(
-      input = c(list(cache=params$cache), params$general_params),
-      check = general_check
-    )
+      params$general_params <- check_param_values(
+          input = params$general_params,
+          # input = c(list(cache=params$cache), params$general_params),
+          check = general_check
+      )
   }
   if(length(params$optimization_params) == 0) {
-    algorithm_parameters <- get(paste0(params$algorithm, "_check"))
-    params$optimization_params <- c(algorithm_parameters, optimization_check)
+      algorithm_parameters <- get(paste0(params$algorithm, "_check"))
+      params$optimization_params <- c(algorithm_parameters, optimization_check)
   } else {
-    algorithm_check_type <- get(paste0(params$algorithm, "_check"))
-    params$optimization_params <- check_param_values(
-      input = params$optimization_params,
-      check = c(algorithm_check_type, optimization_check)
-    )
+      algorithm_check_type <- get(paste0(params$algorithm, "_check"))
+      params$optimization_params <- check_param_values(
+          input = params$optimization_params,
+          check = c(algorithm_check_type, optimization_check)
+      )
   }
   
+  # Cache should be created, if passes > 1
+  if(params$general_params$passes > 1) {
+      params$general_params$cache <- TRUE
+  }
   # Return validated parameters
   return(list(learning_mode = params$learning_mode,
               algorithm = params$algorithm,
@@ -319,59 +322,62 @@ print.vw <- function(x, ...) {
 }
 
 .create_parameters_string <- function(params) {
-  flatten <- function(x) {
-    repeat {
-      if(!any(vapply(x,is.list, logical(1)))) return(x)
-      x <- Reduce(c, x)
+    flatten <- function(x) {
+        repeat {
+            if(!any(vapply(x,is.list, logical(1)))) return(x)
+            x <- Reduce(c, x)
+        }
     }
-  }
-  temp_params <- params
-  #Set learning mode string argument
-  mode_string <- switch (temp_params$learning_mode,
-    multiclass = {
-      tmp <- paste0("--", temp_params$learning_params$reduction, " ", temp_params$learning_params$num_classes); 
-      temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA; tmp
-    },
-    lda = {tmp <- paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA; tmp},
-    factorization = {tmp <- paste0("--rank ", temp_params$learning_params$rank); temp_params$learning_params$rank <- NA; tmp},
-    bootstrap = {tmp <- paste0("--bootstrap ", temp_params$learning_params$rounds); temp_params$learning_params$rounds <- NA; tmp},
-    nn = {tmp <- paste0("--nn ", temp_params$learning_params$hidden); temp_params$learning_params$hidden <- NA; tmp},
-    boosting = {
-      tmp <- paste0("--boosting ", temp_params$learning_params$num_learners);
-      temp_params$learning_params$num_learners <- NA; tmp
-    },
-    ksvm = "--ksvm"
-  )
-  #Set learning mode string argument
-  algorithm_string <- switch (temp_params$algorithm,
-                              sgd = {tmp <- ""; tmp},
-                              bfgs = {tmp <- "--bfgs"; tmp},
-                              ftrl = {tmp <- "--ftrl"; tmp}
-  )
-  # Flatten list
-  temp_params <- flatten(temp_params[-c(1,2)])
-  # Convert parameters list to "--arg _" list
-  temp_params <- sapply(names(temp_params), FUN = function(i) {
-    if(is.na(temp_params[i]) | temp_params[i] == "") {
-      return("")
-    };
-    if(is.logical(temp_params[i][[1]]) & temp_params[i][[1]] == TRUE) {
-      return(paste0("--",i))
-    }; 
-    if(is.logical(temp_params[i][[1]]) & temp_params[i][[1]] == FALSE) {
-      return("")
-    } else {
-      return(paste0("--",i," ",temp_params[i]))
+    temp_params <- params
+    #Set learning mode string argument
+    mode_string <- switch (temp_params$learning_mode,
+                           multiclass = {
+                               tmp <- paste0("--", temp_params$learning_params$reduction, " ", temp_params$learning_params$num_classes); 
+                               temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA; tmp
+                           },
+                           lda = {tmp <- paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA; tmp},
+                           factorization = {tmp <- paste0("--rank ", temp_params$learning_params$rank); temp_params$learning_params$rank <- NA; tmp},
+                           bootstrap = {tmp <- paste0("--bootstrap ", temp_params$learning_params$rounds); temp_params$learning_params$rounds <- NA; tmp},
+                           nn = {tmp <- paste0("--nn ", temp_params$learning_params$hidden); temp_params$learning_params$hidden <- NA; tmp},
+                           boosting = {
+                               tmp <- paste0("--boosting ", temp_params$learning_params$num_learners);
+                               temp_params$learning_params$num_learners <- NA; tmp
+                           },
+                           ksvm = "--ksvm"
+    )
+    #Set learning mode string argument
+    algorithm_string <- switch (temp_params$algorithm,
+                                sgd = {tmp <- ""; tmp},
+                                bfgs = {tmp <- "--bfgs"; tmp},
+                                ftrl = {tmp <- "--ftrl"; tmp}
+    )
+    # Disable cache here, because it's checked in vwtrain and vwtest
+    if (temp_params$general_params$cache) {
+        temp_params$general_params$cache <- NA
     }
-  })
-  # Filter empty strings
-  temp_params <- Filter(temp_params, f = function(x) nchar(x) > 0)
-  # Create string "--passes 0 --bit_precision 18" for parser
-  parameters_string <- paste0(temp_params, collapse = " ")
-  parameters_string <- paste(mode_string, algorithm_string, parameters_string, sep = " ")
-  
-  return(parameters_string)
+    # Flatten list
+    temp_params <- flatten(temp_params[-c(1,2)])
+    # Convert parameters list to "--arg _" list
+    temp_params <- sapply(names(temp_params), FUN = function(i) {
+        if(is.na(temp_params[i]) | temp_params[i] == "") {
+            return("")
+        };
+        if(is.logical(temp_params[i][[1]]) & temp_params[i][[1]] == TRUE) {
+            return(paste0("--",i))
+        }; 
+        if(is.logical(temp_params[i][[1]]) & temp_params[i][[1]] == FALSE) {
+            return("")
+        } else {
+            return(paste0("--",i," ",temp_params[i]))
+        }
+    })
+    # Filter empty strings
+    temp_params <- Filter(temp_params, f = function(x) nchar(x) > 0)
+    # Create string "--passes 0 --bit_precision 18" for parser
+    parameters_string <- paste0(temp_params, collapse = " ")
+    parameters_string <- paste(mode_string, algorithm_string, parameters_string, sep = " ")
+    
+    return(parameters_string)
 }
 
 
-  

@@ -17,7 +17,7 @@ and also with human readable features ("inverted")}
 \item{quiet}{Do not print anything to the console}
 }
 \description{
-Train Vowpal Wabbit model
+vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 }
 \examples{
 ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")

@@ -7,6 +7,8 @@
 
 #'Train Vowpal Wabbit model
 #'
+#'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
+#'
 #'@param vwmodel Model of vw class to train
 #'@param data_path Path to training data in .vw plain text format
 #'@param readable_model Print trained model in human readable format ("hashed") 
@@ -21,6 +23,8 @@ vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALS
 }
 
 #'Compute predictions using Vowpal Wabbit model
+#'
+#'vwtest computes predictions using VW model from \code{\link{vwsetup}}
 #'
 #'@param vwmodel Model of vw class to train
 #'@param data_path Path to training data in .vw plain text format
