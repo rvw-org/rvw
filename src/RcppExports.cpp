@@ -18,34 +18,38 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtrain
-void vwtrain(Rcpp::List vwmodel, std::string data_path);
-RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP data_pathSEXP) {
+void vwtrain(Rcpp::List vwmodel, std::string data_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet);
+RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
     Rcpp::traits::input_parameter< std::string >::type data_path(data_pathSEXP);
-    vwtrain(vwmodel, data_path);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
+    Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
+    vwtrain(vwmodel, data_path, readable_model, quiet);
     return R_NilValue;
 END_RCPP
 }
 // vwtest
-Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path, std::string probs_path);
-RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP probs_pathSEXP) {
+Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path, std::string probs_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet);
+RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
     Rcpp::traits::input_parameter< std::string >::type data_path(data_pathSEXP);
     Rcpp::traits::input_parameter< std::string >::type probs_path(probs_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data_path, probs_path));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
+    Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
+    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data_path, probs_path, readable_model, quiet));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 3},
-    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 2},
-    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 3},
+    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 4},
+    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 5},
     {NULL, NULL, 0}
 };
 

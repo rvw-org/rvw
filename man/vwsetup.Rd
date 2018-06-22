@@ -8,7 +8,7 @@ vwsetup(learning_mode = c("binary", "multiclass", "lda", "factorization",
   "bootstrap", "nn"), algorithm = c("sgd", "bfgs", "ftrl"),
   general_params = list(), optimization_params = list(),
   learning_params = list(), dir = tempdir(), train_data = "",
-  test_data = "", model = "mdl.vw", eval = FALSE, cache = FALSE)
+  test_data = "", model = "mdl.vw", eval = FALSE)
 }
 \arguments{
 \item{learning_mode}{Learning method or reduction:
@@ -24,7 +24,7 @@ boosting - online boosting with  weak learners}
 \item{algorithm}{Optimzation algorithm}
 
 \item{general_params}{List of parameters:
-cache - Use a cache
+cache - Create and use cache files
 passes - Number of Training Passes
 bit_precision - number of bits in the feature table
 quadratic - Create and use quadratic features
@@ -95,14 +95,12 @@ boosting:
 \item{model}{File name for model weights}
 
 \item{eval}{Compute model evaluation}
-
-\item{cache}{Create cache files}
 }
 \value{
 vwmodel list class
 }
 \description{
-Create Vowpal Wabbit model, setup model parameters and data
+Sets up VW model together with parameters and data
 }
 \examples{
 vwsetup(
@@ -110,8 +108,7 @@ vwsetup(
  train_data = "X_train.vw",
  test_data = "X_valid.vw",
  model = "pk_mdl.vw",
- cache = TRUE,
- general_params = list(passes=10),
+ general_params = list(cache = TRUE, passes=10),
  optimization_params = list(adaptive=FALSE),
  learning_params = list(binary=TRUE)
 )

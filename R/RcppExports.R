@@ -5,11 +5,41 @@
     invisible(.Call(`_rvwgsoc_create_cache`, dir, data_file, cache_file))
 }
 
-vwtrain <- function(vwmodel, data_path = "") {
-    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path))
+#'Train Vowpal Wabbit model
+#'
+#'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
+#'
+#'@param vwmodel Model of vw class to train
+#'@param data_path Path to training data in .vw plain text format
+#'@param readable_model Print trained model in human readable format ("hashed") 
+#'and also with human readable features ("inverted")
+#'@param quiet Do not print anything to the console 
+#'@examples
+#'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+#'test_vwmodel <- vwsetup()
+#'vwtrain(test_vwmodel, data_path = ext_train_data)
+vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE) {
+    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path, readable_model, quiet))
 }
 
-vwtest <- function(vwmodel, data_path = "", probs_path = "") {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data_path, probs_path)
+#'Compute predictions using Vowpal Wabbit model
+#'
+#'vwtest computes predictions using VW model from \code{\link{vwsetup}}
+#'
+#'@param vwmodel Model of vw class to train
+#'@param data_path Path to training data in .vw plain text format
+#'@param probs_path Path to file where to save predictions
+#'@param readable_model Print trained model in human readable format ("hashed") 
+#'and also with human readable features ("inverted")
+#'@param quiet Do not print anything to the console 
+#'@return Numerical vector containing predictions
+#'@examples
+#'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+#'ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc") 
+#'test_vwmodel <- vwsetup()
+#'vwtrain(test_vwmodel, data_path = ext_train_data)
+#'vwtrain(test_vwmodel, data_path = ext_test_data)
+vwtest <- function(vwmodel, data_path = "", probs_path = "", readable_model = NULL, quiet = FALSE) {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data_path, probs_path, readable_model, quiet)
 }
 
