@@ -7,6 +7,7 @@
 #'@param test_data Validation data file name. File should be in .vw plain text format
 #'@param model File name for model weights
 #'@param eval Compute model evaluation
+#'@param update_model Update an existing model, when training with new data. \code{TRUE} by default.
 #'@param learning_mode Learning method or reduction:
 #'\itemize{
 #'  \item \code{binary}
@@ -16,7 +17,7 @@
 #'  \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
 #'  \item \code{ksvm} - online kernel Support Vector Machine
 #'  \item \code{nn} - sigmoidal feedforward network
-#'  \item \code{boosting} - online boosting with  weak learners
+#'  \item \code{boosting} - online boosting with weak learners
 #'}
 #'@param algorithm Optimzation algorithm
 #'\itemize{
@@ -140,6 +141,7 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
                     train_data = "",
                     test_data = "",
                     model = "mdl.vw",
+                    update_model = TRUE,
                     eval = FALSE
 ) {
   train_cache = ""
@@ -148,6 +150,9 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
   if(substr(dir, nchar(dir), nchar(dir)) != "/") {
     dir <- paste0(dir, "/")
   }
+  
+  # Delete model files from previous setups
+  file.remove(paste0(dir, model))
   
   learning_mode <- match.arg(learning_mode)
   algorithm <- match.arg(algorithm)
@@ -181,6 +186,7 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
   vwmodel <- list(params = params,
                   dir = dir,
                   model = model,
+                  update_model = update_model,
                   params_str = params_str,
                   data = list(train = train_data,
                                test = test_data),
@@ -238,7 +244,21 @@ print.vw <- function(x, ...) {
     cat("\tTest data file path:  ", x$cache$test, "\n")
   }
   }
-
+#'Access and modify parameters of VW model
+#'
+#'@description These functions allow to access VW model parameters by name and correctly modify them
+#'@param vwmodel Model of vw class
+#'@param name Name of VW parameter
+#'@param value Replacment value of a parameter
+#'@return Value of a parameter
+#'@examples 
+#'vwmodel <- vwsetup()
+#'# Access parameter 
+#'vwparams(vwmodel, "passes")
+#'# Modify parameter
+#'vwparams(vwmodel, "passes") <- 10
+#'
+#'@rdname vwmodel
 vwparams <- function(vwmodel, name) {
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)
     if(length(key_string) > 0) {
@@ -253,6 +273,7 @@ vwparams <- function(vwmodel, name) {
     }
 }
 
+#'@rdname vwmodel
 `vwparams<-` <- function(vwmodel, name, value) {
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)
     if(length(key_string) > 0) {
@@ -264,6 +285,7 @@ vwparams <- function(vwmodel, name) {
         }
         vwmodel$params <- .check_parameters(vwmodel$params)
         vwmodel$params_str <- .create_parameters_string(vwmodel$params)
+        file.remove(paste0(vwmodel$dir, vwmodel$model))
         return(vwmodel)
     } else {
         stop("Wrong parameter name")

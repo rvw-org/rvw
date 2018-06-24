@@ -58,6 +58,14 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     train_init_str += " -d " + data_str;
     
+    // Use existing train file to continue training
+    if (vwmodel["update_model"]) {
+        std::ifstream model_file(model_str);
+        if (model_file.good()) {
+            train_init_str += " -i " + model_str;
+        }
+    }
+    
     // Check readable model output mode: hashed features and original features (invert hash)
     if (readable_model.isNotNull()) {
         if (Rcpp::as<std::string>(readable_model) == "hashed")
@@ -65,7 +73,11 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
             train_init_str += " --readable_model " + readable_model_str;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
-            train_init_str += " --invert_hash " + readable_model_str;
+            if (Rcpp::as<int>(vwmodel_general_params["passes"]) == 1) {
+                train_init_str += " --invert_hash " + readable_model_str;
+            } else {
+                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+            }
         } else {
             Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
             return;
@@ -163,7 +175,11 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
             test_init_str += " --readable_model " + readable_model_str;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
-            test_init_str += " --invert_hash " + readable_model_str;
+            if (Rcpp::as<int>(vwmodel_general_params["passes"]) == 1) {
+                test_init_str += " --invert_hash " + readable_model_str;
+            } else {
+                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+            }
         } else {
             Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
             Rcpp::NumericVector data_vec(0);

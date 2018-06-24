@@ -8,7 +8,7 @@ vwsetup(learning_mode = c("binary", "multiclass", "lda", "factorization",
   "bootstrap", "nn"), algorithm = c("sgd", "bfgs", "ftrl"),
   general_params = list(), optimization_params = list(),
   learning_params = list(), dir = tempdir(), train_data = "",
-  test_data = "", model = "mdl.vw", eval = FALSE)
+  test_data = "", model = "mdl.vw", update_model = TRUE, eval = FALSE)
 }
 \arguments{
 \item{learning_mode}{Learning method or reduction:
@@ -20,7 +20,7 @@ vwsetup(learning_mode = c("binary", "multiclass", "lda", "factorization",
  \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
  \item \code{ksvm} - online kernel Support Vector Machine
  \item \code{nn} - sigmoidal feedforward network
- \item \code{boosting} - online boosting with  weak learners
+ \item \code{boosting} - online boosting with weak learners
 }}
 
 \item{algorithm}{Optimzation algorithm
@@ -135,6 +135,8 @@ Additional parameters depending on \code{algorithm} choice:
 \item{test_data}{Validation data file name. File should be in .vw plain text format}
 
 \item{model}{File name for model weights}
+
+\item{update_model}{Update an existing model, when training with new data. \code{TRUE} by default.}
 
 \item{eval}{Compute model evaluation}
 }

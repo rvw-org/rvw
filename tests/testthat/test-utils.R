@@ -6,13 +6,11 @@ ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc")
 
 test_that("vwtrain and vwtest output correct readable model", {
     # Package session
-    test_vwmodel <- vwsetup(
-        dir = "./",
-        model = "pk_mdl.vw"
-    )
+    test_vwmodel <- vwsetup(dir = "./", model = "pk_mdl.vw")
     # vwtrain
     vwtrain(test_vwmodel, data_path = ext_train_data, readable_model = "hashed")
     vw_pk_train_hashed_mdl_checksum = unname(tools::md5sum("readable_pk_mdl.vw"))
+    test_vwmodel <- vwsetup(dir = "./", model = "pk_mdl.vw")
     vwtrain(test_vwmodel, data_path = ext_train_data, readable_model = "inverted")
     vw_pk_train_inverted_mdl_checksum <- unname(tools::md5sum("readable_pk_mdl.vw"))
     # vwtest
