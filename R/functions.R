@@ -56,6 +56,7 @@
 #'  \item \code{initial_t} - initial t value
 #'  \item \code{power_t} - t power value
 #'  \item \code{learning_rate} - Set initial learning Rate
+#'  \item \code{link} - Convert output predictions using specified link function. Options: identity, logistic, glf1 or poisson.
 #'  \item \code{loss_function} - Specify the loss function to be used
 #'  \item \code{quantile_tau} - Parameter Tau associated with Quantile loss
 #'}
@@ -152,7 +153,9 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
   }
   
   # Delete model files from previous setups
-  file.remove(paste0(dir, model))
+  if (file.exists(paste0(dir, model))) {
+      file.remove(paste0(dir, model))
+  }
   
   learning_mode <- match.arg(learning_mode)
   algorithm <- match.arg(algorithm)
@@ -285,7 +288,7 @@ vwparams <- function(vwmodel, name) {
         }
         vwmodel$params <- .check_parameters(vwmodel$params)
         vwmodel$params_str <- .create_parameters_string(vwmodel$params)
-        file.remove(paste0(vwmodel$dir, vwmodel$model))
+        # file.remove(paste0(vwmodel$dir, vwmodel$model))
         return(vwmodel)
     } else {
         stop("Wrong parameter name")
@@ -319,8 +322,8 @@ vwparams <- function(vwmodel, name) {
   general_check <- list(cache=FALSE,
                         passes=1,
                         bit_precision=18,
-                        quadratic=FALSE,
-                        cubic=FALSE,
+                        quadratic="",
+                        cubic="",
                         interactions="",
                         permutations=FALSE,
                         holdout_period=10,
@@ -337,7 +340,7 @@ vwparams <- function(vwmodel, name) {
   # Learning parameters/reductions default/check lists
   binary_check <- list(binary=FALSE)
   multiclass_check <- list(reduction="csoaa",
-                           num_classes="3")
+                           num_classes=3)
   lda_check <- list(num_topics=0,
                     lda_alpha=0.100000001,
                     lda_rho=0.100000001,
@@ -370,6 +373,7 @@ vwparams <- function(vwmodel, name) {
                              initial_t=0,
                              power_t=0.5,
                              learning_rate=0.5,
+                             link="",
                              loss_function="squared",
                              quantile_tau=0.5)
   

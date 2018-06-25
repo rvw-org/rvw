@@ -62,6 +62,7 @@ vwsetup(learning_mode = c("binary", "multiclass", "lda", "factorization",
  \item \code{initial_t} - initial t value
  \item \code{power_t} - t power value
  \item \code{learning_rate} - Set initial learning Rate
+ \item \code{link} - Convert output predictions using specified link function. Options: identity, logistic, glf1 or poisson.
  \item \code{loss_function} - Specify the loss function to be used
  \item \code{quantile_tau} - Parameter Tau associated with Quantile loss
 }
