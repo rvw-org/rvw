@@ -58,14 +58,29 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     train_init_str += " -d " + data_str;
     
+    // Use existing train file to continue training
+    if (vwmodel["update_model"]) {
+        std::ifstream model_file(model_str);
+        if (model_file.good()) {
+            train_init_str += " -i " + model_str;
+        }
+    }
+    
     // Check readable model output mode: hashed features and original features (invert hash)
+    bool read_model_file = false;
     if (readable_model.isNotNull()) {
         if (Rcpp::as<std::string>(readable_model) == "hashed")
         {
             train_init_str += " --readable_model " + readable_model_str;
+            read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
-            train_init_str += " --invert_hash " + readable_model_str;
+            if (Rcpp::as<int>(vwmodel_general_params["passes"]) == 1) {
+                train_init_str += " --invert_hash " + readable_model_str;
+                read_model_file = true;
+            } else {
+                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+            }
         } else {
             Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
             return;
@@ -99,7 +114,7 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     VW::save_predictor(*train_model, model_str);
     VW::finish(*train_model);
     
-    if (!quiet)
+    if (!quiet && read_model_file)
     {
         // Reading from temporary files and printing to console
         std::ifstream readable_model_stream (readable_model_str);
@@ -112,6 +127,7 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
                 Rcpp::Rcout << readable_model_line << std::endl;
             }
             readable_model_stream.close();
+            // remove(readable_model_str.c_str());
             Rcpp::Rcout << std::endl;
         }
     }
@@ -157,13 +173,20 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     test_init_str += " -t -d " + data_str + " -p " + probs_str + " -i " + model_str;
     
     // Check readable model output mode: hashed features and original features (invert hash)
+    bool read_model_file = false;
     if (readable_model.isNotNull()) {
         if (Rcpp::as<std::string>(readable_model) == "hashed")
         {
             test_init_str += " --readable_model " + readable_model_str;
+            read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
-            test_init_str += " --invert_hash " + readable_model_str;
+            if (Rcpp::as<int>(vwmodel_general_params["passes"]) == 1) {
+                test_init_str += " --invert_hash " + readable_model_str;
+                read_model_file = true;
+            } else {
+                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+            }
         } else {
             Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
             Rcpp::NumericVector data_vec(0);
@@ -217,7 +240,7 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
         remove(probs_str.c_str());
     }
     
-    if (!quiet)
+    if (!quiet && read_model_file)
     {
         // Reading from temporary files and printing to console
         std::ifstream readable_model_stream (readable_model_str);
@@ -230,6 +253,7 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
                 Rcpp::Rcout << readable_model_line << std::endl;
             }
             readable_model_stream.close();
+            // remove(readable_model_str.c_str());
             Rcpp::Rcout << std::endl;
         }
     }

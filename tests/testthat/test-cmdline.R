@@ -117,3 +117,47 @@ test_that("vwsetup with custom arguments and cache works as CL version", {
   expect_equal(vw_pk_mdl_checksum, vw_cl_mdl_checksum)
   expect_equal(vw_pk_output, vw_cl_output, tolerance=1e-7)
 })
+
+test_that("Updating model with new data works as CL version", {
+    # Package session
+    test_vwmodel <- vwsetup(
+        dir = "./",
+        model = "pk_mdl.vw"
+    )
+    vwtrain(test_vwmodel, data_path = ext_train_data)
+    vw_pk_initial_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
+    vwtrain(test_vwmodel, data_path = ext_test_data)
+    vw_pk_updated_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
+    vw_pk_output <- vwtest(test_vwmodel, data_path = ext_test_data)
+    file.remove("pk_mdl.vw")
+    
+    # Command Line session
+    system(
+        paste0("vw",
+               " -d ", ext_train_data, " -f ./cl_mdl.vw"),
+        intern = FALSE,
+        ignore.stderr = TRUE
+    )
+    vw_cl_initial_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
+    system(
+        paste0("vw",
+               " -d ", ext_test_data, " -i ./cl_mdl.vw -f ./cl_mdl.vw"),
+        intern = FALSE,
+        ignore.stderr = TRUE
+    )
+    vw_cl_updated_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
+    vw_cl_output <- as.numeric(
+        system(
+            paste0("vw",
+                   " -t -d ", ext_test_data, " -i ./cl_mdl.vw -p /dev/stdout"),
+            intern = TRUE,
+            ignore.stderr = TRUE
+        )
+    )
+    file.remove("cl_mdl.vw")
+    
+    # Results comparison
+    expect_equal(vw_pk_initial_mdl_checksum, vw_cl_initial_mdl_checksum)
+    expect_equal(vw_pk_updated_mdl_checksum, vw_cl_updated_mdl_checksum)
+    expect_equal(vw_pk_output, vw_cl_output, tolerance=1e-7)
+})

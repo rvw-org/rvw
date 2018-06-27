@@ -8,83 +8,126 @@ vwsetup(learning_mode = c("binary", "multiclass", "lda", "factorization",
   "bootstrap", "nn"), algorithm = c("sgd", "bfgs", "ftrl"),
   general_params = list(), optimization_params = list(),
   learning_params = list(), dir = tempdir(), train_data = "",
-  test_data = "", model = "mdl.vw", eval = FALSE)
+  test_data = "", model = "mdl.vw", update_model = TRUE, eval = FALSE)
 }
 \arguments{
 \item{learning_mode}{Learning method or reduction:
-binary
-multiclass
-lda - Latent Dirichlet Allocation
-factorization - matrix factorization mode
-bootstrap - bootstrap with K rounds by online importance resampling
-ksvm - online kernel Support Vector Machine
-nn - sigmoidal feedforward network
-boosting - online boosting with  weak learners}
+\itemize{
+ \item \code{binary}
+ \item \code{multiclass}
+ \item \code{lda} - Latent Dirichlet Allocation
+ \item \code{factorization} - matrix factorization mode
+ \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
+ \item \code{ksvm} - online kernel Support Vector Machine
+ \item \code{nn} - sigmoidal feedforward network
+ \item \code{boosting} - online boosting with weak learners
+}}
 
-\item{algorithm}{Optimzation algorithm}
+\item{algorithm}{Optimzation algorithm
+\itemize{
+ \item \code{sgd} adaptive, normalized, invariant stochastic gradient descent
+ \item \code{bfgs}
+ \item \code{ftrl}
+}}
 
 \item{general_params}{List of parameters:
-cache - Create and use cache files
-passes - Number of Training Passes
-bit_precision - number of bits in the feature table
-quadratic - Create and use quadratic features
-cubic - Create and use cubic features
-interactions - Create feature interactions of any level between namespaces
-permutations - Use permutations instead of combinations for feature interactions of same namespace
-holdout_period - holdout period for test only
-early_terminate - Specify the number of passes tolerated when holdout loss doesn't decrease before early termination
-sort_features - Turn this on to disregard order in which features have been defined. This will lead  to smaller cache sizes
-noconstant - Don't add a constant feature
-ngram - Generate N grams
-skips - Generate skips in N grams
-hash - How to hash the features. Available options: strings, all
-affix - Generate prefixes/suffixes of features
-random_weights - Make initial weights random
-sparse_weights - Use a sparse datastructure for weights
-initial_weight - Set all weights to initial value}
+\itemize{
+ \item \code{cache} - Create and use cache files
+ \item \code{passes} - Number of Training Passes
+ \item \code{bit_precision} - number of bits in the feature table
+ \item \code{quadratic} - Create and use quadratic features
+ \item \code{cubic} - Create and use cubic features
+ \item \code{interactions} - Create feature interactions of any level between namespaces
+ \item \code{permutations} - Use permutations instead of combinations for feature interactions of same namespace
+ \item \code{holdout_period} - holdout period for test only
+ \item \code{early_terminate} - Specify the number of passes tolerated when holdout loss doesn't decrease before early termination
+ \item \code{sort_features} - Turn this on to disregard order in which features have been defined. This will lead  to smaller cache sizes
+ \item \code{noconstant} - Don't add a constant feature
+ \item \code{ngram} - Generate N grams
+ \item \code{skips} - Generate skips in N grams
+ \item \code{hash} - How to hash the features. Available options: strings, all
+ \item \code{affix} - Generate prefixes/suffixes of features
+ \item \code{random_weights} - Make initial weights random
+ \item \code{sparse_weights} - Use a sparse datastructure for weights
+ \item \code{initial_weight} - Set all weights to initial value
+}}
 
 \item{optimization_params}{List of parameters:
-hessian_on - Use second derivative in line search
-initial_pass_length - Initial number of examples per pass
-l1 - L1 regularization
-l2 - L2 regularization
-decay_learning_rate - Set Decay factor for learning_rate between passes
-initial_t - initial t value
-power_t - t power value
-learning_rate - Set initial learning Rate
-loss_function - Specify the loss function to be used
-quantile_tau - Parameter Tau associated with Quantile loss}
+\itemize{
+ \item \code{hessian_on} - Use second derivative in line search
+ \item \code{initial_pass_length} - Initial number of examples per pass
+ \item \code{l1} - L1 regularization
+ \item \code{l2} - L2 regularization
+ \item \code{decay_learning_rate} - Set Decay factor for learning_rate between passes
+ \item \code{initial_t} - initial t value
+ \item \code{power_t} - t power value
+ \item \code{learning_rate} - Set initial learning Rate
+ \item \code{link} - Convert output predictions using specified link function. Options: identity, logistic, glf1 or poisson.
+ \item \code{loss_function} - Specify the loss function to be used
+ \item \code{quantile_tau} - Parameter Tau associated with Quantile loss
+}
+Additional parameters depending on \code{algorithm} choice:
+\itemize{
+ \item \code{sgd}: 
+   \itemize{
+     \item \code{adaptive} - Use adaptive, individual learning rates (on by default)
+     \item \code{normalized} - Use per feature normalized updates (on by default)
+     \item \code{invariant} - Use safe/importance aware updates (on by default)
+   }
+ \item \code{bfgs}: 
+   \itemize{
+     \item \code{conjugate_gradient} - Use conjugate gradient based optimization
+   }
+ \item \code{ftrl}: 
+   \itemize{
+     \item \code{ftrl_alpha}
+     \item \code{ftrl_beta}
+   }
+}}
 
 \item{learning_params}{List of parametrs associated with learning_mode
-binary: 
-   binary - Reports loss as binary classification with -1,1 labels
-multiclass: 
-   reduction - csoaa, oaa, ect, wap, csoaa_ldf multiclass learning
-   num_classes - Number of classes
-lda: 
-   num_topics - Number of topics
-   lda_alpha - Prior on sparsity of per-document topic weights
-   lda_rho - Prior on sparsity of topic distributions
-   lda_D - Number of documents
-   lda_epsilon - Loop convergence threshold
-   math_mode - Math mode: simd, accuracy, fast-approx
-   minibatch - Minibatch size
-factorization:
-   rank - rank for matrix factorization
-bootstrap:
-   rounds - number of rounds
-   bs_type - the bootstrap mode: 'mean' or 'vote'
-nn:
-   hidden - number of hidden units
-   inpass - Train or test sigmoidal feedforward network with input passthrough
-   multitask - Share hidden layer across all reduced tasks
-   dropout - Train or test sigmoidal feedforward network using dropout.
-   meanfield - Train or test sigmoidal feedforward network using mean field.
-boosting:
-   num_learners - number of weak learners
-   num_learners - number of weak learners
-   num_learners - number of weak learners
-   num_learners - number of weak learners}
+\itemize{
+ \item \code{binary}: 
+   \itemize{
+     \item \code{binary} - Reports loss as binary classification with -1,1 labels
+   }
+ \item \code{multiclass}:
+   \itemize{ 
+     \item \code{reduction} - csoaa, oaa, ect, wap, csoaa_ldf multiclass learning
+     \item \code{num_classes} - Number of classes
+   }
+ \item \code{lda}:
+   \itemize{ 
+     \item \code{num_topics} - Number of topics
+     \item \code{lda_alpha} - Prior on sparsity of per-document topic weights
+     \item \code{lda_rho} - Prior on sparsity of topic distributions
+     \item \code{lda_D} - Number of documents
+     \item \code{lda_epsilon} - Loop convergence threshold
+     \item \code{math_mode} - Math mode: simd, accuracy, fast-approx
+     \item \code{minibatch} - Minibatch size
+   }
+ \item \code{factorization}:
+   \itemize{
+   \item \code{rank} - rank for matrix factorization
+   }
+ \item \code{bootstrap}:
+   \itemize{
+     \item \code{rounds} - number of rounds
+     \item \code{bs_type} - the bootstrap mode: 'mean' or 'vote'
+   }
+ \item \code{nn}:
+   \itemize{
+     \item \code{hidden} - number of hidden units
+     \item \code{inpass} - Train or test sigmoidal feedforward network with input passthrough
+     \item \code{multitask} - Share hidden layer across all reduced tasks
+     \item \code{dropout} - Train or test sigmoidal feedforward network using dropout.
+     \item \code{meanfield} - Train or test sigmoidal feedforward network using mean field.
+   }
+ \item \code{boosting}:
+   \itemize{
+     \item \code{num_learners} - number of weak learners
+   }
+}}
 
 \item{dir}{Working directory, default is tempdir()}
 
@@ -93,6 +136,8 @@ boosting:
 \item{test_data}{Validation data file name. File should be in .vw plain text format}
 
 \item{model}{File name for model weights}
+
+\item{update_model}{Update an existing model, when training with new data. \code{TRUE} by default.}
 
 \item{eval}{Compute model evaluation}
 }
