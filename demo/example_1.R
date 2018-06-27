@@ -5,8 +5,8 @@ curr_dir <- getwd()
 setwd(tempdir())
 
 # Right now using only files in .vw format, later will also accept R formats
-ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
-ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
 
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
                          general_params = list(cache = TRUE, hash="all", passes=10),

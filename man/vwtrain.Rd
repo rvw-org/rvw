@@ -20,7 +20,7 @@ and also with human readable features ("inverted")}
 vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 }
 \examples{
-ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 test_vwmodel <- vwsetup()
 vwtrain(test_vwmodel, data_path = ext_train_data)
 }

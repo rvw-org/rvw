@@ -125,8 +125,8 @@
 #'@examples
 #'vwsetup(
 #'  dir = tempdir(),
-#'  train_data = "X_train.vw",
-#'  test_data = "X_valid.vw",
+#'  train_data = "binary_train.vw",
+#'  test_data = "binary_valid.vw",
 #'  model = "pk_mdl.vw",
 #'  general_params = list(cache = TRUE, passes=10),
 #'  optimization_params = list(adaptive=FALSE),

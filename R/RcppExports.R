@@ -15,7 +15,7 @@
 #'and also with human readable features ("inverted")
 #'@param quiet Do not print anything to the console 
 #'@examples
-#'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+#'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data_path = ext_train_data)
 vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE) {
@@ -34,8 +34,8 @@ vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALS
 #'@param quiet Do not print anything to the console 
 #'@return Numerical vector containing predictions
 #'@examples
-#'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
-#'ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc") 
+#'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+#'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data_path = ext_train_data)
 #'vwtrain(test_vwmodel, data_path = ext_test_data)

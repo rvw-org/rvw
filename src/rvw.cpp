@@ -2,6 +2,7 @@
 
 #include "helpers.h"
 #include "vowpalwabbit/vw.h"
+#include "vowpalwabbit/global_data.h"
 #include <Rcpp.h>
 
 
@@ -42,7 +43,7 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'and also with human readable features ("inverted")
 //'@param quiet Do not print anything to the console 
 //'@examples
-//'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data_path = ext_train_data)
 // [[Rcpp::export]]
@@ -103,6 +104,7 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     }
     
     vw* train_model = VW::initialize(train_init_str);
+    
     VW::start_parser(*train_model);
     if (!quiet)
     {
@@ -146,8 +148,8 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
 //'@param quiet Do not print anything to the console 
 //'@return Numerical vector containing predictions
 //'@examples
-//'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
-//'ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc") 
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+//'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data_path = ext_train_data)
 //'vwtrain(test_vwmodel, data_path = ext_test_data)
@@ -210,6 +212,7 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     }
     
     vw* predict_model = VW::initialize(test_init_str);
+    
     VW::start_parser(*predict_model);
     if (!quiet)
     {
@@ -220,7 +223,6 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     VW::end_parser(*predict_model);
     int num_of_examples = get_num_example(*predict_model);
     VW::finish(*predict_model);
-    
     
     Rcpp::NumericVector data_vec(num_of_examples);
     std::ifstream probs_stream (probs_str);
