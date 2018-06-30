@@ -1,4 +1,5 @@
 library(rvwgsoc)
+library(magrittr)
 
 
 curr_dir <- getwd()
@@ -23,3 +24,9 @@ vwtrain(test_vwmodel, data_path = ext_train_data, quiet = T)
 vwtest(test_vwmodel, data_path = ext_train_data, quiet = T)
 
 setwd(curr_dir)
+
+
+test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw") 
+test_vwmodel <- add_reduction(vwmodel = test_vwmodel, name = "bootstrap", rounds=10, bs_type="mean")
+test_vwmodel <- add_reduction(vwmodel = test_vwmodel, name = "oaa", num_classes=3)
+test_vwmodel$params_str

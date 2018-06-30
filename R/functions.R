@@ -133,11 +133,9 @@
 #'  learning_params = list(binary=TRUE)
 #')
 #'
-vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorization", "bootstrap", "nn"),
-                    algorithm = c("sgd", "bfgs", "ftrl"),
+vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                     general_params = list(),
                     optimization_params = list(),
-                    learning_params = list(),
                     dir = tempdir(),
                     train_data = "",
                     test_data = "",
@@ -157,14 +155,17 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
       file.remove(paste0(dir, model))
   }
   
-  learning_mode <- match.arg(learning_mode)
   algorithm <- match.arg(algorithm)
   
-  params <- list(learning_mode = learning_mode,
-                 algorithm = algorithm,
-                 general_params = general_params,
-                 learning_params = learning_params,
-                 optimization_params = optimization_params
+  # This internal variable determines input format for dataframe to vw parser
+  # input_mode = "single"
+  
+  params <- list(
+      algorithm = algorithm,
+      general_params = general_params,
+      optimization_params = optimization_params,
+      reductions = list()
+      # input_mode = input_mode
   )
   # Parse parameters and write them to string
   # Check parameters
@@ -186,6 +187,7 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
   if(eval) {
     eval_results = "palaceholder for eveluation results"
   }
+  
   vwmodel <- list(params = params,
                   dir = dir,
                   model = model,
@@ -199,6 +201,31 @@ vwsetup <- function(learning_mode = c("binary", "multiclass", "lda", "factorizat
   class(vwmodel) <- "vw"
   return(vwmodel)
 }
+
+#'Add reduction to the model
+#'
+#'@description Add reduction to the reduction stack inside model
+#'@param vwmodel Model of vw class
+#'@param name Name of reduction
+#'@param ... Reduction options
+add_reduction <- function(vwmodel, name = c("binary", "oaa", "ect", "csoaa", "wap", "log_multi",
+                                "lda", "mf", "lrq", "stage_poly", "bootstrap",
+                                "autolink", "cb", "cbify", "nn", "topk",
+                                "struct_search", "boosting"), ...) {
+    
+    reduction_name <- match.arg(name)
+    
+    if (reduction_name %in% names(vwmodel$params$reductions)) {
+        stop("Trying to overwrite reduction")
+    }
+    
+    new_reduction <- setNames(list(list(...)), reduction_name)
+    vwmodel$params$reductions <- c(vwmodel$params$reductions, new_reduction)
+    vwmodel$params <- .check_parameters(vwmodel$params)
+    vwmodel$params_str <- .create_parameters_string(vwmodel$params)
+    vwmodel
+}
+
 
 #'Print VW model
 #'
@@ -338,9 +365,14 @@ vwparams <- function(vwmodel, name) {
                         sparse_weights=FALSE,
                         initial_weight=0)
   # Learning parameters/reductions default/check lists
-  binary_check <- list(binary=FALSE)
-  multiclass_check <- list(reduction="csoaa",
-                           num_classes=3)
+  binary_check <- list()
+  oaa_check <- list(num_classes=3)
+  ect_check <- list(num_classes=3)
+  csoaa_check <- list(num_classes=3,
+                      ldf="singleline")
+  wap_check <- list(num_classes=3,
+                    ldf="singleline")
+  log_multi <- list(num_classes=3)
   lda_check <- list(num_topics=0,
                     lda_alpha=0.100000001,
                     lda_rho=0.100000001,
@@ -348,15 +380,24 @@ vwparams <- function(vwmodel, name) {
                     lda_epsilon=0.00100000005,
                     math_mode=0,
                     minibatch=1)
-  factorization_check <- list(rank=0)
-  bootstrap_check <- list(rounds="",
+  mf_check <- list(rank=0)
+  lrq_check <- list(features="", 
+                    lrqdropout=FALSE)
+  stage_poly <- list(sched_exponent = 1.0,
+                     batch_sz = 1000,
+                     batch_sz_no_doubling = TRUE)
+  bootstrap_check <- list(rounds=10,
                           bs_type="mean")
-  ksvm_check <- list()
+  autolink <- list(degree=2)
+  cb <- list(costs=2)
+  cbify <- list(num_classes=3)
   nn_check <- list(hidden=3,
                    inpass=FALSE,
                    multitask=FALSE,
                    dropout=FALSE,
                    meanfield=FALSE)
+  topk <- list(k=3)
+  struct_search <- list(id=0)
   boosting_check <- list(num_learners=5)
   # Learning algorithm default/check lists
   sgd_check <- list(adaptive=TRUE,
@@ -365,6 +406,9 @@ vwparams <- function(vwmodel, name) {
   bfgs_check <- list(conjugate_gradient=FALSE)
   ftrl_check <- list(ftrl_alpha=0.005,
                      ftrl_beta=0.1)
+  ksvm_check <- list(reprocess=1,
+                     kernel="linear",
+                     bandwidth=1.0)
   optimization_check <- list(hessian_on=FALSE,
                              initial_pass_length="",
                              l1=0,
@@ -379,14 +423,21 @@ vwparams <- function(vwmodel, name) {
   
   # Create default parameters list if no parameters provided
   # Else check parameters and return validated parameters
-  if(length(params$learning_params) == 0) {
-    params$learning_params <- get(paste0(params$learning_mode, "_check"))
-  } else {
-    learning_check_type <- get(paste0(params$learning_mode, "_check"))
-    params$learning_params <- check_param_values(
-      input = params$learning_params,
-      check = learning_check_type
-    )
+  if(length(params$reductions) != 0) {
+      
+      
+      valid_reductions <- list()
+      params$reductions <- sapply(names(params$reductions), function(reduction_name) {
+          reduction_check_type <- get(paste0(reduction_name, "_check"))
+          valid_reduction <- check_param_values(
+              input = params$reductions[[reduction_name]],
+              check = reduction_check_type
+          )
+          valid_reduction <- setNames(list(valid_reduction), reduction_name)
+          valid_reductions <<- c(valid_reductions, valid_reduction)
+      })
+      params$reductions <- valid_reductions
+    
   }
   if(length(params$general_params) == 0) {
       params$general_params <- general_check
@@ -416,11 +467,25 @@ vwparams <- function(vwmodel, name) {
   return(list(learning_mode = params$learning_mode,
               algorithm = params$algorithm,
               general_params = params$general_params,
-              learning_params = params$learning_params,
-              optimization_params = params$optimization_params))
+              optimization_params = params$optimization_params,
+              reductions = params$reductions))
 }
 
 .create_parameters_string <- function(params) {
+    params_to_strings <- function(i) {
+        if(is.na(flat_params[[i]]) | flat_params[[i]] == "") {
+            return("")
+        };
+        if(is.logical(flat_params[[i]][[1]]) & flat_params[[i]][[1]] == TRUE) {
+            return(paste0("--",i))
+        }; 
+        if(is.logical(flat_params[[i]][[1]]) & flat_params[[i]][[1]] == FALSE) {
+            return("")
+        } else {
+            return(paste0("--",i," ",flat_params[[i]]))
+        }
+    }
+    
     flatten <- function(x) {
         repeat {
             if(!any(vapply(x,is.list, logical(1)))) return(x)
@@ -428,53 +493,50 @@ vwparams <- function(vwmodel, name) {
         }
     }
     temp_params <- params
-    #Set learning mode string argument
-    mode_string <- switch (temp_params$learning_mode,
-                           multiclass = {
-                               tmp <- paste0("--", temp_params$learning_params$reduction, " ", temp_params$learning_params$num_classes); 
-                               temp_params$learning_params$reduction <- NA; temp_params$learning_params$num_classes <- NA; tmp
-                           },
-                           lda = {tmp <- paste0("--lda ", temp_params$learning_params$num_topics); temp_params$learning_params$num_topics <- NA; tmp},
-                           factorization = {tmp <- paste0("--rank ", temp_params$learning_params$rank); temp_params$learning_params$rank <- NA; tmp},
-                           bootstrap = {tmp <- paste0("--bootstrap ", temp_params$learning_params$rounds); temp_params$learning_params$rounds <- NA; tmp},
-                           nn = {tmp <- paste0("--nn ", temp_params$learning_params$hidden); temp_params$learning_params$hidden <- NA; tmp},
-                           boosting = {
-                               tmp <- paste0("--boosting ", temp_params$learning_params$num_learners);
-                               temp_params$learning_params$num_learners <- NA; tmp
-                           },
-                           ksvm = "--ksvm"
-    )
+    
+    # Convert different reductions into string with CL arguments
+    reductions_params <- sapply(names(temp_params$reductions), function(reduction_name) {
+        tmp <- paste0("--", reduction_name, " ", temp_params$reductions[[reduction_name]][1])
+        temp_params$reductions[[reduction_name]][1] <<- NA
+        tmp
+    })
+    
+    # temp_params$reductions <- list()
+    # Filter empty strings
+    reductions_params <- Filter(reductions_params, f = function(x) nchar(x) > 0)
+    reductions_string <-  paste0(reductions_params, collapse = " ")
+    
+    # Flatten reduction
+    flat_params <- flatten(temp_params$reductions)
+    # Convert reduction parameters list to "--arg _" list
+    flat_reduction_params <- sapply(names(flat_params), FUN = params_to_strings)
+    # Filter empty strings
+    flat_reduction_params <- Filter(flat_reduction_params, f = function(x) nchar(x) > 0)
+    # Create string "--passes 0 --bit_precision 18" for parser
+    reduction_params_string <- paste0(flat_reduction_params, collapse = " ")
+    
+    temp_params$reductions <- list()
+    
     #Set learning mode string argument
     algorithm_string <- switch (temp_params$algorithm,
                                 sgd = {tmp <- ""; tmp},
                                 bfgs = {tmp <- "--bfgs"; tmp},
-                                ftrl = {tmp <- "--ftrl"; tmp}
+                                ftrl = {tmp <- "--ftrl"; tmp},
+                                ksvm = {tmp <- "--ksvm"; tmp}
     )
     # Disable cache here, because it's checked in vwtrain and vwtest
     if (temp_params$general_params$cache) {
         temp_params$general_params$cache <- NA
     }
     # Flatten list
-    temp_params <- flatten(temp_params[-c(1,2)])
+    flat_params <- flatten(temp_params[-c(1,2)])
     # Convert parameters list to "--arg _" list
-    temp_params <- sapply(names(temp_params), FUN = function(i) {
-        if(is.na(temp_params[i]) | temp_params[i] == "") {
-            return("")
-        };
-        if(is.logical(temp_params[i][[1]]) & temp_params[i][[1]] == TRUE) {
-            return(paste0("--",i))
-        }; 
-        if(is.logical(temp_params[i][[1]]) & temp_params[i][[1]] == FALSE) {
-            return("")
-        } else {
-            return(paste0("--",i," ",temp_params[i]))
-        }
-    })
+    flat_params <- sapply(names(flat_params), FUN = params_to_strings)
     # Filter empty strings
-    temp_params <- Filter(temp_params, f = function(x) nchar(x) > 0)
+    flat_params <- Filter(flat_params, f = function(x) nchar(x) > 0)
     # Create string "--passes 0 --bit_precision 18" for parser
-    parameters_string <- paste0(temp_params, collapse = " ")
-    parameters_string <- paste(mode_string, algorithm_string, parameters_string, sep = " ")
+    parameters_string <- paste0(flat_params, collapse = " ")
+    parameters_string <- paste(algorithm_string, parameters_string, reductions_string, reduction_params_string, sep = " ")
     
     return(parameters_string)
 }
