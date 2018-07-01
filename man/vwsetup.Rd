@@ -4,30 +4,20 @@
 \alias{vwsetup}
 \title{Create Vowpal Wabbit model, setup model parameters and data}
 \usage{
-vwsetup(learning_mode = c("binary", "multiclass", "lda", "factorization",
-  "bootstrap", "nn"), algorithm = c("sgd", "bfgs", "ftrl"),
-  general_params = list(), optimization_params = list(),
-  learning_params = list(), dir = tempdir(), train_data = "",
-  test_data = "", model = "mdl.vw", update_model = TRUE, eval = FALSE)
+vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
+  general_params = list(), optimization_params = list(), dir = tempdir(),
+  train_data = "", test_data = "", model = "mdl.vw", eval = FALSE,
+  reduction = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
+  "lda", "mf", "lrq", "stage_poly", "bootstrap", "autolink", "cb", "cbify",
+  "nn", "topk", "struct_search", "boosting"), ...)
 }
 \arguments{
-\item{learning_mode}{Learning method or reduction:
-\itemize{
- \item \code{binary}
- \item \code{multiclass}
- \item \code{lda} - Latent Dirichlet Allocation
- \item \code{factorization} - matrix factorization mode
- \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
- \item \code{ksvm} - online kernel Support Vector Machine
- \item \code{nn} - sigmoidal feedforward network
- \item \code{boosting} - online boosting with weak learners
-}}
-
 \item{algorithm}{Optimzation algorithm
 \itemize{
  \item \code{sgd} adaptive, normalized, invariant stochastic gradient descent
  \item \code{bfgs}
  \item \code{ftrl}
+ \item \code{ksvm}
 }}
 
 \item{general_params}{List of parameters:
@@ -85,7 +75,39 @@ Additional parameters depending on \code{algorithm} choice:
    }
 }}
 
-\item{learning_params}{List of parametrs associated with learning_mode
+\item{dir}{Working directory, default is tempdir()}
+
+\item{train_data}{Train data file name. File should be in .vw plain text format}
+
+\item{test_data}{Validation data file name. File should be in .vw plain text format}
+
+\item{model}{File name for model weights}
+
+\item{eval}{Compute model evaluation}
+
+\item{reduction}{Add reduction: 
+\itemize{
+ \item \code{binary}
+ \item \code{oaa} - One-against-all multiclass learning with  labels
+ \item \code{ect} - Error correcting tournament with  labels
+ \item \code{csoaa} - One-against-all multiclass learning with  costs
+ \item \code{wap} - Weighted all-pairs multiclass learning with  costs
+ \item \code{log_multi} - Online (decision) trees for  classes
+ \item \code{lda} - Latent Dirichlet Allocation
+ \item \code{mf} - Matrix factorization mode
+ \item \code{lrq} - Low rank quadratic features
+ \item \code{stage_poly} - Stagewise polynomial features
+ \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
+ \item \code{autolink} - Create link function with polynomial N
+ \item \code{cb} - Contextual bandit learning with K costs
+ \item \code{cbify} - Convert multiclass on K classes into a contextual bandit problem
+ \item \code{nn} - Sigmoidal feedforward network
+ \item \code{topk} - Top K recommendation
+ \item \code{struct_search} - Search-based structured prediction (SEARN or DAgger)
+ \item \code{boosting} - online boosting with weak learners
+}}
+
+\item{...}{Options for reduction
 \itemize{
  \item \code{binary}: 
    \itemize{
@@ -106,7 +128,7 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{math_mode} - Math mode: simd, accuracy, fast-approx
      \item \code{minibatch} - Minibatch size
    }
- \item \code{factorization}:
+ \item \code{mf}:
    \itemize{
    \item \code{rank} - rank for matrix factorization
    }
@@ -128,18 +150,6 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{num_learners} - number of weak learners
    }
 }}
-
-\item{dir}{Working directory, default is tempdir()}
-
-\item{train_data}{Train data file name. File should be in .vw plain text format}
-
-\item{test_data}{Validation data file name. File should be in .vw plain text format}
-
-\item{model}{File name for model weights}
-
-\item{update_model}{Update an existing model, when training with new data. \code{TRUE} by default.}
-
-\item{eval}{Compute model evaluation}
 }
 \value{
 vwmodel list class

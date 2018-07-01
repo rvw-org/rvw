@@ -18,15 +18,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtrain
-void vwtrain(Rcpp::List vwmodel, std::string data_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet);
-RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP) {
+void vwtrain(Rcpp::List vwmodel, std::string data_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, bool update_model);
+RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP update_modelSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
     Rcpp::traits::input_parameter< std::string >::type data_path(data_pathSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
-    vwtrain(vwmodel, data_path, readable_model, quiet);
+    Rcpp::traits::input_parameter< bool >::type update_model(update_modelSEXP);
+    vwtrain(vwmodel, data_path, readable_model, quiet, update_model);
     return R_NilValue;
 END_RCPP
 }
@@ -48,7 +49,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 3},
-    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 4},
+    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 5},
     {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 5},
     {NULL, NULL, 0}
 };

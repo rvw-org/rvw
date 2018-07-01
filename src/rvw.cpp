@@ -42,14 +42,19 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'@param readable_model Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted")
 //'@param quiet Do not print anything to the console 
+//'@param update_model Update an existing model, when training with new data. \code{TRUE} by default.
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data_path = ext_train_data)
 // [[Rcpp::export]]
-void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false) {
+void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=true) {
     // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
-    // Rcpp::Rcout << vwmodel.attr("class") << std::endl;
+    Rcpp::Rcout << Rf_inherits(vwmodel, "vw") << std::endl;
+    if(!Rf_inherits(vwmodel, "vw")) {
+        Rcpp::stop("vwmodel should be of class vw");
+    }
+        
     std::string data_str = check_data(vwmodel, data_path, "train");
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
@@ -60,7 +65,7 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     train_init_str += " -d " + data_str;
     
     // Use existing train file to continue training
-    if (vwmodel["update_model"]) {
+    if (update_model) {
         std::ifstream model_file(model_str);
         if (model_file.good()) {
             train_init_str += " -i " + model_str;

@@ -4,7 +4,8 @@
 \alias{vwtrain}
 \title{Train Vowpal Wabbit model}
 \usage{
-vwtrain(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE)
+vwtrain(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE,
+  update_model = TRUE)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
@@ -15,6 +16,8 @@ vwtrain(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE)
 and also with human readable features ("inverted")}
 
 \item{quiet}{Do not print anything to the console}
+
+\item{update_model}{Update an existing model, when training with new data. \code{TRUE} by default.}
 }
 \description{
 vwtrain is an interface to train VW model from \code{\link{vwsetup}}

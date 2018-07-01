@@ -14,12 +14,13 @@
 #'@param readable_model Print trained model in human readable format ("hashed") 
 #'and also with human readable features ("inverted")
 #'@param quiet Do not print anything to the console 
+#'@param update_model Update an existing model, when training with new data. \code{TRUE} by default.
 #'@examples
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data_path = ext_train_data)
-vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE) {
-    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path, readable_model, quiet))
+vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE, update_model = TRUE) {
+    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path, readable_model, quiet, update_model))
 }
 
 #'Compute predictions using Vowpal Wabbit model
