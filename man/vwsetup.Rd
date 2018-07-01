@@ -87,7 +87,7 @@ Additional parameters depending on \code{algorithm} choice:
 
 \item{reduction}{Add reduction: 
 \itemize{
- \item \code{binary}
+ \item \code{binary} - Reports loss as binary classification with -1,1 labels
  \item \code{oaa} - One-against-all multiclass learning with  labels
  \item \code{ect} - Error correcting tournament with  labels
  \item \code{csoaa} - One-against-all multiclass learning with  costs
@@ -109,14 +109,14 @@ Additional parameters depending on \code{algorithm} choice:
 
 \item{...}{Options for reduction
 \itemize{
- \item \code{binary}: 
-   \itemize{
-     \item \code{binary} - Reports loss as binary classification with -1,1 labels
-   }
- \item \code{multiclass}:
+ \item \code{oaa} or \code{ect} or \code{log_multi}:
    \itemize{ 
-     \item \code{reduction} - csoaa, oaa, ect, wap, csoaa_ldf multiclass learning
      \item \code{num_classes} - Number of classes
+   }
+ \item \code{csoaa} or \code{wap}:
+   \itemize{ 
+     \item \code{num_classes} - Number of classes
+     \item \code{csoaa_ldf} or \code{wap_ldf} - \code{singleline} (Default) or \code{multiline} label dependent features
    }
  \item \code{lda}:
    \itemize{ 
@@ -130,12 +130,35 @@ Additional parameters depending on \code{algorithm} choice:
    }
  \item \code{mf}:
    \itemize{
-   \item \code{rank} - rank for matrix factorization
+     \item \code{rank} - rank for matrix factorization
+   }
+ \item \code{lrq}:
+   \itemize{
+     \item \code{features} - low rank quadratic features
+     \item \code{lrqdropout} - use dropout training for low rank quadratic features
+   }
+ \item \code{stage_poly}:
+   \itemize{
+     \item \code{sched_exponent} - exponent controlling quantity of included features
+     \item \code{batch_sz} - multiplier on batch size before including more features
+     \item \code{batch_sz_no_doubling} - batch_sz does not double
    }
  \item \code{bootstrap}:
    \itemize{
      \item \code{rounds} - number of rounds
      \item \code{bs_type} - the bootstrap mode: 'mean' or 'vote'
+   }
+ \item \code{autolink}:
+   \itemize{
+     \item \code{degree} - polynomial degree
+   }
+ \item \code{cb}:
+   \itemize{
+     \item \code{costs} - number of costs
+   }
+ \item \code{cbify}:
+   \itemize{
+     \item \code{num_classes} - number of classes
    }
  \item \code{nn}:
    \itemize{
@@ -144,6 +167,14 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{multitask} - Share hidden layer across all reduced tasks
      \item \code{dropout} - Train or test sigmoidal feedforward network using dropout.
      \item \code{meanfield} - Train or test sigmoidal feedforward network using mean field.
+   }
+ \item \code{topk}:
+   \itemize{
+     \item \code{k} - number of top k recomendations
+   }
+ \item \code{struct_search}:
+   \itemize{
+     \item \code{id} - maximum action id or 0 for LDF
    }
  \item \code{boosting}:
    \itemize{
@@ -165,7 +196,7 @@ vwsetup(
  model = "pk_mdl.vw",
  general_params = list(cache = TRUE, passes=10),
  optimization_params = list(adaptive=FALSE),
- learning_params = list(binary=TRUE)
+ reduction = "binary"
 )
 
 }

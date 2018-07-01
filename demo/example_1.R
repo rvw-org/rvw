@@ -26,7 +26,7 @@ vwtest(test_vwmodel, data_path = ext_train_data, quiet = T)
 # Add reductions via new interface
 library(magrittr)
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
-                         reduction = "ect", num_classes=3) %>% 
+                         reduction = "ect", num_classes=3) %>%
     add_reduction(reduction = "boosting", num_learners=10)
 # Print vwmodel contents
 test_vwmodel

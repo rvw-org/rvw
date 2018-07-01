@@ -11,9 +11,9 @@ add_reduction(vwmodel, reduction = c("binary", "oaa", "ect", "csoaa", "wap",
 \arguments{
 \item{vwmodel}{Model of vw class}
 
-\item{...}{Reduction options}
+\item{reduction}{Name of reduction}
 
-\item{name}{Name of reduction}
+\item{...}{Reduction options}
 }
 \description{
 Add reduction to the reduction stack inside model

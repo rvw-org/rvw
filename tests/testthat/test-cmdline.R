@@ -44,8 +44,8 @@ test_that("nn vwsetup works as CL version", {
   test_vwmodel <- vwsetup(
     dir = "./",
     model = "pk_mdl.vw",
-    learning_mode = "nn",
-    learning_params = list(hidden = 4)
+    reduction = "nn",
+    hidden = 4
   )
   vwtrain(test_vwmodel, data_path = ext_train_data)
   vw_pk_output <- vwtest(test_vwmodel, data_path = ext_test_data)
@@ -170,9 +170,9 @@ test_that("vwsetup with multiclass classification setup works as CL version", {
     test_vwmodel <- vwsetup(
         dir = "./",
         model = "pk_mdl.vw",
-        learning_mode = "multiclass",
         general_params = list(cache=TRUE, passes=4),
-        learning_params = list(reduction="ect", num_classes=3)
+        reduction = "ect",
+        num_classes = 3
     )
     vwtrain(test_vwmodel, data_path = multiclass_train_data)
     vw_pk_output <- vwtest(test_vwmodel, data_path = multiclass_test_data)
