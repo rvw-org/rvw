@@ -40,12 +40,12 @@ test_model <- list(params = list(algorithm = "sgd",
 ),
 dir = "../my_tmp/",
 model = "mdl.vw",
-params_str = paste(" --passes 1 --bit_precision 18 --holdout_period 10",
+params_str = paste0(" --passes 1 --bit_precision 18 --holdout_period 10",
                    " --early_terminate 3 --initial_weight 0 --adaptive",
                    " --normalized --invariant --l1 0 --l2 0",
                    " --decay_learning_rate 1 --initial_t 0 --power_t 0.5",
                    " --learning_rate 0.5 --loss_function squared",
-                   " --quantile_tau 0.5  ", sep = ""),
+                   " --quantile_tau 0.5  "),
 data = list(train = "",
             test = ""),
 cache = list(train = "",
@@ -64,12 +64,12 @@ test_that("vwsetup correctly setup model with different learning modes", {
                                            multitask=FALSE,
                                            dropout=FALSE,
                                            meanfield=FALSE))
-  nn_test_model$params_str = paste(" --passes 1 --bit_precision 18 --holdout_period 10",
+  nn_test_model$params_str = paste0(" --passes 1 --bit_precision 18 --holdout_period 10",
                                 " --early_terminate 3 --initial_weight 0 --adaptive",
                                 " --normalized --invariant --l1 0 --l2 0",
                                 " --decay_learning_rate 1 --initial_t 0 --power_t 0.5",
                                 " --learning_rate 0.5 --loss_function squared",
-                                " --quantile_tau 0.5 --nn 3 ", sep = "")
+                                " --quantile_tau 0.5 --nn 3 ")
   expect_identical(
     vwsetup(dir = "../my_tmp/", reduction = "nn"),
     nn_test_model
@@ -84,7 +84,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
                                            lda_epsilon=0.00100000005,
                                            math_mode=0,
                                            minibatch=1))
-  lda_test_model$params_str = paste(" --passes 1 --bit_precision 18",
+  lda_test_model$params_str = paste0(" --passes 1 --bit_precision 18",
                                 " --holdout_period 10 --early_terminate 3",
                                 " --initial_weight 0 --adaptive --normalized --invariant",
                                 " --l1 0 --l2 0 --decay_learning_rate 1 --initial_t 0",
@@ -92,7 +92,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
                                 " --quantile_tau 0.5 --lda 0 --lda_alpha 0.100000001",
                                 " --lda_rho 0.100000001 --lda_D 10000",
                                 " --lda_epsilon 0.00100000005 --math_mode 0",
-                                " --minibatch 1", sep = "")
+                                " --minibatch 1")
   
   expect_identical(
     vwsetup(dir = "../my_tmp/", reduction = "lda"),
@@ -105,12 +105,12 @@ test_that("vwsetup correctly setup model with different learning modes", {
   custom_test_model$params$general_params$passes = 10
   custom_test_model$params$optimization_params$adaptive = FALSE
   custom_test_model$params$reductions = list(binary = list())
-  custom_test_model$params_str <- paste(" --passes 10 --bit_precision 18",
+  custom_test_model$params_str <- paste0(" --passes 10 --bit_precision 18",
                                  " --holdout_period 10 --early_terminate 3",
                                  " --initial_weight 0 --normalized",
                                  " --invariant --l1 0 --l2 0 --decay_learning_rate 1",
                                  " --initial_t 0 --power_t 0.5 --learning_rate 0.5",
-                                 " --loss_function squared --quantile_tau 0.5 --binary ", sep = "")
+                                 " --loss_function squared --quantile_tau 0.5 --binary ")
   # Package vwmodel setup
   test_vwmodel <- vwsetup(
     dir = "../my_tmp/",
