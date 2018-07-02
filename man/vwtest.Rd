@@ -26,8 +26,8 @@ Numerical vector containing predictions
 vwtest computes predictions using VW model from \code{\link{vwsetup}}
 }
 \examples{
-ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
-ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc") 
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 test_vwmodel <- vwsetup()
 vwtrain(test_vwmodel, data_path = ext_train_data)
 vwtrain(test_vwmodel, data_path = ext_test_data)

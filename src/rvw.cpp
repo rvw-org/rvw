@@ -2,6 +2,7 @@
 
 #include "helpers.h"
 #include "vowpalwabbit/vw.h"
+#include "vowpalwabbit/global_data.h"
 #include <Rcpp.h>
 
 
@@ -41,14 +42,19 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'@param readable_model Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted")
 //'@param quiet Do not print anything to the console 
+//'@param update_model Update an existing model, when training with new data. \code{TRUE} by default.
 //'@examples
-//'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data_path = ext_train_data)
 // [[Rcpp::export]]
-void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false) {
+void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=true) {
     // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
-    // Rcpp::Rcout << vwmodel.attr("class") << std::endl;
+    Rcpp::Rcout << Rf_inherits(vwmodel, "vw") << std::endl;
+    if(!Rf_inherits(vwmodel, "vw")) {
+        Rcpp::stop("vwmodel should be of class vw");
+    }
+        
     std::string data_str = check_data(vwmodel, data_path, "train");
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
@@ -59,7 +65,7 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     train_init_str += " -d " + data_str;
     
     // Use existing train file to continue training
-    if (vwmodel["update_model"]) {
+    if (update_model) {
         std::ifstream model_file(model_str);
         if (model_file.good()) {
             train_init_str += " -i " + model_str;
@@ -103,6 +109,7 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     }
     
     vw* train_model = VW::initialize(train_init_str);
+    
     VW::start_parser(*train_model);
     if (!quiet)
     {
@@ -146,8 +153,8 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
 //'@param quiet Do not print anything to the console 
 //'@return Numerical vector containing predictions
 //'@examples
-//'ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
-//'ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc") 
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+//'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data_path = ext_train_data)
 //'vwtrain(test_vwmodel, data_path = ext_test_data)
@@ -210,6 +217,7 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     }
     
     vw* predict_model = VW::initialize(test_init_str);
+    
     VW::start_parser(*predict_model);
     if (!quiet)
     {
@@ -220,7 +228,6 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     VW::end_parser(*predict_model);
     int num_of_examples = get_num_example(*predict_model);
     VW::finish(*predict_model);
-    
     
     Rcpp::NumericVector data_vec(num_of_examples);
     std::ifstream probs_stream (probs_str);

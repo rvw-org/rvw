@@ -1,4 +1,5 @@
 useDynLib(rvwgsoc, .registration=TRUE)
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
+importFrom(stats, setNames)
 S3method(print, vw)

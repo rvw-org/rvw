@@ -1,12 +1,13 @@
 library(rvwgsoc)
 
-
 curr_dir <- getwd()
 setwd(tempdir())
 
 # Right now using only files in .vw format, later will also accept R formats
-ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
-ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
+multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package = "rvwgsoc")
+multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvwgsoc")
 
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
                          general_params = list(cache = TRUE, hash="all", passes=10),
@@ -21,5 +22,20 @@ vwtest(test_vwmodel, data_path = ext_test_data, readable_model = "inverted")
 # No console output
 vwtrain(test_vwmodel, data_path = ext_train_data, quiet = T)
 vwtest(test_vwmodel, data_path = ext_train_data, quiet = T)
+
+# Add reductions via new interface
+library(magrittr)
+test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
+                         reduction = "ect", num_classes=3) %>%
+    add_reduction(reduction = "boosting", num_learners=10)
+# Print vwmodel contents
+test_vwmodel
+# Access vw parameters
+vwparams(test_vwmodel, "num_classes")
+# Modify parameters
+vwparams(test_vwmodel, "num_learners") <- 100
+
+vwtrain(test_vwmodel, data_path = multiclass_train_data)
+vwtest(test_vwmodel, data_path = multiclass_test_data)
 
 setwd(curr_dir)

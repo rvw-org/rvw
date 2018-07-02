@@ -1,8 +1,8 @@
 context("Check auxiliary functionality")
 library(rvwgsoc)
 
-ext_train_data <- system.file("extdata", "X_train.vw", package = "rvwgsoc")
-ext_test_data <- system.file("extdata", "X_valid.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
 
 test_that("vwtrain and vwtest output correct readable model", {
     # Package session
