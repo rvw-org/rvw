@@ -62,7 +62,8 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
     
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
-    train_init_str += " -d " + data_str;
+    // Commented for testing
+    // train_init_str += " -d " + data_str;
     
     // Use existing train file to continue training
     if (update_model) {
@@ -108,16 +109,25 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
         train_init_str += " --quiet";
     }
     
-    vw* train_model = VW::initialize(train_init_str);
+    // For testing
+    train_init_str += " --no_stdin";
     
-    VW::start_parser(*train_model);
-    if (!quiet)
-    {
-        Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
-        Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
-    }
-    LEARNER::generic_driver(*train_model);
-    VW::end_parser(*train_model);
+    Rcpp::Rcout << "Before init" << std::endl;
+    vw* train_model = VW::initialize(train_init_str);
+    Rcpp::Rcout << "After init" << std::endl;
+    
+    custom_driver(*train_model, data_str);
+    
+    // Commented for testing
+    // VW::start_parser(*train_model);
+    // if (!quiet)
+    // {
+    //     Rcpp::Rcout << "average  since         example        example  current  current  current" << std::endl;
+    //     Rcpp::Rcout << "loss     last          counter         weight    label  predict features" << std::endl;
+    // }
+    // LEARNER::generic_driver(*train_model);
+    // VW::end_parser(*train_model);
+    
     VW::save_predictor(*train_model, model_str);
     VW::finish(*train_model);
     

@@ -1,5 +1,6 @@
 #include "vowpalwabbit/vw.h"
 #include <Rcpp.h>
+#include <fstream>
 
 std::string check_data(Rcpp::List & vwmodel, std::string & data_path, std::string mode="train") {
     Rcpp::List vwmodel_data = vwmodel["data"];
@@ -34,4 +35,23 @@ std::string check_data(Rcpp::List & vwmodel, std::string & data_path, std::strin
 // Get number of examples used in model
 int get_num_example(vw& all) {
     return all.sd->example_number + all.sd->weighted_holdout_examples;
+}
+
+// Custom driver to test example creation using libvw
+void custom_driver(vw& model, std::string & file_path) {
+    std::ifstream input_file_stream (file_path);
+    std::string input_file_line;
+    if (input_file_stream.is_open())
+    {
+        while ( getline (input_file_stream, input_file_line) )
+        {
+            // Rcpp::Rcout << "Line = " << input_file_line << std::endl;
+            example *ec = VW::read_example(model, input_file_line);
+            model.learn(ec);
+            // Rcpp::Rcout << "Pred = " << ec->pred.scalar << std::endl;
+            VW::finish_example(model, ec);
+        }
+        input_file_stream.close();
+        Rcpp::Rcout << std::endl;
+    }
 }

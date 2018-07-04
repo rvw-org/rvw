@@ -8,3 +8,6 @@ std::string check_data(Rcpp::List & vwmodel, std::string & data, std::string mod
 
 // Get number of examples used in model
 int get_num_example(vw& all);
+
+// Custom driver to test example creation using libvw
+void custom_driver(vw& model, std::string & file_path);
