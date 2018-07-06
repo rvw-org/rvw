@@ -398,5 +398,130 @@ vwparams <- function(vwmodel, name) {
 }
 
 
-
+## original source:  vowpal_wabbit/R/r.vw/dt2vw.R
+##
+## written by (per 'git log'):
+##   Selim Raboudi <selim.raboudi@gmail.com>
+##   Jongbin Jung <olorin86@gmail.com>
+## and by Dirk Eddelbuettel as part of rvw
+## released under (3 clause) BSD like rest of vowpal_wabbit
+##
+## now maintained here by Ivan Pavlov as part of rvwgsoc
+df2vw <- function(data, file_path, namespaces = NULL, vec_keep_space = c(),
+                  targets = NULL, probabilities = NULL,
+                  weight = NULL, base = NULL, tag = NULL,
+                  append = FALSE) {
+    
+    # if namespaces = NULL, define a unique namespace
+    if (is.null(namespaces)) {
+        all_vars <- colnames(data)[!colnames(data) %in% c(targets, probabilities, weight, base, tag)]
+        namespaces <- list(A = list(all_vars))
+    }
+    
+    # parse variable names
+    specChar      <- "\\(|\\)|\\||\\:|'"
+    specCharSpace <- "\\(|\\)|\\||\\:| |'"
+    
+    parsingNames <- function(x) {
+        ret <- c()
+        for (el in x)
+            ret <- append(ret, gsub(specCharSpace,'_', el))
+        ret
+    }
+    
+    # parse categorical variables
+    parsingVar <- function(x, keepSpace) {
+        # remove leading and trailing spaces, then remove special characters
+        # then remove isolated underscores.
+        if (!keepSpace)
+            spch <- specCharSpace
+        else
+            spch <- specChar
+        gsub(spch, '_', x)
+    }
+    
+    # namespace load with a yaml file
+    if (typeof(namespaces) == "character" && length(namespaces) == 1 &&
+        grepl("yaml$", namespaces)) {
+        print("Using YAML file for loading the namespaces")
+        if (requireNamespace("yaml", quiet=TRUE, as.character=TRUE)) {
+            namespaces <- yaml::yaml.load_file(namespaces)
+        } else {
+            stop("The 'yaml' package is needed.", .Call=FALSE)
+        }
+    }
+    
+    # replace all names to avoid conflicts with VW file format
+    names(data) <- parsingNames(names(data))
+    names(namespaces) <- parsingNames(names(namespaces))
+    for (x in names(namespaces)) namespaces[[x]] <- parsingNames(namespaces[[x]])
+    targets <- parsingNames(targets)
+    if (!is.null(probabilities)) weight <- parsingNames(probabilities)
+    if (!is.null(weight)) weight <- parsingNames(weight)
+    if (!is.null(base)) weight <- parsingNames(base)
+    if (!is.null(tag)) tag <- parsingNames(tag)
+    
+    # Preparing file
+    if(!append)
+        vw_file <- file(file_path,"w")
+    else
+        vw_file <- file(file_path,"a")
+    
+    # Construct vw format for labels, weights, base and tag
+    vw_format <- ""
+    column_names <- c()
+    
+    if(!is.null(targets)) {
+        if(length(targets) > 1) {
+            if(!is.null(probabilities) & (length(targets) == length(probabilities))) {
+                vw_format <- paste0(vw_format, 1:length(targets), rep(":%f:%f ", length(targets)), collapse = "")
+                column_names <- c(column_names,
+                                  strsplit(paste(targets, probabilities, collapse = " "), split = " "))
+            } else {
+                vw_format <- paste0(vw_format, 1:length(targets), rep(":%f ", length(targets)), collapse = "")
+                column_names <- c(column_names, targets)
+            }
+        } else {
+            vw_format <- paste0(vw_format, "%f ")
+            column_names <- c(column_names, targets)
+        }
+        if(!is.null(weight)) {
+            vw_format <- paste0(vw_format, "%f ")
+            column_names <- c(column_names, weight)
+        }
+        if(!is.null(base)) {
+            vw_format <- paste0(vw_format, "%f ")
+            column_names <- c(column_names, base)
+        }
+        if(!is.null(tag)) {
+            vw_format <- paste0(vw_format, "'%s ")
+            column_names <- c(column_names, tag)
+        }
+    }
+    vw_format <- trimws(vw_format, which = "right")
+    
+    numeric_value <- sapply(data_full, is.numeric)
+    
+    apply(data, MARGIN = 1, function(row) {
+        features_line = ""
+        for(namespace_name in names(namespaces)) {
+            features_line = paste(features_line, paste0("|", namespace_name))
+            for(feature_name in namespaces[[namespace_name]]) {
+                # print(row[[feature_name]])
+                if(numeric_value[feature_name]) {
+                    features_line = paste(features_line, paste0(feature_name, ":", row[feature_name]))
+                } else if(feature_name %in% vec_keep_space) {
+                    features_line = paste(features_line, parsingVar(row[feature_name], keepSpace = T))
+                } else {
+                    features_line = paste(features_line, paste0(feature_name, "^", parsingVar(row[feature_name], keepSpace = F)))
+                }
+                
+            }
+        }
+        labels_line <- do.call(sprintf, c(list(vw_format), as.double(row[column_names])))
+        writeLines(text = paste0(labels_line, features_line), con = vw_file)
+        
+    })
+    close(vw_file)
+}
 

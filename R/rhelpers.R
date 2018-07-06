@@ -1,6 +1,3 @@
-# Helper functions
-# .df2vw <- function(data, namespaces=NULL, input_mode)
-
 
 .check_parameters <- function(params) {
     # Helper function to check parameters
