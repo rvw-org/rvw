@@ -1,4 +1,3 @@
-
 .check_parameters <- function(params) {
     # Helper function to check parameters
     check_param_values <- function(input, check) {

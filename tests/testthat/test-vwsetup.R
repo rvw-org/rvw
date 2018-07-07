@@ -46,10 +46,8 @@ params_str = paste0(" --passes 1 --bit_precision 18 --holdout_period 10",
                    " --decay_learning_rate 1 --initial_t 0 --power_t 0.5",
                    " --learning_rate 0.5 --loss_function squared",
                    " --quantile_tau 0.5  "),
-data = list(train = "",
+data_md5sum = list(train = "",
             test = ""),
-cache = list(train = "",
-             test = ""),
 eval = "")
 class(test_model) <- "vw"
 

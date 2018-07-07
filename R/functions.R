@@ -180,8 +180,6 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                     general_params = list(),
                     optimization_params = list(),
                     dir = tempdir(),
-                    train_data = "",
-                    test_data = "",
                     model = "mdl.vw",
                     eval = FALSE,
                     reduction = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
@@ -190,8 +188,10 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                                   "struct_search", "boosting"),
                     ...
 ) {
-  train_cache = ""
-  test_cache = ""
+  library(tools)
+    
+  train_md5sum = ""
+  test_md5sum = ""
   eval_results = ""
   if(substr(dir, nchar(dir), nchar(dir)) != "/") {
     dir <- paste0(dir, "/")
@@ -213,8 +213,6 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
   }
 
   
-  # This internal variable determines input format for dataframe to vw parser
-  # input_mode = "single"
   
   params <- list(
       algorithm = algorithm,
@@ -229,17 +227,17 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
   # Write to string
   params_str <- .create_parameters_string(params)
   # Create cache
-  if (params$general_params$cache) {
-    # If have data, create cache
-    if (nchar(train_data) != 0) {
-      train_cache <- paste0(train_data, ".cache")
-      .create_cache(dir=dir, data_file=train_data, cache_file=train_cache)
-    }
-    if (nchar(test_data) != 0) {
-      test_cache <- paste0(test_data, ".cache")
-      .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
-    }
-  }
+  # if (params$general_params$cache) {
+  #   # If have data, create cache
+  #   if (nchar(train_data) != 0) {
+  #     train_cache <- paste0(train_data, ".cache")
+  #     .create_cache(dir=dir, data_file=train_data, cache_file=train_cache)
+  #   }
+  #   if (nchar(test_data) != 0) {
+  #     test_cache <- paste0(test_data, ".cache")
+  #     .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
+  #   }
+  # }
   if(eval) {
     eval_results = "palaceholder for eveluation results"
   }
@@ -248,10 +246,8 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                   dir = dir,
                   model = model,
                   params_str = params_str,
-                  data = list(train = train_data,
-                               test = test_data),
-                  cache = list(train = train_cache,
-                              test = test_cache),
+                  data_md5sum = list(train = train_md5sum,
+                               test = test_md5sum),
                   eval = eval_results)
   class(vwmodel) <- "vw"
   return(vwmodel)
@@ -323,14 +319,6 @@ print.vw <- function(x, ...) {
       cat("\t", i, ":  ", x$params$optimization_params[[i]], "\n")
     }
   })
-  cat("Data:", "\n")
-  cat("\tTrain data file path:  ", x$data$train, "\n")
-  cat("\tTest data file path:  ", x$data$test, "\n")
-  if (x$params$general_params$cache) {
-    cat("Cache:", "\n")
-    cat("\tTrain data file path:  ", x$cache$train, "\n")
-    cat("\tTest data file path:  ", x$cache$test, "\n")
-  }
   }
 #'Access and modify parameters of VW model
 #'
@@ -407,7 +395,32 @@ vwparams <- function(vwmodel, name) {
 ## released under (3 clause) BSD like rest of vowpal_wabbit
 ##
 ## now maintained here by Ivan Pavlov as part of rvwgsoc
-df2vw <- function(data, file_path, namespaces = NULL, vec_keep_space = c(),
+
+#'Create a VW data file from a R data.frame object 
+#'
+#'@param data [data.frame] data.frame object to be converted
+#'@param file_path [string] file name of the resulting data in
+#'  VW-friendly format
+#'@param namespaces [list or yaml file] name of each namespace and
+#'  each variable for each namespace can be a R list, or a YAML
+#'  file example namespace with the IRIS database: namespaces =
+#'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
+#'  'Petal.Width') this creates 2 namespaces (sepal
+#'  and petal) containing the features defined by elements of this lists.
+#'@param keep_space [string vector] keep spaces for this features
+#'Example:"FERRARI 4Si"
+#'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
+#'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+#'@param targets [string or string vector]
+#'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
+#'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+#'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
+#'@param probabilities [string vector] vectors with action probabilities for Contextual Bandit algorithm.
+#'@param weight [string] weight (importance) of each line of the dataset.
+#'@param base [string] base of each line of the dataset. Used for residual regression.
+#'@param tag [string] tag of each line of the dataset.
+#'@param append [bool] data to be appended to result file
+df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                   targets = NULL, probabilities = NULL,
                   weight = NULL, base = NULL, tag = NULL,
                   append = FALSE) {
@@ -510,7 +523,7 @@ df2vw <- function(data, file_path, namespaces = NULL, vec_keep_space = c(),
                 # print(row[[feature_name]])
                 if(numeric_value[feature_name]) {
                     features_line = paste(features_line, paste0(feature_name, ":", row[feature_name]))
-                } else if(feature_name %in% vec_keep_space) {
+                } else if(feature_name %in% keep_space) {
                     features_line = paste(features_line, parsingVar(row[feature_name], keepSpace = T))
                 } else {
                     features_line = paste(features_line, paste0(feature_name, "^", parsingVar(row[feature_name], keepSpace = F)))
@@ -523,5 +536,7 @@ df2vw <- function(data, file_path, namespaces = NULL, vec_keep_space = c(),
         
     })
     close(vw_file)
+    # Return check sum
+    unname(tools::md5sum(file_path))
 }
 

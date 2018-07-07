@@ -2,34 +2,40 @@
 #include <Rcpp.h>
 #include <fstream>
 
-std::string check_data(Rcpp::List & vwmodel, std::string & data_path, std::string mode="train") {
-    Rcpp::List vwmodel_data = vwmodel["data"];
-    std::string valid_data_str;
-    // // DEBUG
-    // // Rcpp::Rcout << vwmodel["params"] << std::endl;
-    // Rcpp::Rcout << Rcpp::as<std::string>(vwmodel["dir"]) << std::endl;
-    // Rcpp::Rcout << Rcpp::as<std::string>(vwmodel_data["train"]) << std::endl;
-    // Rcpp::Rcout << data_path << std::endl;
-    // // END DEBUG
-    
-    std::string vwmodel_data_file;
-    if (mode == "test") {
-        vwmodel_data_file = Rcpp::as<std::string>(vwmodel_data["test"]);
+Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP & data=R_NilValue, std::string mode="train",
+                       SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
+                       SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
+                       SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue) {
+    Rcpp::CharacterVector data_md5sum("");
+    if(TYPEOF(data) == STRSXP) {
+        // Use path to file as model input
+        valid_data_str = Rcpp::as<std::string>(data);
+        // Compute cache
+        Rcpp::Rcout << "before 1" << std::endl;
+        Rcpp::Environment env("package:tools");
+        Rcpp::Rcout << "before 1" << std::endl;
+        Rcpp::Function r_md5sum = env["md5sum"];
+        Rcpp::Rcout << "before 1" << std::endl;
+        data_md5sum = r_md5sum(valid_data_str);
+        Rcpp::Rcout << "before 1" << std::endl;
+    } else if(TYPEOF(data) == VECSXP) {
+        // Parse data frame and use VW file as model input
+        Rcpp::DataFrame input_dataframe(data);
+        Rcpp::Environment env("package:rvwgsoc");
+        Rcpp::Function r_df2vw = env["df2vw"];
+        valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + mode + ".vw";
+        
+        // Convert and compute cache
+        data_md5sum = r_df2vw(data, valid_data_str,
+                namespaces, keep_space,
+                targets, probabilities,
+                weight, base, tag,
+                false
+        );
     } else {
-        vwmodel_data_file = Rcpp::as<std::string>(vwmodel_data["train"]);
+        Rcpp::stop("Only String and data.frame types are supported");
     }
-    
-    if(data_path.empty()) {
-        if(vwmodel_data_file.empty()) {
-            Rcpp::stop("No data provided");
-        } else {
-            valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + vwmodel_data_file;
-        }
-    } else {
-        // valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + data;
-        valid_data_str = data_path;
-    }
-    return valid_data_str;
+    return data_md5sum;
 }
 
 // Get number of examples used in model

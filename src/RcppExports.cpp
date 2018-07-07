@@ -18,39 +18,53 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtrain
-void vwtrain(Rcpp::List vwmodel, std::string data_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, bool update_model);
-RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP update_modelSEXP) {
+void vwtrain(Rcpp::List& vwmodel, SEXP& data, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, bool update_model, SEXP& namespaces, SEXP& keep_space, SEXP& targets, SEXP& probabilities, SEXP& weight, SEXP& base, SEXP& tag);
+RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP update_modelSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
-    Rcpp::traits::input_parameter< std::string >::type data_path(data_pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type vwmodel(vwmodelSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
     Rcpp::traits::input_parameter< bool >::type update_model(update_modelSEXP);
-    vwtrain(vwmodel, data_path, readable_model, quiet, update_model);
+    Rcpp::traits::input_parameter< SEXP& >::type namespaces(namespacesSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type keep_space(keep_spaceSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type targets(targetsSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type probabilities(probabilitiesSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type weight(weightSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type base(baseSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type tag(tagSEXP);
+    vwtrain(vwmodel, data, readable_model, quiet, update_model, namespaces, keep_space, targets, probabilities, weight, base, tag);
     return R_NilValue;
 END_RCPP
 }
 // vwtest
-Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path, std::string probs_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet);
-RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP data_pathSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP) {
+Rcpp::NumericVector vwtest(Rcpp::List& vwmodel, SEXP& data, std::string probs_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, SEXP& namespaces, SEXP& keep_space, SEXP& targets, SEXP& probabilities, SEXP& weight, SEXP& base, SEXP& tag);
+RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type vwmodel(vwmodelSEXP);
-    Rcpp::traits::input_parameter< std::string >::type data_path(data_pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type vwmodel(vwmodelSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< std::string >::type probs_path(probs_pathSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
-    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data_path, probs_path, readable_model, quiet));
+    Rcpp::traits::input_parameter< SEXP& >::type namespaces(namespacesSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type keep_space(keep_spaceSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type targets(targetsSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type probabilities(probabilitiesSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type weight(weightSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type base(baseSEXP);
+    Rcpp::traits::input_parameter< SEXP& >::type tag(tagSEXP);
+    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data, probs_path, readable_model, quiet, namespaces, keep_space, targets, probabilities, weight, base, tag));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 3},
-    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 5},
-    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 5},
+    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 12},
+    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 12},
     {NULL, NULL, 0}
 };
 

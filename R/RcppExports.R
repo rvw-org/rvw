@@ -10,17 +10,36 @@
 #'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 #'
 #'@param vwmodel Model of vw class to train
-#'@param data_path Path to training data in .vw plain text format
-#'@param readable_model Print trained model in human readable format ("hashed") 
+#'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
+#'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
+#'@param readable_model [string] Print trained model in human readable format ("hashed") 
 #'and also with human readable features ("inverted")
-#'@param quiet Do not print anything to the console 
-#'@param update_model Update an existing model, when training with new data. \code{TRUE} by default.
+#'@param quiet [logical] Do not print anything to the console 
+#'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
+#'@param namespaces For \code{df2vw} [list or yaml file] name of each namespace and
+#'  each variable for each namespace can be a R list, or a YAML
+#'  file example namespace with the IRIS database: namespaces =
+#'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
+#'  'Petal.Width') this creates 2 namespaces (sepal
+#'  and petal) containing the features defined by elements of this lists.
+#'@param For \code{df2vw} keep_space [string vector] keep spaces for this features
+#'Example:"FERRARI 4Si"
+#'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
+#'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+#'@param For \code{df2vw} targets [string or string vector]
+#'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
+#'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+#'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
+#'@param probabilities For \code{df2vw} [string vector] vectors with action probabilities for Contextual Bandit algorithm.
+#'@param weight For \code{df2vw} [string] weight (importance) of each line of the dataset.
+#'@param base For \code{df2vw} [string] base of each line of the dataset. Used for residual regression.
+#'@param tag For \code{df2vw} [string] tag of each line of the dataset.
 #'@examples
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data_path = ext_train_data)
-vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE, update_model = TRUE) {
-    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data_path, readable_model, quiet, update_model))
+vwtrain <- function(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE, update_model = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL) {
+    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, namespaces, keep_space, targets, probabilities, weight, base, tag))
 }
 
 #'Compute predictions using Vowpal Wabbit model
@@ -28,11 +47,30 @@ vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALS
 #'vwtest computes predictions using VW model from \code{\link{vwsetup}}
 #'
 #'@param vwmodel Model of vw class to train
-#'@param data_path Path to training data in .vw plain text format
+#'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
+#'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 #'@param probs_path Path to file where to save predictions
 #'@param readable_model Print trained model in human readable format ("hashed") 
 #'and also with human readable features ("inverted")
-#'@param quiet Do not print anything to the console 
+#'@param quiet Do not print anything to the console
+#'@param namespaces For \code{df2vw} [list or yaml file] name of each namespace and
+#'  each variable for each namespace can be a R list, or a YAML
+#'  file example namespace with the IRIS database: namespaces =
+#'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
+#'  'Petal.Width') this creates 2 namespaces (sepal
+#'  and petal) containing the features defined by elements of this lists.
+#'@param For \code{df2vw} keep_space [string vector] keep spaces for this features
+#'Example:"FERRARI 4Si"
+#'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
+#'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+#'@param For \code{df2vw} targets [string or string vector]
+#'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
+#'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+#'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
+#'@param probabilities For \code{df2vw} [string vector] vectors with action probabilities for Contextual Bandit algorithm.
+#'@param weight For \code{df2vw} [string] weight (importance) of each line of the dataset.
+#'@param base For \code{df2vw} [string] base of each line of the dataset. Used for residual regression.
+#'@param tag For \code{df2vw} [string] tag of each line of the dataset.
 #'@return Numerical vector containing predictions
 #'@examples
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
@@ -40,7 +78,7 @@ vwtrain <- function(vwmodel, data_path = "", readable_model = NULL, quiet = FALS
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data_path = ext_train_data)
 #'vwtrain(test_vwmodel, data_path = ext_test_data)
-vwtest <- function(vwmodel, data_path = "", probs_path = "", readable_model = NULL, quiet = FALSE) {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data_path, probs_path, readable_model, quiet)
+vwtest <- function(vwmodel, data = NULL, probs_path = "", readable_model = NULL, quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL) {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, namespaces, keep_space, targets, probabilities, weight, base, tag)
 }
 

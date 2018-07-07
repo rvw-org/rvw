@@ -8,15 +8,15 @@ test_that("vwtrain and vwtest output correct readable model", {
     # Package session
     test_vwmodel <- vwsetup(dir = "./", model = "pk_mdl.vw")
     # vwtrain
-    vwtrain(test_vwmodel, data_path = ext_train_data, readable_model = "hashed")
+    vwtrain(test_vwmodel, data = ext_train_data, readable_model = "hashed")
     vw_pk_train_hashed_mdl_checksum = unname(tools::md5sum("readable_pk_mdl.vw"))
     test_vwmodel <- vwsetup(dir = "./", model = "pk_mdl.vw")
-    vwtrain(test_vwmodel, data_path = ext_train_data, readable_model = "inverted")
+    vwtrain(test_vwmodel, data = ext_train_data, readable_model = "inverted")
     vw_pk_train_inverted_mdl_checksum <- unname(tools::md5sum("readable_pk_mdl.vw"))
     # vwtest
-    vwtest(test_vwmodel, data_path = ext_test_data, readable_model = "hashed")
+    vwtest(test_vwmodel, data = ext_test_data, readable_model = "hashed")
     vw_pk_test_hashed_mdl_checksum = unname(tools::md5sum("readable_pk_mdl.vw"))
-    vwtest(test_vwmodel, data_path = ext_test_data, readable_model = "inverted")
+    vwtest(test_vwmodel, data = ext_test_data, readable_model = "inverted")
     vw_pk_test_inverted_mdl_checksum <- unname(tools::md5sum("readable_pk_mdl.vw"))
     
     file.remove("pk_mdl.vw","readable_pk_mdl.vw")
