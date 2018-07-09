@@ -11,13 +11,9 @@ Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_
         // Use path to file as model input
         valid_data_str = Rcpp::as<std::string>(data);
         // Compute cache
-        Rcpp::Rcout << "before 1" << std::endl;
         Rcpp::Environment env("package:tools");
-        Rcpp::Rcout << "before 1" << std::endl;
         Rcpp::Function r_md5sum = env["md5sum"];
-        Rcpp::Rcout << "before 1" << std::endl;
         data_md5sum = r_md5sum(valid_data_str);
-        Rcpp::Rcout << "before 1" << std::endl;
     } else if(TYPEOF(data) == VECSXP) {
         // Parse data frame and use VW file as model input
         Rcpp::DataFrame input_dataframe(data);

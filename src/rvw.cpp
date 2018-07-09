@@ -44,28 +44,29 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'and also with human readable features ("inverted")
 //'@param quiet [logical] Do not print anything to the console 
 //'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
-//'@param namespaces For \code{df2vw} [list or yaml file] name of each namespace and
+//'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 //'  each variable for each namespace can be a R list, or a YAML
 //'  file example namespace with the IRIS database: namespaces =
 //'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
 //'  'Petal.Width') this creates 2 namespaces (sepal
 //'  and petal) containing the features defined by elements of this lists.
-//'@param For \code{df2vw} keep_space [string vector] keep spaces for this features
+//'@param keep_space [string vector] For \code{df2vw}. Keep spaces for this features
 //'Example:"FERRARI 4Si"
 //'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 //'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
-//'@param For \code{df2vw} targets [string or string vector]
+//'@param targets [string or string vector] For \code{df2vw}.
 //'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 //'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
 //'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
-//'@param probabilities For \code{df2vw} [string vector] vectors with action probabilities for Contextual Bandit algorithm.
-//'@param weight For \code{df2vw} [string] weight (importance) of each line of the dataset.
-//'@param base For \code{df2vw} [string] base of each line of the dataset. Used for residual regression.
-//'@param tag For \code{df2vw} [string] tag of each line of the dataset.
+//'@param probabilities [string vector] For \code{df2vw}. vectors with action probabilities for Contextual Bandit algorithm.
+//'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
+//'@param base [string] For \code{df2vw}. base of each line of the dataset. Used for residual regression.
+//'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
+//'@import tools
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 //'test_vwmodel <- vwsetup()
-//'vwtrain(test_vwmodel, data_path = ext_train_data)
+//'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
 void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
              SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
@@ -132,7 +133,6 @@ void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::
         train_init_str += " --cache_file " + cache_str;
     }
     // Update model_md5sum
-    Rcpp::Rcout << new_data_md5sum << std::endl;
     vwmodel_md5sums["train"] = new_data_md5sum;
     // Ignore output from VW
     if (!quiet)
@@ -196,31 +196,32 @@ void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::
 //'@param readable_model Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted")
 //'@param quiet Do not print anything to the console
-//'@param namespaces For \code{df2vw} [list or yaml file] name of each namespace and
+//'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 //'  each variable for each namespace can be a R list, or a YAML
 //'  file example namespace with the IRIS database: namespaces =
 //'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
 //'  'Petal.Width') this creates 2 namespaces (sepal
 //'  and petal) containing the features defined by elements of this lists.
-//'@param For \code{df2vw} keep_space [string vector] keep spaces for this features
+//'@param keep_space [string vector] For \code{df2vw}. Keep spaces for this features
 //'Example:"FERRARI 4Si"
 //'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 //'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
-//'@param For \code{df2vw} targets [string or string vector]
+//'@param targets [string or string vector] For \code{df2vw}.
 //'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 //'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
 //'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
-//'@param probabilities For \code{df2vw} [string vector] vectors with action probabilities for Contextual Bandit algorithm.
-//'@param weight For \code{df2vw} [string] weight (importance) of each line of the dataset.
-//'@param base For \code{df2vw} [string] base of each line of the dataset. Used for residual regression.
-//'@param tag For \code{df2vw} [string] tag of each line of the dataset.
+//'@param probabilities [string vector] For \code{df2vw}. Vectors with action probabilities for Contextual Bandit algorithm.
+//'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
+//'@param base [string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.
+//'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
 //'@return Numerical vector containing predictions
+//'@import tools
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 //'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 //'test_vwmodel <- vwsetup()
-//'vwtrain(test_vwmodel, data_path = ext_train_data)
-//'vwtrain(test_vwmodel, data_path = ext_test_data)
+//'vwtrain(test_vwmodel, data = ext_train_data)
+//'vwtrain(test_vwmodel, data = ext_test_data)
 // [[Rcpp::export]]
 Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP & data=R_NilValue, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
                            SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,

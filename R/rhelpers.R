@@ -1,3 +1,5 @@
+# Helper functions
+
 .check_parameters <- function(params) {
     # Helper function to check parameters
     check_param_values <- function(input, check) {
@@ -44,9 +46,9 @@
     oaa_check <- list(num_classes=3)
     ect_check <- list(num_classes=3)
     csoaa_check <- list(num_classes=3,
-                        csoaa_ldf="singleline")
+                        csoaa_ldf="")
     wap_check <- list(num_classes=3,
-                      wap_ldf="singleline")
+                      wap_ldf="")
     log_multi <- list(num_classes=3)
     lda_check <- list(num_topics=0,
                       lda_alpha=0.100000001,

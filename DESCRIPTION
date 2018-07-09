@@ -7,7 +7,7 @@ Author: Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
 Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
 Description: R interface for Vowpal Wabbit using Rcpp and libvw for GSoC 2018.
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.12.16)
+Imports: Rcpp (>= 0.12.16), tools, yaml
 LinkingTo: Rcpp
 Suggests: testthat
 SystemRequirements: C++11, Vowpal Wabbit library

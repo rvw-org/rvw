@@ -6,10 +6,10 @@
 \usage{
 vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
   general_params = list(), optimization_params = list(), dir = tempdir(),
-  train_data = "", test_data = "", model = "mdl.vw", eval = FALSE,
-  reduction = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
-  "lda", "mf", "lrq", "stage_poly", "bootstrap", "autolink", "cb", "cbify",
-  "nn", "topk", "struct_search", "boosting"), ...)
+  model = "mdl.vw", eval = FALSE, reduction = c("", "binary", "oaa",
+  "ect", "csoaa", "wap", "log_multi", "lda", "mf", "lrq", "stage_poly",
+  "bootstrap", "autolink", "cb", "cbify", "nn", "topk", "struct_search",
+  "boosting"), ...)
 }
 \arguments{
 \item{algorithm}{Optimzation algorithm
@@ -76,10 +76,6 @@ Additional parameters depending on \code{algorithm} choice:
 }}
 
 \item{dir}{Working directory, default is tempdir()}
-
-\item{train_data}{Train data file name. File should be in .vw plain text format}
-
-\item{test_data}{Validation data file name. File should be in .vw plain text format}
 
 \item{model}{File name for model weights}
 
@@ -191,8 +187,6 @@ Sets up VW model together with parameters and data
 \examples{
 vwsetup(
  dir = tempdir(),
- train_data = "binary_train.vw",
- test_data = "binary_valid.vw",
  model = "pk_mdl.vw",
  general_params = list(cache = TRUE, passes=10),
  optimization_params = list(adaptive=FALSE),
