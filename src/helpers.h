@@ -1,6 +1,7 @@
 #include "vowpalwabbit/vw.h"
 #include <Rcpp.h>
 
+
 // Helper functions
 
 // Check if data from vwmodel should be used or from function arguments

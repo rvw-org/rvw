@@ -1,6 +1,46 @@
 #include "vowpalwabbit/vw.h"
 #include <Rcpp.h>
+
 #include <fstream>
+#include <stdio.h>
+#include <string.h>
+
+#include <RApiSerializeAPI.h>
+
+#include <R.h>
+#include <R_ext/Rdynload.h>
+
+extern "C" {
+#include "md5.h"
+}
+
+
+// Based on code from R digest package http://dirk.eddelbuettel.com/code/digest.html
+// Copyright (C) 2003 - 2016  Dirk Eddelbuettel <edd@debian.org>
+std::string md5sum(SEXP data) {
+    // Testing object md5sum
+    Rcpp::RawVector x = serializeToRaw(data);
+    // Rcpp::Rcout << "Yes, it's raw" << std::endl;
+    char output[33+1];
+    int output_length = -1;
+    char * char_x = (char*) RAW(x);
+    uint32_t nChar = XLENGTH(x);
+    md5_context ctx;
+    output_length = 16;
+    unsigned char md5sum[16];
+    int j;
+    md5_starts( &ctx );
+    md5_update( &ctx, (uint8 *) char_x, nChar);
+    md5_finish( &ctx, md5sum );
+    memcpy(output, md5sum, 16);
+    
+    for (j = 0; j < 16; j++)
+        sprintf(output + j * 2, "%02x", md5sum[j]);
+    
+    std::string output_str(output);
+    
+    return(output_str);
+}
 
 Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP & data=R_NilValue, std::string mode="train",
                        SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
@@ -10,24 +50,37 @@ Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_
     if(TYPEOF(data) == STRSXP) {
         // Use path to file as model input
         valid_data_str = Rcpp::as<std::string>(data);
+        
         // Compute cache
         Rcpp::Environment env("package:tools");
         Rcpp::Function r_md5sum = env["md5sum"];
         data_md5sum = r_md5sum(valid_data_str);
     } else if(TYPEOF(data) == VECSXP) {
         // Parse data frame and use VW file as model input
-        Rcpp::DataFrame input_dataframe(data);
-        Rcpp::Environment env("package:rvwgsoc");
-        Rcpp::Function r_df2vw = env["df2vw"];
-        valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + mode + ".vw";
         
-        // Convert and compute cache
-        data_md5sum = r_df2vw(data, valid_data_str,
-                namespaces, keep_space,
-                targets, probabilities,
-                weight, base, tag,
-                false
-        );
+        // Update valid data string
+        valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + mode + ".vw";
+        // Compute md5sum of data.frame
+        data_md5sum = md5sum(data);
+        
+        // Compare new md5sum with old md5sum
+        Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
+        Rcpp::String model_md5sum = vwmodel_md5sums[mode];
+        
+        
+        if (model_md5sum != Rcpp::as<std::string>(data_md5sum)) {
+            Rcpp::Rcout << "Converting data.frame to VW frame" << std::endl;
+            Rcpp::Environment env("package:rvwgsoc");
+            Rcpp::Function r_df2vw = env["df2vw"];
+            // Convert data.frame to VW
+            r_df2vw(data, valid_data_str,
+                    namespaces, keep_space,
+                    targets, probabilities,
+                    weight, base, tag,
+                    false
+            );
+        }
+        
     } else {
         Rcpp::stop("Only String and data.frame types are supported");
     }

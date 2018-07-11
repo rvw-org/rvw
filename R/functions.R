@@ -186,7 +186,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                     ...
 ) {
     
-  library(tools)
+  # library(tools)
   train_md5sum = ""
   test_md5sum = ""
   eval_results = ""
@@ -423,7 +423,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                   targets = NULL, probabilities = NULL,
                   weight = NULL, base = NULL, tag = NULL,
                   append = FALSE) {
-    library(tools)
+    # library(tools)
     # if namespaces = NULL, define a unique namespace
     if (is.null(namespaces)) {
         all_vars <- colnames(data)[!colnames(data) %in% c(targets, probabilities, weight, base, tag)]
@@ -536,7 +536,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     })
     close(vw_file)
     # Return check sum
-    unname(md5sum(file_path))
+    # unname(tools::md5sum(file_path))
 }
 
 # Helper functions
