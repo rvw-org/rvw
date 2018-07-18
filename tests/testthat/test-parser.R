@@ -46,6 +46,7 @@ test_that("df2vw correctly parses data", {
                                                       NS2 = c("fact_v2", "text_v3")),
                                     keep_space = "text_v3",
                                     targets = "regular_label", tag = "tag", weight = "importance")
+    regular_df2vw_checksum <- unname(md5sum(df2vw_path))
     
     # CSOAA labels
     ref_file <- file(ref_path,"w")
@@ -55,12 +56,13 @@ test_that("df2vw correctly parses data", {
     close(ref_file)
     csoaa_ref_checksum <- unname(md5sum(ref_path))
     
-    csoaa_df2vw_checksum <- df2vw(data = test_df, file_path = df2vw_path,
+    df2vw(data = test_df, file_path = df2vw_path,
                                   namespaces = list(NS1 = c("num_v1", "fact_v2"),
                                                     NS2 = c("fact_v2", "text_v3")),
                                   keep_space = "text_v3",
                                   targets = c("multilabel_1", "multilabel_2", "multilabel_3", "multilabel_4"),
                                   tag = "tag", weight = "importance")
+    csoaa_df2vw_checksum <- unname(md5sum(df2vw_path))
     
     # Context Bandit labels
     ref_file <- file(ref_path,"w")
@@ -70,13 +72,14 @@ test_that("df2vw correctly parses data", {
     close(ref_file)
     cb_ref_checksum <- unname(md5sum(ref_path))
     
-    cb_df2vw_checksum <- df2vw(data = test_df, file_path = df2vw_path,
+    df2vw(data = test_df, file_path = df2vw_path,
                                     namespaces = list(NS1 = c("num_v1", "fact_v2"),
                                                       NS2 = c("fact_v2", "text_v3")),
                                     keep_space = "text_v3",
                                     targets = c("multilabel_1", "multilabel_2", "multilabel_3", "multilabel_4"),
                                     probabilities = c("multilabel_1", "multilabel_2", "multilabel_3", "multilabel_4"),
                                     tag = "tag", weight = "importance")
+    cb_df2vw_checksum <- unname(md5sum(df2vw_path))
     
     file.remove(ref_path, df2vw_path)
     

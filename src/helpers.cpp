@@ -17,14 +17,9 @@ extern "C" {
 
 // Based on code from R digest package http://dirk.eddelbuettel.com/code/digest.html
 // Copyright (C) 2003 - 2016  Dirk Eddelbuettel <edd@debian.org>
-std::string md5sum(SEXP data) {
-    // Testing object md5sum
-    Rcpp::RawVector x = serializeToRaw(data);
-    // Rcpp::Rcout << "Yes, it's raw" << std::endl;
+std::string md5sum(char * char_x, uint32_t nChar) {
     char output[33+1];
     int output_length = -1;
-    char * char_x = (char*) RAW(x);
-    uint32_t nChar = XLENGTH(x);
     md5_context ctx;
     output_length = 16;
     unsigned char md5sum[16];
@@ -47,21 +42,30 @@ Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_
                        SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
                        SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue) {
     Rcpp::CharacterVector data_md5sum("");
+    uint32_t nChar;
+    char * char_x;
     if(TYPEOF(data) == STRSXP) {
         // Use path to file as model input
         valid_data_str = Rcpp::as<std::string>(data);
         
-        // Compute cache
-        Rcpp::Environment env("package:tools");
-        Rcpp::Function r_md5sum = env["md5sum"];
-        data_md5sum = r_md5sum(valid_data_str);
+        std::ifstream data_instream(valid_data_str);
+        std::string data_contents((std::istreambuf_iterator<char>(data_instream)), 
+                             std::istreambuf_iterator<char>());
+        
+        char_x = &data_contents[0u];
+        nChar = data_contents.length();
+        data_md5sum = md5sum(char_x, nChar);
     } else if(TYPEOF(data) == VECSXP) {
         // Parse data frame and use VW file as model input
         
         // Update valid data string
         valid_data_str = Rcpp::as<std::string>(vwmodel["dir"]) + mode + ".vw";
         // Compute md5sum of data.frame
-        data_md5sum = md5sum(data);
+        Rcpp::RawVector x = serializeToRaw(data);
+        char_x = (char*) RAW(x);
+        nChar = XLENGTH(x);
+        
+        data_md5sum = md5sum(char_x, nChar);
         
         // Compare new md5sum with old md5sum
         Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
