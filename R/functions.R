@@ -423,12 +423,13 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                   targets = NULL, probabilities = NULL,
                   weight = NULL, base = NULL, tag = NULL,
                   append = FALSE) {
-    # library(tools)
     # if namespaces = NULL, define a unique namespace
     if (is.null(namespaces)) {
         all_vars <- colnames(data)[!colnames(data) %in% c(targets, probabilities, weight, base, tag)]
         namespaces <- list(A = list(all_vars))
     }
+    
+    data <- data.table::copy(data.table::setDT(data))
     
     # parse variable names
     specChar      <- "\\(|\\)|\\||\\:|'"
@@ -450,6 +451,30 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         else
             spch <- specChar
         gsub(spch, '_', x)
+    }
+    
+    # Construct labels for multilabel examples: 1:0.3 2:0.3 3:0.3
+    constructLabels <- function(targets) {
+        tmp <- c()
+        for(i in 1:length(targets)) {
+            target <- eval(parse(text=eval(get(targets[i], envir=parent.frame(n=1)))))
+            ifelse(is.na(target), "", tmp <- c(tmp, paste(i, target,
+                                                          sep = ":")))
+        }
+        paste(tmp, collapse = " ")
+    }
+    # Construct labels for Context Bandit: 1:0.3:0.3 2:0.3:0.3 3:0.3:0.3
+    constructLabelsCB <- function(targets, probabilities) {
+        tmp <- c()
+        print(eval(get(targets[1], envir=parent.frame(n=1))))
+        for(i in 1:length(targets)) {
+            target <- eval(parse(text=eval(get(targets[i], envir=parent.frame(n=1)))))
+            probability <- eval(parse(text=eval(get(probabilities[i], envir=parent.frame(n=1)))))
+            # ifelse(is.na(targets[i]), "", tmp <- c(tmp, paste(i, targets[i], probabilities[i], sep = ":")))
+            ifelse(is.na(target), "", tmp <- c(tmp, paste(i, target,
+                                                          probability, sep = ":")))
+        }
+        paste(tmp, collapse = " ")
     }
     
     # namespace load with a yaml file
@@ -481,62 +506,102 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         vw_file <- file(file_path,"a")
     
     # Construct vw format for labels, weights, base and tag
-    vw_format <- ""
-    column_names <- c()
+    formatDataVW <- ""
+    argexpr <- c()
+    names_indices <- c(1:ncol(data))
+    names(names_indices) <- names(data)
     
     if(!is.null(targets)) {
+        formatDataVW <- paste0(formatDataVW, "%s ")
         if(length(targets) > 1) {
-            if(!is.null(probabilities) & (length(targets) == length(probabilities))) {
-                vw_format <- paste0(vw_format, 1:length(targets), rep(":%s:%s ", length(targets)), collapse = "")
-                column_names <- c(column_names,
-                                  strsplit(paste(targets, probabilities, collapse = " "), split = " "))
+            if(!is.null(probabilities)) {
+                if(length(targets) != length(probabilities)) {
+                    stop("targets and probabilities should be of the same length")
+                }
+                temp_labels <- paste0("eval(parse(text = 'constructLabelsCB(targets, probabilities)'))")
+                argexpr <- c(argexpr, temp_labels)
+                
             } else {
-                vw_format <- paste0(vw_format, 1:length(targets), rep(":%s ", length(targets)), collapse = "")
-                column_names <- c(column_names, targets)
+                temp_labels <- paste0("eval(parse(text = 'constructLabels(targets)'))")
+                
+                argexpr <- c(argexpr, temp_labels)
             }
         } else {
-            vw_format <- paste0(vw_format, "%s ")
-            column_names <- c(column_names, targets)
+            argexpr <- c(argexpr, targets)
         }
         if(!is.null(weight)) {
-            vw_format <- paste0(vw_format, "%s ")
-            column_names <- c(column_names, weight)
+            formatDataVW <- paste0(formatDataVW, "%s ")
+            argexpr <- c(argexpr, weight)
         }
         if(!is.null(base)) {
-            vw_format <- paste0(vw_format, "%s ")
-            column_names <- c(column_names, base)
+            formatDataVW <- paste0(formatDataVW, "%s ")
+            argexpr <- c(argexpr, base)
         }
         if(!is.null(tag)) {
-            vw_format <- paste0(vw_format, "'%s ")
-            column_names <- c(column_names, tag)
+            formatDataVW <- paste0(formatDataVW, "%s ")
+            argexpr <- c(argexpr, tag)
         }
     }
-    vw_format <- trimws(vw_format, which = "right")
+    formatDataVW <- trimws(formatDataVW, which = "right")
     
-    numeric_value <- sapply(data, is.numeric)
-    column_names <- unlist(column_names)
-    apply(data, MARGIN = 1, function(row) {
-        features_line = ""
-        for(namespace_name in names(namespaces)) {
-            features_line = paste(features_line, paste0("|", namespace_name))
-            for(feature_name in namespaces[[namespace_name]]) {
-                if(numeric_value[feature_name]) {
-                    features_line = paste(features_line, paste0(feature_name, ":", row[feature_name]))
-                } else if(feature_name %in% keep_space) {
-                    features_line = paste(features_line, parsingVar(row[feature_name], keepSpace = T))
-                } else {
-                    features_line = paste(features_line, paste0(feature_name, "^", parsingVar(row[feature_name], keepSpace = F)))
-                }
-                
-            }
-        }
-        labels_line <- do.call(sprintf, c(list(vw_format), row[column_names]))
-        writeLines(text = paste0(labels_line, features_line), con = vw_file)
+    # numeric_value <- sapply(data, is.numeric)
+    argexpr <- unlist(argexpr)
+    
+    # Constructing features
+    ## INITIALIZING THE HEADER AND INDEX
+    ##Header: list of variables'name for each namespace
+    ##Index: check if the variable is numerical (->TRUE) or categorical (->FALSE)
+    Header <- list()
+    Index <- list()
+    
+    for(nsN in names(namespaces)) {
+        # Index[[nsN]] <- sapply(data[,namespaces[[nsN]]], is.numeric)
+        Index[[nsN]] <- sapply(data[,namespaces[[nsN]],with=F], is.numeric)
+        Header[[nsN]] <- namespaces[[nsN]]
         
-    })
+        ## ESCAPE THE CATEGORICAL VARIABLES
+        # Keep space for features stated in "keep_space" argument
+        Header[[nsN]][!Index[[nsN]]] <- paste0("eval(parse(text = 'parsingVar(",
+                                               Header[[nsN]][!Index[[nsN]]],
+                                               ", keepSpace = ", Header[[nsN]][!Index[[nsN]]] %in% keep_space, ")'))")
+    }
+    
+    ## ADDING THE FORMAT FOR THE VARIABLES OF EACH NAMESPACE, AND CREATING THE ARGUMENT VECTOR
+    for (nsN in names(namespaces)) {
+        header <- namespaces[[nsN]]
+        eval_header <- Header[[nsN]]
+        index <- Index[[nsN]]
+        formatNumeric <- paste0(header[index], rep(":%s ", sum(index)), collapse = "")
+        # appending the name of the variable to its value for each categorical variable
+        formatCategorical <- paste0(header[!index], rep("_%s", sum(!index)), collapse = " ")
+        
+        formatDataVW <- c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategorical))
+        
+        argexpr <- c(argexpr, eval_header[index], eval_header[!index])
+    }
+    
+    # formatDataVW <- paste0(formatDataVW, collapse = ' |')
+    if (!is.null(tag)) {
+        formatDataVW <- paste0(formatDataVW, collapse = '|')
+    } else {
+        formatDataVW <- paste0(formatDataVW, collapse = ' |')
+    }
+    argexpr <- paste0(argexpr, collapse = ', ')
+    formatDataVW <- paste0("sprintf2('", formatDataVW, "',",argexpr, ")")
+    
+    print("Header:")
+    print(Header)
+    print("Index:")
+    print(Index)
+    
+    print("formatDataVW:")
+    print(formatDataVW)
+    print("argexpr:")
+    print(argexpr)
+    
+    writeLines(text = paste0(data[, eval(parse(text = formatDataVW))], collapse = '\n'),
+               con = vw_file)
     close(vw_file)
-    # Return check sum
-    # unname(tools::md5sum(file_path))
 }
 
 # Helper functions
