@@ -454,27 +454,39 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     }
     
     # Construct labels for multilabel examples: 1:0.3 2:0.3 3:0.3
-    constructLabels <- function(targets) {
-        tmp <- c()
+    constructLabels <- function(targets, num_row) {
+        # Initialize output vector
+        tmp <- rep("", num_row)
+        # Iterate cost vectors names
         for(i in 1:length(targets)) {
-            target <- eval(parse(text=eval(get(targets[i], envir=parent.frame(n=1)))))
-            ifelse(is.na(target), "", tmp <- c(tmp, paste(i, target,
-                                                          sep = ":")))
+            elem_targets <- eval(get(targets[i], envir=parent.frame(n=1)))
+            # Iterate cost vectors individualy (nrow of data)
+            for (j in 1:num_row) {
+                ifelse(is.na(elem_targets[j]),
+                       "",
+                       tmp[j] <- paste(tmp[j],
+                                       paste(i, elem_targets[j], sep = ":")))
+            }
         }
-        paste(tmp, collapse = " ")
+        trimws(tmp)
     }
     # Construct labels for Context Bandit: 1:0.3:0.3 2:0.3:0.3 3:0.3:0.3
-    constructLabelsCB <- function(targets, probabilities) {
-        tmp <- c()
-        print(eval(get(targets[1], envir=parent.frame(n=1))))
+    constructLabelsCB <- function(targets, probabilities, num_row) {
+        # Initialize output vector
+        tmp <- rep("", num_row)
+        # Iterate cost vectors names
         for(i in 1:length(targets)) {
-            target <- eval(parse(text=eval(get(targets[i], envir=parent.frame(n=1)))))
-            probability <- eval(parse(text=eval(get(probabilities[i], envir=parent.frame(n=1)))))
-            # ifelse(is.na(targets[i]), "", tmp <- c(tmp, paste(i, targets[i], probabilities[i], sep = ":")))
-            ifelse(is.na(target), "", tmp <- c(tmp, paste(i, target,
-                                                          probability, sep = ":")))
+            elem_targets <- eval(get(targets[i], envir=parent.frame(n=1)))
+            elem_probability <- eval(get(probabilities[i], envir=parent.frame(n=1)))
+            # Iterate cost vectors individualy (nrow of data)
+            for (j in 1:num_row) {
+                ifelse(is.na(elem_targets[j]),
+                       "",
+                       tmp[j] <- paste(tmp[j],
+                                       paste(i, elem_targets[j], elem_probability[j], sep = ":")))
+            }
         }
-        paste(tmp, collapse = " ")
+        trimws(tmp)
     }
     
     # namespace load with a yaml file
@@ -518,11 +530,11 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                 if(length(targets) != length(probabilities)) {
                     stop("targets and probabilities should be of the same length")
                 }
-                temp_labels <- paste0("eval(parse(text = 'constructLabelsCB(targets, probabilities)'))")
+                temp_labels <- paste0("eval(parse(text = 'constructLabelsCB(targets, probabilities, nrow(data))'))")
                 argexpr <- c(argexpr, temp_labels)
                 
             } else {
-                temp_labels <- paste0("eval(parse(text = 'constructLabels(targets)'))")
+                temp_labels <- paste0("eval(parse(text = 'constructLabels(targets, nrow(data))'))")
                 
                 argexpr <- c(argexpr, temp_labels)
             }
@@ -571,13 +583,14 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         header <- namespaces[[nsN]]
         eval_header <- Header[[nsN]]
         index <- Index[[nsN]]
+        keep_space_index <- header[!index] %in% keep_space
         formatNumeric <- paste0(header[index], rep(":%s ", sum(index)), collapse = "")
         # appending the name of the variable to its value for each categorical variable
-        formatCategorical <- paste0(header[!index], rep("_%s", sum(!index)), collapse = " ")
+        formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ")
+        formatCategoricalWithSpace <- paste0(rep("%s", sum(keep_space_index)), collapse = " ")
         
-        formatDataVW <- c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategorical))
-        
-        argexpr <- c(argexpr, eval_header[index], eval_header[!index])
+        formatDataVW <- c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategoricalNoSpace, formatCategoricalWithSpace))
+        argexpr <- c(argexpr, eval_header[index], eval_header[!index][!keep_space_index], eval_header[!index][keep_space_index])
     }
     
     # formatDataVW <- paste0(formatDataVW, collapse = ' |')
@@ -589,19 +602,52 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     argexpr <- paste0(argexpr, collapse = ', ')
     formatDataVW <- paste0("sprintf2('", formatDataVW, "',",argexpr, ")")
     
-    print("Header:")
-    print(Header)
-    print("Index:")
-    print(Index)
+    # print("Header:")
+    # print(Header)
+    # print("Index:")
+    # print(Index)
+    # 
+    # print("formatDataVW:")
+    # print(formatDataVW)
+    # print("argexpr:")
+    # print(argexpr)
     
-    print("formatDataVW:")
-    print(formatDataVW)
-    print("argexpr:")
-    print(argexpr)
-    
-    writeLines(text = paste0(data[, eval(parse(text = formatDataVW))], collapse = '\n'),
+    writeLines(text = paste0(data[, eval(parse(text = formatDataVW), envir = parent.frame(n=1))], collapse = '\n'),
                con = vw_file)
     close(vw_file)
+}
+
+sprintf2 <- function(fmt, ...) {
+    MAX_NVAL <- 99L
+    args <- list(...)
+    if (length(args) <= MAX_NVAL)
+        return(sprintf(fmt, ...))
+    stopifnot(length(fmt) == 1L)
+    not_a_spec_at <- gregexpr("%%", fmt, fixed=TRUE)[[1L]]
+    not_a_spec_at <- c(not_a_spec_at, not_a_spec_at + 1L)
+    spec_at <- setdiff(gregexpr("%", fmt, fixed=TRUE)[[1L]], not_a_spec_at)
+    nspec <- length(spec_at)
+    if (length(args) < nspec)
+        stop("too few arguments")
+    if (nspec <= MAX_NVAL) {
+        break_points <- integer(0)
+    } else {
+        break_points <- seq(MAX_NVAL + 1L, nspec, by=MAX_NVAL)
+    }
+    break_from <- c(1L, break_points)
+    break_to <- c(break_points - 1L, nspec)
+    fmt_break_at <- spec_at[break_points]
+    fmt_chunks <- substr(rep.int(fmt, length(fmt_break_at) + 1L),
+                         c(1L, fmt_break_at),
+                         c(fmt_break_at - 1L, nchar(fmt)))
+    ans_chunks <- mapply(
+        function(fmt_chunk, from, to)
+            do.call(sprintf, c(list(fmt_chunk), args[from:to])),
+        fmt_chunks,
+        break_from,
+        break_to
+    )
+    paste(apply(ans_chunks,1, paste, collapse = ""), collapse = "\n")
 }
 
 # Helper functions
