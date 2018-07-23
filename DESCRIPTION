@@ -1,14 +1,14 @@
 Package: rvwgsoc
 Type: Package
 Title: R interface for Vowpal Wabbit
-Version: 0.3
-Date: 2018-07-07
+Version: 0.4
+Date: 2018-07-23
 Author: Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
 Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
 Description: R interface for Vowpal Wabbit using Rcpp and libvw for GSoC 2018.
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.12.16), tools, yaml, RApiSerialize
+Imports: Rcpp (>= 0.12.16), tools, RApiSerialize, data.table
 LinkingTo: Rcpp, RApiSerialize
-Suggests: testthat
+Suggests: testthat, yaml, utils
 SystemRequirements: C++11, Vowpal Wabbit library
 RoxygenNote: 6.0.1

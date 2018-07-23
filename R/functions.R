@@ -416,13 +416,15 @@ vwparams <- function(vwmodel, name) {
 #'@param weight [string] weight (importance) of each line of the dataset.
 #'@param base [string] base of each line of the dataset. Used for residual regression.
 #'@param tag [string] tag of each line of the dataset.
+#'@param multiline [integer] number of labels (separate lines) for multilines examle
 #'@param append [bool] data to be appended to result file
 #'@import yaml
 #'@import tools 
 df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                   targets = NULL, probabilities = NULL,
                   weight = NULL, base = NULL, tag = NULL,
-                  append = FALSE) {
+                  multiline = NULL, append = FALSE) {
+    
     # if namespaces = NULL, define a unique namespace
     if (is.null(namespaces)) {
         all_vars <- colnames(data)[!colnames(data) %in% c(targets, probabilities, weight, base, tag)]
@@ -492,9 +494,10 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     # namespace load with a yaml file
     if (typeof(namespaces) == "character" && length(namespaces) == 1 &&
         grepl("yaml$", namespaces)) {
-        requireNamespace(yaml)
+        # requireNamespace(yaml)
         print("Using YAML file for loading the namespaces")
         if (requireNamespace("yaml", quiet=TRUE, as.character=TRUE)) {
+            utils::globalVariable("yaml")
             namespaces <- yaml::yaml.load_file(namespaces)
         } else {
             stop("The 'yaml' package is needed.", .Call=FALSE)
@@ -524,7 +527,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     names(names_indices) <- names(data)
     
     if(!is.null(targets)) {
-        formatDataVW <- paste0(formatDataVW, "%s ")
+        formatDataVW <- paste0(formatDataVW, "%s")
         if(length(targets) > 1) {
             if(!is.null(probabilities)) {
                 if(length(targets) != length(probabilities)) {
@@ -538,12 +541,31 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                 
                 argexpr <- c(argexpr, temp_labels)
             }
+            formatDataVW <- paste0(formatDataVW, " ")
         } else {
+            # Append regular labels
             argexpr <- c(argexpr, targets)
-        }
-        if(!is.null(weight)) {
-            formatDataVW <- paste0(formatDataVW, "%s ")
-            argexpr <- c(argexpr, weight)
+            
+            # For multiline examples
+            if(!is.null(multiline) ) {
+                formatDataVW <- paste0("%s:", formatDataVW)
+                argexpr <- c("eval(parse(text = 'rep(1:multiline, nrow(data)/multiline)'))",
+                             argexpr)
+                if(!is.null(probabilities) ) {
+                    if(length(probabilities) == 1){
+                        formatDataVW <- paste0(formatDataVW, ":%s")
+                        argexpr <- c(argexpr, probabilities)
+                    } else {
+                        stop("probabilities should be of length 1")
+                    }
+                }
+            } else {
+                if(!is.null(weight)) {
+                    formatDataVW <- paste0(formatDataVW, " %s")
+                    argexpr <- c(argexpr, weight)
+                }
+            }
+            formatDataVW <- paste0(formatDataVW, " ")
         }
         if(!is.null(base)) {
             formatDataVW <- paste0(formatDataVW, "%s ")
@@ -555,8 +577,6 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         }
     }
     formatDataVW <- trimws(formatDataVW, which = "right")
-    
-    # numeric_value <- sapply(data, is.numeric)
     argexpr <- unlist(argexpr)
     
     # Constructing features
@@ -586,42 +606,47 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         keep_space_index <- header[!index] %in% keep_space
         formatNumeric <- paste0(header[index], rep(":%s ", sum(index)), collapse = "")
         # appending the name of the variable to its value for each categorical variable
-        formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ")
+        # if(!is.null(multiline)) {
+        #     formatCategoricalNoSpace <- paste0(rep("%s ", sum(!keep_space_index)), collapse = " ") 
+        # } else {
+        #     formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ") 
+        # }
+        formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ") 
         formatCategoricalWithSpace <- paste0(rep("%s", sum(keep_space_index)), collapse = " ")
         
         formatDataVW <- c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategoricalNoSpace, formatCategoricalWithSpace))
         argexpr <- c(argexpr, eval_header[index], eval_header[!index][!keep_space_index], eval_header[!index][keep_space_index])
     }
     
-    # formatDataVW <- paste0(formatDataVW, collapse = ' |')
+    # Add namespaces saparator
     if (!is.null(tag)) {
         formatDataVW <- paste0(formatDataVW, collapse = '|')
     } else {
-        formatDataVW <- paste0(formatDataVW, collapse = ' |')
+        formatDataVW_label <- formatDataVW[1]
+        formatDataVW <- paste0(formatDataVW[2:length(formatDataVW)], collapse = '|')
+        formatDataVW <- paste0(formatDataVW_label, ' |', formatDataVW)
     }
-    argexpr <- paste0(argexpr, collapse = ', ')
-    formatDataVW <- paste0("sprintf2('", formatDataVW, "',",argexpr, ")")
     
-    # print("Header:")
-    # print(Header)
-    # print("Index:")
-    # print(Index)
-    # 
-    # print("formatDataVW:")
-    # print(formatDataVW)
-    # print("argexpr:")
-    # print(argexpr)
+    if(!is.null(multiline)) {
+        formatDataVW <- 
+            writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))],
+                                     c(rep("", multiline - 1), "\n"),
+                                     collapse = '\n'),
+                       con = vw_file)
+    } else {
+        writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))], collapse = '\n'),
+                   con = vw_file)
+    }
     
-    writeLines(text = paste0(data[, eval(parse(text = formatDataVW), envir = parent.frame(n=1))], collapse = '\n'),
-               con = vw_file)
     close(vw_file)
 }
 
-sprintf2 <- function(fmt, ...) {
+# Helper functions
+.sprintf2 <- function(fmt, ...) {
     MAX_NVAL <- 99L
-    args <- list(...)
+    args <- c(...)
     if (length(args) <= MAX_NVAL)
-        return(sprintf(fmt, ...))
+        return(do.call(sprintf, c(list(fmt), args)))
     stopifnot(length(fmt) == 1L)
     not_a_spec_at <- gregexpr("%%", fmt, fixed=TRUE)[[1L]]
     not_a_spec_at <- c(not_a_spec_at, not_a_spec_at + 1L)
@@ -649,8 +674,6 @@ sprintf2 <- function(fmt, ...) {
     )
     paste(apply(ans_chunks,1, paste, collapse = ""), collapse = "\n")
 }
-
-# Helper functions
 
 .check_parameters <- function(params) {
     # Helper function to check parameters
@@ -870,3 +893,4 @@ sprintf2 <- function(fmt, ...) {
     
     return(parameters_string)
 }
+

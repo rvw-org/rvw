@@ -1,6 +1,10 @@
 context("Check auxiliary functionality")
 library(rvwgsoc)
 
+# Switch to temporary directory
+curr_dir <- getwd()
+setwd(tempdir())
+
 ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
 
@@ -8,15 +12,15 @@ test_that("vwtrain and vwtest output correct readable model", {
     # Package session
     test_vwmodel <- vwsetup(dir = "./", model = "pk_mdl.vw")
     # vwtrain
-    vwtrain(test_vwmodel, data = ext_train_data, readable_model = "hashed")
+    vwtrain(test_vwmodel, data = ext_train_data, readable_model = "hashed", quiet = T)
     vw_pk_train_hashed_mdl_checksum = unname(tools::md5sum("readable_pk_mdl.vw"))
     test_vwmodel <- vwsetup(dir = "./", model = "pk_mdl.vw")
-    vwtrain(test_vwmodel, data = ext_train_data, readable_model = "inverted")
+    vwtrain(test_vwmodel, data = ext_train_data, readable_model = "inverted", quiet = T)
     vw_pk_train_inverted_mdl_checksum <- unname(tools::md5sum("readable_pk_mdl.vw"))
     # vwtest
-    vwtest(test_vwmodel, data = ext_test_data, readable_model = "hashed")
+    vwtest(test_vwmodel, data = ext_test_data, readable_model = "hashed", quiet = T)
     vw_pk_test_hashed_mdl_checksum = unname(tools::md5sum("readable_pk_mdl.vw"))
-    vwtest(test_vwmodel, data = ext_test_data, readable_model = "inverted")
+    vwtest(test_vwmodel, data = ext_test_data, readable_model = "inverted", quiet = T)
     vw_pk_test_inverted_mdl_checksum <- unname(tools::md5sum("readable_pk_mdl.vw"))
     
     file.remove("pk_mdl.vw","readable_pk_mdl.vw")
@@ -61,3 +65,6 @@ test_that("vwtrain and vwtest output correct readable model", {
     expect_equal(vw_pk_train_inverted_mdl_checksum, vw_cl_train_inverted_mdl_checksum)
     expect_equal(vw_pk_test_inverted_mdl_checksum, vw_cl_test_inverted_mdl_checksum)
 })
+
+# Return back
+setwd(curr_dir)

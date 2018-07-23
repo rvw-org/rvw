@@ -2,6 +2,10 @@ context("Check df2vw parser")
 library(rvwgsoc)
 
 test_that("df2vw correctly parses data", {
+    # Switch to temporary directory
+    curr_dir <- getwd()
+    setwd(tempdir())
+    
     df2vw_path <- "df2vw.vw"
     ref_path <- "ref.vw"
     
@@ -10,6 +14,8 @@ test_that("df2vw correctly parses data", {
         fact_v2 = factor(c("a", "a", "b", "c")),
         text_v3 = rep("Et harum| (quid)em: rerum facilis!", 4),
         regular_label = c(1, 1.2, 4, 5.4),
+        base = c(1, 1, 1, 1),
+        multiline_label = c(0, 1, 1, 0),
         multilabel_1 = c(0.25, 0.25, 0.25, 0.25),
         multilabel_2 = c(0.25, 0.25, 0.25, 0.25),
         multilabel_3 = c(0.25, 0.25, 0.25, 0.25),
@@ -26,18 +32,18 @@ test_that("df2vw correctly parses data", {
                      "|NS1 num_v1:0.333333334 fact_v2^a |NS2 fact_v2^a Et harum_ _quid_em_ rerum facilis!",
                      "|NS1 num_v1:10 fact_v2^b |NS2 fact_v2^b Et harum_ _quid_em_ rerum facilis!",
                      "|NS1 num_v1:100000.314 fact_v2^c |NS2 fact_v2^c Et harum_ _quid_em_ rerum facilis!"),
-        regular_labels = c("1 10 ex1", "1.2 0.5 ex2", "4 0.5 ex3", "5.4 4 ex4"),
-        csoaa_labels = c("1:0.25 2:0.25 3:0.25 4:0.25 10 ex1", "1:0.25 2:0.25 3:0.25 4:0.25 0.5 ex2",
-                         "1:0.25 2:0.25 3:0.25 4:0.25 0.5 ex3", "1:0.25 2:0.25 3:0.25 4:0.25 4 ex4"),
-        cb_labels = c("1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 10 ex1",
-                      "1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 0.5 ex2",
-                      "1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 0.5 ex3",
-                      "1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 4 ex4"),
-        na_labels = c(" ",
-                      "1:0.25:0.25 0.5 ex2",
-                      "2:0.25:0.25 0.5 ex3",
-                      "1:0.25:0.25 2:0.25:0.25 4 ex4")
-        
+        regular_labels = c("1 10 1 ex1", "1.2 0.5 1 ex2", "4 0.5 1 ex3", "5.4 4 1 ex4"),
+        csoaa_labels = c("1:0.25 2:0.25 3:0.25 4:0.25 ex1", "1:0.25 2:0.25 3:0.25 4:0.25 ex2",
+                         "1:0.25 2:0.25 3:0.25 4:0.25 ex3", "1:0.25 2:0.25 3:0.25 4:0.25 ex4"),
+        cb_labels = c("1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 ex1",
+                      "1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 ex2",
+                      "1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 ex3",
+                      "1:0.25:0.25 2:0.25:0.25 3:0.25:0.25 4:0.25:0.25 ex4"),
+        na_labels = c(" ex1",
+                      "1:0.25:0.25 ex2",
+                      "2:0.25:0.25 ex3",
+                      "1:0.25:0.25 2:0.25:0.25 ex4"),
+        multiline_labels = c("1:0 ", "2:1 ", "1:1 ", "2:0 ")
     )
     
     # Regular labels
@@ -51,7 +57,7 @@ test_that("df2vw correctly parses data", {
     df2vw(data = test_df, file_path = df2vw_path,
                                     namespaces = list(NS1 = c("num_v1", "fact_v2"),
                                                       NS2 = c("fact_v2", "text_v3")),
-                                    keep_space = "text_v3",
+                                    keep_space = "text_v3", base = "base",
                                     targets = "regular_label", tag = "tag", weight = "importance")
     regular_df2vw_checksum <- unname(tools::md5sum(df2vw_path))
     
@@ -104,7 +110,24 @@ test_that("df2vw correctly parses data", {
           probabilities = c("multilabel_1", "multilabel_2", "multilabel_3"),
           tag = "tag", weight = "importance")
     na_df2vw_checksum <- unname(tools::md5sum(df2vw_path))
-
+    
+    # Multiline CSOAA
+    ref_file <- file(ref_path,"w")
+    ref_df$lines <- apply(ref_df, MARGIN = 1, function(x) {
+        paste0(x[["multiline_labels"]], x[["features"]])
+    })
+    writeLines(text = paste0(ref_df$lines, c("", "\n"), collapse = "\n"), con = ref_file)
+    close(ref_file)
+    mult_ref_checksum <- unname(tools::md5sum(ref_path))
+    
+    df2vw(data = test_df, file_path = df2vw_path,
+          namespaces = list(NS1 = c("num_v1", "fact_v2"),
+                            NS2 = c("fact_v2", "text_v3")),
+          keep_space = "text_v3",
+          targets = "multiline_label",
+          multiline = 2)
+    mult_df2vw_checksum <- unname(tools::md5sum(df2vw_path))
+    
     
     file.remove(ref_path, df2vw_path)
     
@@ -113,5 +136,8 @@ test_that("df2vw correctly parses data", {
     expect_equal(csoaa_df2vw_checksum, csoaa_ref_checksum)
     expect_equal(cb_df2vw_checksum, cb_ref_checksum)
     expect_equal(na_df2vw_checksum, na_ref_checksum)
+    expect_equal(mult_df2vw_checksum, mult_ref_checksum)
     
+    # Return back
+    setwd(curr_dir)
 })

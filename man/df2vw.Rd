@@ -6,7 +6,7 @@
 \usage{
 df2vw(data, file_path, namespaces = NULL, keep_space = NULL,
   targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
-  tag = NULL, append = FALSE)
+  tag = NULL, multiline = NULL, append = FALSE)
 }
 \arguments{
 \item{data}{[data.frame] data.frame object to be converted}
@@ -38,6 +38,8 @@ multi-class classification algorithms or as vectors with actions for Contextual 
 \item{base}{[string] base of each line of the dataset. Used for residual regression.}
 
 \item{tag}{[string] tag of each line of the dataset.}
+
+\item{multiline}{[integer] number of labels (separate lines) for multilines examle}
 
 \item{append}{[bool] data to be appended to result file}
 }
