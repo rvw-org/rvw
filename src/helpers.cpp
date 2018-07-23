@@ -40,7 +40,7 @@ std::string md5sum(char * char_x, uint32_t nChar) {
 Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP & data=R_NilValue, std::string mode="train",
                        SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
                        SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-                       SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue) {
+                       SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue) {
     Rcpp::CharacterVector data_md5sum("");
     uint32_t nChar;
     char * char_x;
@@ -80,7 +80,7 @@ Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_
             r_df2vw(data, valid_data_str,
                     namespaces, keep_space,
                     targets, probabilities,
-                    weight, base, tag,
+                    weight, base, tag, multiline,
                     false
             );
         }

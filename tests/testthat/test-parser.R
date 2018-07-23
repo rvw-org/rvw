@@ -1,11 +1,11 @@
 context("Check df2vw parser")
 library(rvwgsoc)
 
+# Switch to temporary directory
+curr_dir <- getwd()
+setwd(tempdir())
+
 test_that("df2vw correctly parses data", {
-    # Switch to temporary directory
-    curr_dir <- getwd()
-    setwd(tempdir())
-    
     df2vw_path <- "df2vw.vw"
     ref_path <- "ref.vw"
     
@@ -138,6 +138,7 @@ test_that("df2vw correctly parses data", {
     expect_equal(na_df2vw_checksum, na_ref_checksum)
     expect_equal(mult_df2vw_checksum, mult_ref_checksum)
     
-    # Return back
-    setwd(curr_dir)
 })
+
+# Return back
+setwd(curr_dir)

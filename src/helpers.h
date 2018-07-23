@@ -8,7 +8,7 @@
 Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP & data=R_NilValue, std::string mode="train",
                        SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
                        SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-                       SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue);
+                       SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue);
 
 // Get number of examples used in model
 int get_num_example(vw& all);

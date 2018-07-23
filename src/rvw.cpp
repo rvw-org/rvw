@@ -63,6 +63,7 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
 //'@param base [string] For \code{df2vw}. base of each line of the dataset. Used for residual regression.
 //'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
+//'@param multiline [integer] number of labels (separate lines) for multilines examle
 //'@import tools
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
@@ -72,7 +73,7 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
              SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
              SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-             SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue) {
+             SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue) {
     // vwmodel should be of class vw
     if(!Rf_inherits(vwmodel, "vw")) {
         Rcpp::stop("vwmodel should be of class vw");
@@ -84,7 +85,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::
     Rcpp::CharacterVector new_data_md5sum = check_data(vwmodel, data_str, data, "train",
                                       namespaces, keep_space,
                                       targets, probabilities,
-                                      weight, base, tag);
+                                      weight, base, tag, multiline);
     Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
@@ -215,6 +216,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::
 //'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
 //'@param base [string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.
 //'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
+//'@param multiline [integer] number of labels (separate lines) for multilines examle
 //'@return Numerical vector containing predictions
 //'@import tools
 //'@examples
@@ -227,7 +229,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::
 Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP & data=R_NilValue, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
                            SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
                            SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-                           SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue) {
+                           SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue) {
     // vwmodel should be of class vw
     if(!Rf_inherits(vwmodel, "vw")) {
         Rcpp::stop("vwmodel should be of class vw");
@@ -238,7 +240,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP & data=R_NilValue, std::st
     Rcpp::CharacterVector data_md5sum = check_data(vwmodel, data_str, data, "test",
                                       namespaces, keep_space,
                                       targets, probabilities,
-                                      weight, base, tag);
+                                      weight, base, tag, multiline);
     
     Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
@@ -249,7 +251,8 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP & data=R_NilValue, std::st
     
     // If no probs_path was provided we should create temporary here and then delete
     if (probs_path.empty()) {
-        probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + std::to_string(std::time(nullptr)) + "_probs_out.vw";
+        // probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + std::to_string(std::time(nullptr)) + "_probs_out.vw";
+        probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + "temp_probs_out.vw";
     } else {
         probs_str = probs_path;
     }

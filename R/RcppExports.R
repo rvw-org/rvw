@@ -34,13 +34,14 @@
 #'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
 #'@param base [string] For \code{df2vw}. base of each line of the dataset. Used for residual regression.
 #'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
+#'@param multiline [integer] number of labels (separate lines) for multilines examle
 #'@import tools
 #'@examples
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
-vwtrain <- function(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE, update_model = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL) {
-    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, namespaces, keep_space, targets, probabilities, weight, base, tag))
+vwtrain <- function(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE, update_model = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
 }
 
 #'Compute predictions using Vowpal Wabbit model
@@ -72,6 +73,7 @@ vwtrain <- function(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE, 
 #'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
 #'@param base [string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.
 #'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
+#'@param multiline [integer] number of labels (separate lines) for multilines examle
 #'@return Numerical vector containing predictions
 #'@import tools
 #'@examples
@@ -80,7 +82,7 @@ vwtrain <- function(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE, 
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtrain(test_vwmodel, data = ext_test_data)
-vwtest <- function(vwmodel, data = NULL, probs_path = "", readable_model = NULL, quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL) {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, namespaces, keep_space, targets, probabilities, weight, base, tag)
+vwtest <- function(vwmodel, data = NULL, probs_path = "", readable_model = NULL, quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
 }
 

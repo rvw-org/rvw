@@ -6,7 +6,8 @@
 \usage{
 vwtest(vwmodel, data = NULL, probs_path = "", readable_model = NULL,
   quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL,
-  probabilities = NULL, weight = NULL, base = NULL, tag = NULL)
+  probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
+  multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
@@ -45,6 +46,8 @@ multi-class classification algorithms or as vectors with actions for Contextual 
 \item{base}{[string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.}
 
 \item{tag}{[string] For \code{df2vw}. Tag of each line of the dataset.}
+
+\item{multiline}{[integer] number of labels (separate lines) for multilines examle}
 }
 \value{
 Numerical vector containing predictions
