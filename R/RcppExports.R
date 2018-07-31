@@ -40,7 +40,7 @@
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
-vwtrain <- function(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE, update_model = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_model = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
     invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
 }
 
@@ -82,7 +82,7 @@ vwtrain <- function(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE, 
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtrain(test_vwmodel, data = ext_test_data)
-vwtest <- function(vwmodel, data = NULL, probs_path = "", readable_model = NULL, quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
     .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
 }
 

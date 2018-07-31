@@ -5,10 +5,11 @@
 // Helper functions
 
 // Check if data from vwmodel should be used or from function arguments
-Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP & data=R_NilValue, std::string mode="train",
-                       SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
-                       SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-                       SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue);
+Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP data, std::string mode="train",
+                                 Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+                                 Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
+                                 Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
+                                 Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue);
 
 // Get number of examples used in model
 int get_num_example(vw& all);

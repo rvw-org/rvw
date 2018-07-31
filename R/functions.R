@@ -1,5 +1,3 @@
-source("R/rhelpers.R")
-
 #'Create Vowpal Wabbit model, setup model parameters and data
 #'
 #'Sets up VW model together with parameters and data
@@ -331,7 +329,7 @@ print.vw <- function(x, ...) {
 #'# Modify parameter
 #'vwparams(vwmodel, "passes") <- 10
 #'
-#'@rdname vwmodel
+#'@rdname vwparams
 vwparams <- function(vwmodel, name) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
@@ -355,7 +353,7 @@ vwparams <- function(vwmodel, name) {
     }
 }
 
-#'@rdname vwmodel
+#'@rdname vwparams
 `vwparams<-` <- function(vwmodel, name, value) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
@@ -494,9 +492,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     # namespace load with a yaml file
     if (typeof(namespaces) == "character" && length(namespaces) == 1 &&
         grepl("yaml$", namespaces)) {
-        # requireNamespace(yaml)
-        print("Using YAML file for loading the namespaces")
-        if (requireNamespace("yaml", quiet=TRUE, as.character=TRUE)) {
+        if(requireNamespace("yaml", quietly = TRUE)) {
             namespaces <- yaml::yaml.load_file(namespaces)
         } else {
             stop("The 'yaml' package is needed.", .Call=FALSE)
@@ -522,25 +518,58 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     # Construct vw format for labels, weights, base and tag
     formatDataVW <- ""
     argexpr <- c()
-    names_indices <- c(1:ncol(data))
+    names_indices <- seq_len(ncol(data))
     names(names_indices) <- names(data)
     
     if(!is.null(targets)) {
         formatDataVW <- paste0(formatDataVW, "%s")
         if(length(targets) > 1) {
+
+            # Initialize empty labels
+            data[["parsed_labels"]] <- rep("", nrow(data))
+            
             if(!is.null(probabilities)) {
+                
                 if(length(targets) != length(probabilities)) {
                     stop("targets and probabilities should be of the same length")
                 }
-                temp_labels <- paste0("eval(parse(text = 'constructLabelsCB(targets, probabilities, nrow(data))'))")
-                argexpr <- c(argexpr, temp_labels)
+                
+                # Construct Labels for multilabel examples with probabilities (e.g. 1:0.6:0.3 2:0.4:0.7)
+                # Iterate cost vectors names
+                for(i in 1:length(targets)) {
+                    elem_targets <- data[[targets[i]]]
+                    elem_probability <- data[[probabilities[i]]]
+                    # Iterate cost vectors individualy (nrow of data)
+                    vapply(X = seq_len(nrow(data)), FUN = function(j) {
+                        ifelse(is.na(elem_targets[j]),
+                               "",
+                               data[["parsed_labels"]][j] <<- paste(data[["parsed_labels"]][j],
+                                                paste(i, elem_targets[j], elem_probability[j], sep = ":")))
+                    },
+                    FUN.VALUE = "character")
+                }
+                data[["parsed_labels"]] <- trimws(data[["parsed_labels"]])
                 
             } else {
-                temp_labels <- paste0("eval(parse(text = 'constructLabels(targets, nrow(data))'))")
+                # Construct Labels for multilabel examples without probabilities (e.g. 1:0.6 2:0.4)
+                # Iterate cost vectors names
+                for(i in 1:length(targets)) {
+                    elem_targets <- data[[targets[i]]]
+                    # Iterate cost vectors individualy (nrow of data)
+                    vapply(X = seq_len(nrow(data)), FUN = function(j) {
+                        ifelse(is.na(elem_targets[j]),
+                               "",
+                               data[["parsed_labels"]][j] <<- paste(data[["parsed_labels"]][j],
+                                                paste(i, elem_targets[j], sep = ":")))
+                    },
+                    FUN.VALUE = "character")
+                }
+                data[["parsed_labels"]] <- trimws(data[["parsed_labels"]])
                 
-                argexpr <- c(argexpr, temp_labels)
             }
             formatDataVW <- paste0(formatDataVW, " ")
+            argexpr <- c(argexpr, "parsed_labels")
+            
         } else {
             # Append regular labels
             argexpr <- c(argexpr, targets)

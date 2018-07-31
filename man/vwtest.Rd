@@ -4,7 +4,7 @@
 \alias{vwtest}
 \title{Compute predictions using Vowpal Wabbit model}
 \usage{
-vwtest(vwmodel, data = NULL, probs_path = "", readable_model = NULL,
+vwtest(vwmodel, data, probs_path = "", readable_model = NULL,
   quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL,
   probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
   multiline = NULL)

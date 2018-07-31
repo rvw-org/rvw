@@ -4,7 +4,7 @@
 \alias{vwtrain}
 \title{Train Vowpal Wabbit model}
 \usage{
-vwtrain(vwmodel, data = NULL, readable_model = NULL, quiet = FALSE,
+vwtrain(vwmodel, data, readable_model = NULL, quiet = FALSE,
   update_model = FALSE, namespaces = NULL, keep_space = NULL,
   targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
   tag = NULL, multiline = NULL)

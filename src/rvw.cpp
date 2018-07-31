@@ -70,10 +70,11 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
-void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
-             SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
-             SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-             SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue) {
+void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
+             Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+             Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
+             Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
+             Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
     // vwmodel should be of class vw
     if(!Rf_inherits(vwmodel, "vw")) {
         Rcpp::stop("vwmodel should be of class vw");
@@ -82,7 +83,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::
     // check if data is in string or data.frame format
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
-    Rcpp::CharacterVector new_data_md5sum = check_data(vwmodel, data_str, data, "train",
+    Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, "train",
                                       namespaces, keep_space,
                                       targets, probabilities,
                                       weight, base, tag, multiline);
@@ -226,10 +227,11 @@ void vwtrain(Rcpp::List & vwmodel, SEXP & data=R_NilValue, Rcpp::Nullable<Rcpp::
 //'vwtrain(test_vwmodel, data = ext_train_data)
 //'vwtrain(test_vwmodel, data = ext_test_data)
 // [[Rcpp::export]]
-Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP & data=R_NilValue, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
-                           SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
-                           SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-                           SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue) {
+Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
+                           Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+                           Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
+                           Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
+                           Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
     // vwmodel should be of class vw
     if(!Rf_inherits(vwmodel, "vw")) {
         Rcpp::stop("vwmodel should be of class vw");
@@ -237,7 +239,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP & data=R_NilValue, std::st
     // check if data is in string or data.frame format
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
-    Rcpp::CharacterVector data_md5sum = check_data(vwmodel, data_str, data, "test",
+    Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, "test",
                                       namespaces, keep_space,
                                       targets, probabilities,
                                       weight, base, tag, multiline);

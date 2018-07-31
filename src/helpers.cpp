@@ -37,11 +37,12 @@ std::string md5sum(char * char_x, uint32_t nChar) {
     return(output_str);
 }
 
-Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP & data=R_NilValue, std::string mode="train",
-                       SEXP & namespaces=R_NilValue, SEXP & keep_space=R_NilValue,
-                       SEXP & targets=R_NilValue, SEXP & probabilities=R_NilValue,
-                       SEXP & weight=R_NilValue, SEXP & base=R_NilValue, SEXP & tag=R_NilValue, SEXP & multiline=R_NilValue) {
-    Rcpp::CharacterVector data_md5sum("");
+Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP data, std::string mode="train",
+                                 Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+                                 Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
+                                 Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
+                                 Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
+    Rcpp::String data_md5sum("");
     uint32_t nChar;
     char * char_x;
     if(TYPEOF(data) == STRSXP) {
@@ -72,7 +73,7 @@ Rcpp::CharacterVector check_data(Rcpp::List & vwmodel, std::string & valid_data_
         Rcpp::String model_md5sum = vwmodel_md5sums[mode];
         
         
-        if (model_md5sum != Rcpp::as<std::string>(data_md5sum)) {
+        if (model_md5sum != data_md5sum) {
             Rcpp::Rcout << "Converting data.frame to VW frame" << std::endl;
             Rcpp::Environment env("package:rvwgsoc");
             Rcpp::Function r_df2vw = env["df2vw"];
