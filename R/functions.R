@@ -453,49 +453,13 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         gsub(spch, '_', x)
     }
     
-    # Construct labels for multilabel examples: 1:0.3 2:0.3 3:0.3
-    constructLabels <- function(targets, num_row) {
-        # Initialize output vector
-        tmp <- rep("", num_row)
-        # Iterate cost vectors names
-        for(i in 1:length(targets)) {
-            elem_targets <- eval(get(targets[i], envir=parent.frame(n=1)))
-            # Iterate cost vectors individualy (nrow of data)
-            for (j in 1:num_row) {
-                ifelse(is.na(elem_targets[j]),
-                       "",
-                       tmp[j] <- paste(tmp[j],
-                                       paste(i, elem_targets[j], sep = ":")))
-            }
-        }
-        trimws(tmp)
-    }
-    # Construct labels for Context Bandit: 1:0.3:0.3 2:0.3:0.3 3:0.3:0.3
-    constructLabelsCB <- function(targets, probabilities, num_row) {
-        # Initialize output vector
-        tmp <- rep("", num_row)
-        # Iterate cost vectors names
-        for(i in 1:length(targets)) {
-            elem_targets <- eval(get(targets[i], envir=parent.frame(n=1)))
-            elem_probability <- eval(get(probabilities[i], envir=parent.frame(n=1)))
-            # Iterate cost vectors individualy (nrow of data)
-            for (j in 1:num_row) {
-                ifelse(is.na(elem_targets[j]),
-                       "",
-                       tmp[j] <- paste(tmp[j],
-                                       paste(i, elem_targets[j], elem_probability[j], sep = ":")))
-            }
-        }
-        trimws(tmp)
-    }
-    
     # namespace load with a yaml file
     if (typeof(namespaces) == "character" && length(namespaces) == 1 &&
         grepl("yaml$", namespaces)) {
         if(requireNamespace("yaml", quietly = TRUE)) {
             namespaces <- yaml::yaml.load_file(namespaces)
         } else {
-            stop("The 'yaml' package is needed.", .Call=FALSE)
+            stop("The 'yaml' package is needed.", call. = FALSE)
         }
     }
     
@@ -536,7 +500,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                 
                 # Construct Labels for multilabel examples with probabilities (e.g. 1:0.6:0.3 2:0.4:0.7)
                 # Iterate cost vectors names
-                for(i in 1:length(targets)) {
+                for(i in seq_along(targets)) {
                     elem_targets <- data[[targets[i]]]
                     elem_probability <- data[[probabilities[i]]]
                     # Iterate cost vectors individualy (nrow of data)
@@ -553,7 +517,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
             } else {
                 # Construct Labels for multilabel examples without probabilities (e.g. 1:0.6 2:0.4)
                 # Iterate cost vectors names
-                for(i in 1:length(targets)) {
+                for(i in seq_along(targets)) {
                     elem_targets <- data[[targets[i]]]
                     # Iterate cost vectors individualy (nrow of data)
                     vapply(X = seq_len(nrow(data)), FUN = function(j) {

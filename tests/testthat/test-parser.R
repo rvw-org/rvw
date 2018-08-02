@@ -47,7 +47,7 @@ test_that("df2vw correctly parses data", {
     )
     
     # Regular labels
-    print("Regular labels")
+    cat("Regular labels\n")
     ref_file <- file(ref_path,"w")
     apply(ref_df, MARGIN = 1, function(x) {
         writeLines(text = paste0(x[["regular_labels"]], x[["features"]]), con = ref_file)
@@ -63,7 +63,7 @@ test_that("df2vw correctly parses data", {
     regular_df2vw_checksum <- unname(tools::md5sum(df2vw_path))
     
     # CSOAA labels
-    print("CSOAA labels")
+    cat("CSOAA labels\n")
     ref_file <- file(ref_path,"w")
     apply(ref_df, MARGIN = 1, function(x) {
         writeLines(text = paste0(x[["csoaa_labels"]], x[["features"]]), con = ref_file)
@@ -80,7 +80,7 @@ test_that("df2vw correctly parses data", {
     csoaa_df2vw_checksum <- unname(tools::md5sum(df2vw_path))
     
     # Context Bandit labels
-    print("Context Bandit labels")
+    cat("Context Bandit labels\n")
     ref_file <- file(ref_path,"w")
     apply(ref_df, MARGIN = 1, function(x) {
         writeLines(text = paste0(x[["cb_labels"]], x[["features"]]), con = ref_file)
@@ -98,7 +98,7 @@ test_that("df2vw correctly parses data", {
     cb_df2vw_checksum <- unname(tools::md5sum(df2vw_path))
     
     # CSOAA when not all labels are allowed
-    print("CSOAA when not all labels are allowed")
+    cat("CSOAA when not all labels are allowed\n")
     ref_file <- file(ref_path,"w")
     apply(ref_df, MARGIN = 1, function(x) {
         writeLines(text = paste0(x[["na_labels"]], x[["features"]]), con = ref_file)
@@ -116,7 +116,7 @@ test_that("df2vw correctly parses data", {
     na_df2vw_checksum <- unname(tools::md5sum(df2vw_path))
     
     # Multiline CSOAA
-    print("Multiline CSOAA")
+    cat("Multiline CSOAA\n")
     ref_file <- file(ref_path,"w")
     ref_df$lines <- apply(ref_df, MARGIN = 1, function(x) {
         paste0(x[["multiline_labels"]], x[["features"]])
