@@ -6,6 +6,7 @@
 #include <Rcpp.h>
 
 
+
 // [[Rcpp::export(".create_cache")]]
 void create_cache(std::string dir="", std::string data_file="", std::string cache_file="") {
     std::string data_str = dir + data_file;
@@ -38,31 +39,63 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 //'
 //'@param vwmodel Model of vw class to train
-//'@param data_path Path to training data in .vw plain text format
-//'@param readable_model Print trained model in human readable format ("hashed") 
+//'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
+//'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
+//'@param readable_model [string] Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted")
-//'@param quiet Do not print anything to the console 
-//'@param update_model Update an existing model, when training with new data. \code{TRUE} by default.
+//'@param quiet [logical] Do not print anything to the console 
+//'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
+//'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
+//'  each variable for each namespace can be a R list, or a YAML
+//'  file example namespace with the IRIS database: namespaces =
+//'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
+//'  'Petal.Width') this creates 2 namespaces (sepal
+//'  and petal) containing the features defined by elements of this lists.
+//'@param keep_space [string vector] For \code{df2vw}. Keep spaces for this features
+//'Example:"FERRARI 4Si"
+//'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
+//'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+//'@param targets [string or string vector] For \code{df2vw}.
+//'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
+//'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+//'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
+//'@param probabilities [string vector] For \code{df2vw}. vectors with action probabilities for Contextual Bandit algorithm.
+//'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
+//'@param base [string] For \code{df2vw}. base of each line of the dataset. Used for residual regression.
+//'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
+//'@param multiline [integer] number of labels (separate lines) for multilines examle
+//'@import tools
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 //'test_vwmodel <- vwsetup()
-//'vwtrain(test_vwmodel, data_path = ext_train_data)
+//'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
-void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=true) {
-    // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
-    Rcpp::Rcout << Rf_inherits(vwmodel, "vw") << std::endl;
+void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
+             Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+             Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
+             Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
+             Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
+    // vwmodel should be of class vw
     if(!Rf_inherits(vwmodel, "vw")) {
         Rcpp::stop("vwmodel should be of class vw");
     }
-        
-    std::string data_str = check_data(vwmodel, data_path, "train");
+    
+    // check if data is in string or data.frame format
+    // if in data.frame format then convert it to VW format
+    std::string data_str = "";
+    Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, "train",
+                                      namespaces, keep_space,
+                                      targets, probabilities,
+                                      weight, base, tag, multiline);
+    Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
     Rcpp::List vwmodel_params = vwmodel["params"];
     Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
     
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
-    train_init_str += " -d " + data_str;
+    // Commented for testing
+    train_init_str += " -d " + data_str + " -f " + model_str;
     
     // Use existing train file to continue training
     if (update_model) {
@@ -94,9 +127,16 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     }
     // Use correct cache file
     if (vwmodel_general_params["cache"]) {
+        Rcpp::String model_md5sum = vwmodel_md5sums["train"];
+        if(model_md5sum != new_data_md5sum) {
+            // kill cache if data is in data.frame format because we need to convert it first and then prepare new cache
+            train_init_str += " --kill_cache";
+        }
         std::string cache_str = Rcpp::as<std::string>(vwmodel["dir"]) + data_str.substr(data_str.find_last_of("\\/") + 1) + ".cache";
         train_init_str += " --cache_file " + cache_str;
     }
+    // Update model_md5sum
+    vwmodel_md5sums["train"] = new_data_md5sum;
     // Ignore output from VW
     if (!quiet)
     {
@@ -108,8 +148,14 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
         train_init_str += " --quiet";
     }
     
+    // For testing
+    // train_init_str += " --no_stdin";
+    
     vw* train_model = VW::initialize(train_init_str);
     
+    // custom_driver(*train_model, data_str);
+    
+    // Commented for testing
     VW::start_parser(*train_model);
     if (!quiet)
     {
@@ -118,7 +164,8 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
     }
     LEARNER::generic_driver(*train_model);
     VW::end_parser(*train_model);
-    VW::save_predictor(*train_model, model_str);
+    
+    // VW::save_predictor(*train_model, model_str);
     VW::finish(*train_model);
     
     if (!quiet && read_model_file)
@@ -146,23 +193,58 @@ void vwtrain(Rcpp::List vwmodel, std::string data_path="", Rcpp::Nullable<Rcpp::
 //'vwtest computes predictions using VW model from \code{\link{vwsetup}}
 //'
 //'@param vwmodel Model of vw class to train
-//'@param data_path Path to training data in .vw plain text format
+//'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
+//'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 //'@param probs_path Path to file where to save predictions
 //'@param readable_model Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted")
-//'@param quiet Do not print anything to the console 
+//'@param quiet Do not print anything to the console
+//'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
+//'  each variable for each namespace can be a R list, or a YAML
+//'  file example namespace with the IRIS database: namespaces =
+//'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
+//'  'Petal.Width') this creates 2 namespaces (sepal
+//'  and petal) containing the features defined by elements of this lists.
+//'@param keep_space [string vector] For \code{df2vw}. Keep spaces for this features
+//'Example:"FERRARI 4Si"
+//'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
+//'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+//'@param targets [string or string vector] For \code{df2vw}.
+//'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
+//'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+//'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
+//'@param probabilities [string vector] For \code{df2vw}. Vectors with action probabilities for Contextual Bandit algorithm.
+//'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
+//'@param base [string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.
+//'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
+//'@param multiline [integer] number of labels (separate lines) for multilines examle
 //'@return Numerical vector containing predictions
+//'@import tools
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 //'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 //'test_vwmodel <- vwsetup()
-//'vwtrain(test_vwmodel, data_path = ext_train_data)
-//'vwtrain(test_vwmodel, data_path = ext_test_data)
+//'vwtrain(test_vwmodel, data = ext_train_data)
+//'vwtrain(test_vwmodel, data = ext_test_data)
 // [[Rcpp::export]]
-Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false) {
-    // if (!Rcpp::mod.inherits("vw")) Rcpp::stop("Input model is not VW model");
-    // Rcpp::Rcout << vwmodel.attr("class") << std::endl;
-    std::string data_str = check_data(vwmodel, data_path, "test");
+Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
+                           Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+                           Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
+                           Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
+                           Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
+    // vwmodel should be of class vw
+    if(!Rf_inherits(vwmodel, "vw")) {
+        Rcpp::stop("vwmodel should be of class vw");
+    }
+    // check if data is in string or data.frame format
+    // if in data.frame format then convert it to VW format
+    std::string data_str = "";
+    Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, "test",
+                                      namespaces, keep_space,
+                                      targets, probabilities,
+                                      weight, base, tag, multiline);
+    
+    Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string probs_str;
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
@@ -171,7 +253,8 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     
     // If no probs_path was provided we should create temporary here and then delete
     if (probs_path.empty()) {
-        probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + std::to_string(std::time(nullptr)) + "_probs_out.vw";
+        // probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + std::to_string(std::time(nullptr)) + "_probs_out.vw";
+        probs_str = Rcpp::as<std::string>(vwmodel["dir"]) + "temp_probs_out.vw";
     } else {
         probs_str = probs_path;
     }
@@ -202,9 +285,16 @@ Rcpp::NumericVector vwtest(Rcpp::List vwmodel, std::string data_path="", std::st
     }
     // Use correct cache file
     if (vwmodel_general_params["cache"]) {
+        Rcpp::String model_md5sum = vwmodel_md5sums["test"];
+        if(model_md5sum != data_md5sum) {
+            // kill cache if data is in data.frame format because we need to convert it first and then prepare new cache
+            test_init_str += " --kill_cache";
+        }
         std::string cache_str = Rcpp::as<std::string>(vwmodel["dir"]) + data_str.substr(data_str.find_last_of("\\/") + 1) + ".cache";
         test_init_str += " --cache_file " + cache_str;
     }
+    // Update model_md5sum
+    vwmodel_md5sums["test"] = data_md5sum;
     // Ignore output from VW
     if (!quiet)
     {

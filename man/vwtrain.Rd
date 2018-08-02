@@ -4,20 +4,50 @@
 \alias{vwtrain}
 \title{Train Vowpal Wabbit model}
 \usage{
-vwtrain(vwmodel, data_path = "", readable_model = NULL, quiet = FALSE,
-  update_model = TRUE)
+vwtrain(vwmodel, data, readable_model = NULL, quiet = FALSE,
+  update_model = FALSE, namespaces = NULL, keep_space = NULL,
+  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
+  tag = NULL, multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
 
-\item{data_path}{Path to training data in .vw plain text format}
+\item{data}{[string or data.frame] Path to training data in .vw plain text format or data.frame.
+If \code{[data.frame]} then will be parsed using \code{df2vw} function.}
 
-\item{readable_model}{Print trained model in human readable format ("hashed") 
+\item{readable_model}{[string] Print trained model in human readable format ("hashed") 
 and also with human readable features ("inverted")}
 
-\item{quiet}{Do not print anything to the console}
+\item{quiet}{[logical] Do not print anything to the console}
 
-\item{update_model}{Update an existing model, when training with new data. \code{TRUE} by default.}
+\item{update_model}{[logical] Update an existing model, when training with new data. \code{FALSE} by default.}
+
+\item{namespaces}{[list or yaml file] For \code{df2vw}. Name of each namespace and
+each variable for each namespace can be a R list, or a YAML
+file example namespace with the IRIS database: namespaces =
+list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
+'Petal.Width') this creates 2 namespaces (sepal
+and petal) containing the features defined by elements of this lists.}
+
+\item{keep_space}{[string vector] For \code{df2vw}. Keep spaces for this features
+Example:"FERRARI 4Si"
+With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
+Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature}
+
+\item{targets}{[string or string vector] For \code{df2vw}.
+If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
+If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm.}
+
+\item{probabilities}{[string vector] For \code{df2vw}. vectors with action probabilities for Contextual Bandit algorithm.}
+
+\item{weight}{[string] For \code{df2vw}. Weight (importance) of each line of the dataset.}
+
+\item{base}{[string] For \code{df2vw}. base of each line of the dataset. Used for residual regression.}
+
+\item{tag}{[string] For \code{df2vw}. Tag of each line of the dataset.}
+
+\item{multiline}{[integer] number of labels (separate lines) for multilines examle}
 }
 \description{
 vwtrain is an interface to train VW model from \code{\link{vwsetup}}
@@ -25,5 +55,5 @@ vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 \examples{
 ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 test_vwmodel <- vwsetup()
-vwtrain(test_vwmodel, data_path = ext_train_data)
+vwtrain(test_vwmodel, data = ext_train_data)
 }

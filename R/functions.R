@@ -3,8 +3,6 @@
 #'Sets up VW model together with parameters and data
 #'
 #'@param dir Working directory, default is tempdir()
-#'@param train_data Train data file name. File should be in .vw plain text format
-#'@param test_data Validation data file name. File should be in .vw plain text format
 #'@param model File name for model weights
 #'@param eval Compute model evaluation
 #'@param reduction Add reduction: 
@@ -163,11 +161,10 @@
 #'    }
 #'}
 #'@return vwmodel list class 
+#'@import tools 
 #'@examples
 #'vwsetup(
 #'  dir = tempdir(),
-#'  train_data = "binary_train.vw",
-#'  test_data = "binary_valid.vw",
 #'  model = "pk_mdl.vw",
 #'  general_params = list(cache = TRUE, passes=10),
 #'  optimization_params = list(adaptive=FALSE),
@@ -178,8 +175,6 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                     general_params = list(),
                     optimization_params = list(),
                     dir = tempdir(),
-                    train_data = "",
-                    test_data = "",
                     model = "mdl.vw",
                     eval = FALSE,
                     reduction = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
@@ -188,8 +183,10 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                                   "struct_search", "boosting"),
                     ...
 ) {
-  train_cache = ""
-  test_cache = ""
+    
+  # library(tools)
+  train_md5sum = ""
+  test_md5sum = ""
   eval_results = ""
   if(substr(dir, nchar(dir), nchar(dir)) != "/") {
     dir <- paste0(dir, "/")
@@ -211,8 +208,6 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
   }
 
   
-  # This internal variable determines input format for dataframe to vw parser
-  # input_mode = "single"
   
   params <- list(
       algorithm = algorithm,
@@ -227,17 +222,17 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
   # Write to string
   params_str <- .create_parameters_string(params)
   # Create cache
-  if (params$general_params$cache) {
-    # If have data, create cache
-    if (nchar(train_data) != 0) {
-      train_cache <- paste0(train_data, ".cache")
-      .create_cache(dir=dir, data_file=train_data, cache_file=train_cache)
-    }
-    if (nchar(test_data) != 0) {
-      test_cache <- paste0(test_data, ".cache")
-      .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
-    }
-  }
+  # if (params$general_params$cache) {
+  #   # If have data, create cache
+  #   if (nchar(train_data) != 0) {
+  #     train_cache <- paste0(train_data, ".cache")
+  #     .create_cache(dir=dir, data_file=train_data, cache_file=train_cache)
+  #   }
+  #   if (nchar(test_data) != 0) {
+  #     test_cache <- paste0(test_data, ".cache")
+  #     .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
+  #   }
+  # }
   if(eval) {
     eval_results = "palaceholder for eveluation results"
   }
@@ -246,10 +241,8 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
                   dir = dir,
                   model = model,
                   params_str = params_str,
-                  data = list(train = train_data,
-                               test = test_data),
-                  cache = list(train = train_cache,
-                              test = test_cache),
+                  data_md5sum = list(train = train_md5sum,
+                               test = test_md5sum),
                   eval = eval_results)
   class(vwmodel) <- "vw"
   return(vwmodel)
@@ -321,14 +314,6 @@ print.vw <- function(x, ...) {
       cat("\t", i, ":  ", x$params$optimization_params[[i]], "\n")
     }
   })
-  cat("Data:", "\n")
-  cat("\tTrain data file path:  ", x$data$train, "\n")
-  cat("\tTest data file path:  ", x$data$test, "\n")
-  if (x$params$general_params$cache) {
-    cat("Cache:", "\n")
-    cat("\tTrain data file path:  ", x$cache$train, "\n")
-    cat("\tTest data file path:  ", x$cache$test, "\n")
-  }
   }
 #'Access and modify parameters of VW model
 #'
@@ -344,7 +329,7 @@ print.vw <- function(x, ...) {
 #'# Modify parameter
 #'vwparams(vwmodel, "passes") <- 10
 #'
-#'@rdname vwmodel
+#'@rdname vwparams
 vwparams <- function(vwmodel, name) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
@@ -368,7 +353,7 @@ vwparams <- function(vwmodel, name) {
     }
 }
 
-#'@rdname vwmodel
+#'@rdname vwparams
 `vwparams<-` <- function(vwmodel, name, value) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
@@ -395,224 +380,255 @@ vwparams <- function(vwmodel, name) {
     }
 }
 
-# Helper functions
-.check_parameters <- function(params) {
-  # Helper function to check parameters
-  check_param_values <- function(input, check) {
-    if(!all(names(input) %in% names(check))) {
-      stop("Wrong argument names!")
-    }
-    
-    valid_input <- check
-    if(!all(sapply(names(input), FUN = function(i) {
-      # First check if types of input argument values are correct (same as of check lists)
-      bool_check <- (typeof(input[[i]]) == typeof(check[[i]])) | (is.na(input[[i]]))
-      # Replace default/check values with values from input
-      valid_input[[i]] <<- input[[i]]
-      # And return bool values to raise errors
-      bool_check
-    }))) {
-      stop("Wrong argument values!")
-    }
-    
-    # Return check with modified values
-    return(valid_input)
-  }
-  # Initialise default/check lists 
-  general_check <- list(cache=FALSE,
-                        passes=1,
-                        bit_precision=18,
-                        quadratic="",
-                        cubic="",
-                        interactions="",
-                        permutations=FALSE,
-                        holdout_period=10,
-                        early_terminate=3,
-                        sort_features=FALSE,
-                        noconstant=FALSE,
-                        ngram="",
-                        skips="",
-                        hash="",
-                        affix="",
-                        random_weights=FALSE,
-                        sparse_weights=FALSE,
-                        initial_weight=0)
-  # Learning parameters/reductions default/check lists
-  binary_check <- list()
-  oaa_check <- list(num_classes=3)
-  ect_check <- list(num_classes=3)
-  csoaa_check <- list(num_classes=3,
-                      csoaa_ldf="singleline")
-  wap_check <- list(num_classes=3,
-                    wap_ldf="singleline")
-  log_multi <- list(num_classes=3)
-  lda_check <- list(num_topics=0,
-                    lda_alpha=0.100000001,
-                    lda_rho=0.100000001,
-                    lda_D=10000,
-                    lda_epsilon=0.00100000005,
-                    math_mode=0,
-                    minibatch=1)
-  mf_check <- list(rank=0)
-  lrq_check <- list(features="", 
-                    lrqdropout=FALSE)
-  stage_poly <- list(sched_exponent = 1.0,
-                     batch_sz = 1000,
-                     batch_sz_no_doubling = TRUE)
-  bootstrap_check <- list(rounds=10,
-                          bs_type="mean")
-  autolink <- list(degree=2)
-  cb <- list(costs=2)
-  cbify <- list(num_classes=3)
-  nn_check <- list(hidden=3,
-                   inpass=FALSE,
-                   multitask=FALSE,
-                   dropout=FALSE,
-                   meanfield=FALSE)
-  topk <- list(k=3)
-  struct_search <- list(id=0)
-  boosting_check <- list(num_learners=5)
-  # Learning algorithm default/check lists
-  sgd_check <- list(adaptive=TRUE,
-                    normalized=TRUE,
-                    invariant=TRUE)
-  bfgs_check <- list(conjugate_gradient=FALSE)
-  ftrl_check <- list(ftrl_alpha=0.005,
-                     ftrl_beta=0.1)
-  ksvm_check <- list(reprocess=1,
-                     kernel="linear",
-                     bandwidth=1.0)
-  optimization_check <- list(hessian_on=FALSE,
-                             initial_pass_length="",
-                             l1=0,
-                             l2=0,
-                             decay_learning_rate=1,
-                             initial_t=0,
-                             power_t=0.5,
-                             learning_rate=0.5,
-                             link="",
-                             loss_function="squared",
-                             quantile_tau=0.5)
-  
-  # Create default parameters list if no parameters provided
-  # Else check parameters and return validated parameters
-  if(length(params$reductions) != 0) {
-      valid_reductions <- list()
-      params$reductions <- sapply(names(params$reductions), function(reduction_name) {
-          reduction_check_type <- get(paste0(reduction_name, "_check"))
-          valid_reduction <- check_param_values(
-              input = params$reductions[[reduction_name]],
-              check = reduction_check_type
-          )
-          valid_reduction <- setNames(list(valid_reduction), reduction_name)
-          valid_reductions <<- c(valid_reductions, valid_reduction)
-      })
-      params$reductions <- valid_reductions
-    
-  }
-  if(length(params$general_params) == 0) {
-      params$general_params <- general_check
-  } else {
-      params$general_params <- check_param_values(
-          input = params$general_params,
-          # input = c(list(cache=params$cache), params$general_params),
-          check = general_check
-      )
-  }
-  if(length(params$optimization_params) == 0) {
-      algorithm_parameters <- get(paste0(params$algorithm, "_check"))
-      params$optimization_params <- c(algorithm_parameters, optimization_check)
-  } else {
-      algorithm_check_type <- get(paste0(params$algorithm, "_check"))
-      params$optimization_params <- check_param_values(
-          input = params$optimization_params,
-          check = c(algorithm_check_type, optimization_check)
-      )
-  }
-  
-  # Cache should be created, if passes > 1
-  if(params$general_params$passes > 1) {
-      params$general_params$cache <- TRUE
-  }
-  # Return validated parameters
-  return(list(algorithm = params$algorithm,
-              general_params = params$general_params,
-              optimization_params = params$optimization_params,
-              reductions = params$reductions))
-}
 
-.create_parameters_string <- function(params) {
-    params_to_strings <- function(i) {
-        if(is.na(flat_params[[i]]) | flat_params[[i]] == "") {
-            return("")
-        };
-        if(is.logical(flat_params[[i]][[1]]) & flat_params[[i]][[1]] == TRUE) {
-            return(paste0("--",i))
-        }; 
-        if(is.logical(flat_params[[i]][[1]]) & flat_params[[i]][[1]] == FALSE) {
-            return("")
+## original source:  vowpal_wabbit/R/r.vw/dt2vw.R
+##
+## written by (per 'git log'):
+##   Selim Raboudi <selim.raboudi@gmail.com>
+##   Jongbin Jung <olorin86@gmail.com>
+## and by Dirk Eddelbuettel as part of rvw
+## released under (3 clause) BSD like rest of vowpal_wabbit
+##
+## now maintained here by Ivan Pavlov as part of rvwgsoc
+
+#'Create a VW data file from a R data.frame object 
+#'
+#'@param data [data.frame] data.frame object to be converted
+#'@param file_path [string] file name of the resulting data in
+#'  VW-friendly format
+#'@param namespaces [list or yaml file] name of each namespace and
+#'  each variable for each namespace can be a R list, or a YAML
+#'  file example namespace with the IRIS database: namespaces =
+#'  list(sepal = list('Sepal.Length', 'Sepal.Width'), petal = list('Petal.Length',
+#'  'Petal.Width') this creates 2 namespaces (sepal
+#'  and petal) containing the features defined by elements of this lists.
+#'@param keep_space [string vector] keep spaces for this features
+#'Example:"FERRARI 4Si"
+#'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
+#'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+#'@param targets [string or string vector]
+#'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
+#'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+#'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
+#'@param probabilities [string vector] vectors with action probabilities for Contextual Bandit algorithm.
+#'@param weight [string] weight (importance) of each line of the dataset.
+#'@param base [string] base of each line of the dataset. Used for residual regression.
+#'@param tag [string] tag of each line of the dataset.
+#'@param multiline [integer] number of labels (separate lines) for multilines examle
+#'@param append [bool] data to be appended to result file
+#'@import yaml
+#'@import tools 
+df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
+                  targets = NULL, probabilities = NULL,
+                  weight = NULL, base = NULL, tag = NULL,
+                  multiline = NULL, append = FALSE) {
+    
+    # if namespaces = NULL, define a unique namespace
+    if (is.null(namespaces)) {
+        all_vars <- colnames(data)[!colnames(data) %in% c(targets, probabilities, weight, base, tag)]
+        namespaces <- list(A = list(all_vars))
+    }
+    
+    data <- data.table::copy(data.table::setDT(data))
+    
+    # parse variable names
+    specChar      <- "\\(|\\)|\\||\\:|'"
+    specCharSpace <- "\\(|\\)|\\||\\:| |'"
+    
+    parsingNames <- function(x) {
+        ret <- c()
+        for (el in x)
+            ret <- append(ret, gsub(specCharSpace,'_', el))
+        ret
+    }
+    
+    # parse categorical variables
+    parsingVar <- function(x, keepSpace) {
+        # remove leading and trailing spaces, then remove special characters
+        # then remove isolated underscores.
+        if (!keepSpace)
+            spch <- specCharSpace
+        else
+            spch <- specChar
+        gsub(spch, '_', x)
+    }
+    
+    # namespace load with a yaml file
+    if (typeof(namespaces) == "character" && length(namespaces) == 1 &&
+        grepl("yaml$", namespaces)) {
+        if(requireNamespace("yaml", quietly = TRUE)) {
+            namespaces <- yaml::yaml.load_file(namespaces)
         } else {
-            return(paste0("--",i," ",flat_params[[i]]))
+            stop("The 'yaml' package is needed.", call. = FALSE)
         }
     }
     
-    flatten <- function(x) {
-        repeat {
-            if(!any(vapply(x,is.list, logical(1)))) return(x)
-            x <- Reduce(c, x)
-        }
-    }
-    temp_params <- params
+    # replace all names to avoid conflicts with VW file format
+    names(data) <- parsingNames(names(data))
+    names(namespaces) <- parsingNames(names(namespaces))
+    for (x in names(namespaces)) namespaces[[x]] <- parsingNames(namespaces[[x]])
+    targets <- parsingNames(targets)
+    if (!is.null(probabilities)) probabilities <- parsingNames(probabilities)
+    if (!is.null(weight)) weight <- parsingNames(weight)
+    if (!is.null(base)) base <- parsingNames(base)
+    if (!is.null(tag)) tag <- parsingNames(tag)
     
-    # Convert different reductions into string with CL arguments
-    reductions_params <- sapply(names(temp_params$reductions), function(reduction_name) {
-        if (length(temp_params$reductions[[reduction_name]]) == 0) {
-            tmp <- paste0("--", reduction_name)
+    # Preparing file
+    if(!append)
+        vw_file <- file(file_path,"w")
+    else
+        vw_file <- file(file_path,"a")
+    
+    # Construct vw format for labels, weights, base and tag
+    formatDataVW <- ""
+    argexpr <- c()
+    names_indices <- seq_len(ncol(data))
+    names(names_indices) <- names(data)
+    
+    if(!is.null(targets)) {
+        formatDataVW <- paste0(formatDataVW, "%s")
+        if(length(targets) > 1) {
+
+            # Initialize empty labels
+            data[["parsed_labels"]] <- rep("", nrow(data))
+            
+            if(!is.null(probabilities)) {
+                
+                if(length(targets) != length(probabilities)) {
+                    stop("targets and probabilities should be of the same length")
+                }
+                
+                # Construct Labels for multilabel examples with probabilities (e.g. 1:0.6:0.3 2:0.4:0.7)
+                # Iterate cost vectors names
+                for(i in seq_along(targets)) {
+                    elem_targets <- data[[targets[i]]]
+                    elem_probability <- data[[probabilities[i]]]
+                    # Iterate cost vectors individualy (nrow of data)
+                    vapply(X = seq_len(nrow(data)), FUN = function(j) {
+                        ifelse(is.na(elem_targets[j]),
+                               "",
+                               data[["parsed_labels"]][j] <<- paste(data[["parsed_labels"]][j],
+                                                paste(i, elem_targets[j], elem_probability[j], sep = ":")))
+                    },
+                    FUN.VALUE = "character")
+                }
+                data[["parsed_labels"]] <- trimws(data[["parsed_labels"]])
+                
+            } else {
+                # Construct Labels for multilabel examples without probabilities (e.g. 1:0.6 2:0.4)
+                # Iterate cost vectors names
+                for(i in seq_along(targets)) {
+                    elem_targets <- data[[targets[i]]]
+                    # Iterate cost vectors individualy (nrow of data)
+                    vapply(X = seq_len(nrow(data)), FUN = function(j) {
+                        ifelse(is.na(elem_targets[j]),
+                               "",
+                               data[["parsed_labels"]][j] <<- paste(data[["parsed_labels"]][j],
+                                                paste(i, elem_targets[j], sep = ":")))
+                    },
+                    FUN.VALUE = "character")
+                }
+                data[["parsed_labels"]] <- trimws(data[["parsed_labels"]])
+                
+            }
+            formatDataVW <- paste0(formatDataVW, " ")
+            argexpr <- c(argexpr, "parsed_labels")
+            
         } else {
-            tmp <- paste0("--", reduction_name, " ", temp_params$reductions[[reduction_name]][1])  
+            # Append regular labels
+            argexpr <- c(argexpr, targets)
+            
+            # For multiline examples
+            if(!is.null(multiline) ) {
+                formatDataVW <- paste0("%s:", formatDataVW)
+                argexpr <- c("eval(parse(text = 'rep(1:multiline, nrow(data)/multiline)'))",
+                             argexpr)
+                if(!is.null(probabilities) ) {
+                    if(length(probabilities) == 1){
+                        formatDataVW <- paste0(formatDataVW, ":%s")
+                        argexpr <- c(argexpr, probabilities)
+                    } else {
+                        stop("probabilities should be of length 1")
+                    }
+                }
+            } else {
+                if(!is.null(weight)) {
+                    formatDataVW <- paste0(formatDataVW, " %s")
+                    argexpr <- c(argexpr, weight)
+                }
+            }
+            formatDataVW <- paste0(formatDataVW, " ")
         }
-        temp_params$reductions[[reduction_name]][1] <<- NA
-        tmp
-    })
-    
-    # temp_params$reductions <- list()
-    # Filter empty strings
-    reductions_params <- Filter(reductions_params, f = function(x) nchar(x) > 0)
-    reductions_string <-  paste0(reductions_params, collapse = " ")
-    
-    # Flatten reduction
-    flat_params <- flatten(temp_params$reductions)
-    # Convert reduction parameters list to "--arg _" list
-    flat_reduction_params <- sapply(names(flat_params), FUN = params_to_strings)
-    # Filter empty strings
-    flat_reduction_params <- Filter(flat_reduction_params, f = function(x) nchar(x) > 0)
-    # Create string "--passes 0 --bit_precision 18" for parser
-    reduction_params_string <- paste0(flat_reduction_params, collapse = " ")
-    
-    temp_params$reductions <- list()
-    
-    #Set learning mode string argument
-    algorithm_string <- switch (temp_params$algorithm,
-                                sgd = {tmp <- ""; tmp},
-                                bfgs = {tmp <- "--bfgs"; tmp},
-                                ftrl = {tmp <- "--ftrl"; tmp},
-                                ksvm = {tmp <- "--ksvm"; tmp}
-    )
-    # Disable cache here, because it's checked in vwtrain and vwtest
-    if (temp_params$general_params$cache) {
-        temp_params$general_params$cache <- NA
+        if(!is.null(base)) {
+            formatDataVW <- paste0(formatDataVW, "%s ")
+            argexpr <- c(argexpr, base)
+        }
+        if(!is.null(tag)) {
+            formatDataVW <- paste0(formatDataVW, "%s ")
+            argexpr <- c(argexpr, tag)
+        }
     }
-    # Flatten list
-    flat_params <- flatten(temp_params[-c(1)])
-    # Convert parameters list to "--arg _" list
-    flat_params <- sapply(names(flat_params), FUN = params_to_strings)
-    # Filter empty strings
-    flat_params <- Filter(flat_params, f = function(x) nchar(x) > 0)
-    # Create string "--passes 0 --bit_precision 18" for parser
-    parameters_string <- paste0(flat_params, collapse = " ")
-    parameters_string <- paste(algorithm_string, parameters_string, reductions_string, reduction_params_string, sep = " ")
+    formatDataVW <- trimws(formatDataVW, which = "right")
+    argexpr <- unlist(argexpr)
     
-    return(parameters_string)
+    # Constructing features
+    ## INITIALIZING THE HEADER AND INDEX
+    ##Header: list of variables'name for each namespace
+    ##Index: check if the variable is numerical (->TRUE) or categorical (->FALSE)
+    Header <- list()
+    Index <- list()
+    
+    for(nsN in names(namespaces)) {
+        # Index[[nsN]] <- sapply(data[,namespaces[[nsN]]], is.numeric)
+        Index[[nsN]] <- sapply(data[,namespaces[[nsN]],with=F], is.numeric)
+        Header[[nsN]] <- namespaces[[nsN]]
+        
+        ## ESCAPE THE CATEGORICAL VARIABLES
+        # Keep space for features stated in "keep_space" argument
+        Header[[nsN]][!Index[[nsN]]] <- paste0("eval(parse(text = 'parsingVar(",
+                                               Header[[nsN]][!Index[[nsN]]],
+                                               ", keepSpace = ", Header[[nsN]][!Index[[nsN]]] %in% keep_space, ")'))")
+    }
+    
+    ## ADDING THE FORMAT FOR THE VARIABLES OF EACH NAMESPACE, AND CREATING THE ARGUMENT VECTOR
+    for (nsN in names(namespaces)) {
+        header <- namespaces[[nsN]]
+        eval_header <- Header[[nsN]]
+        index <- Index[[nsN]]
+        keep_space_index <- header[!index] %in% keep_space
+        formatNumeric <- paste0(header[index], rep(":%s ", sum(index)), collapse = "")
+        # appending the name of the variable to its value for each categorical variable
+        # if(!is.null(multiline)) {
+        #     formatCategoricalNoSpace <- paste0(rep("%s ", sum(!keep_space_index)), collapse = " ") 
+        # } else {
+        #     formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ") 
+        # }
+        formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ") 
+        formatCategoricalWithSpace <- paste0(rep("%s", sum(keep_space_index)), collapse = " ")
+        
+        formatDataVW <- c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategoricalNoSpace, formatCategoricalWithSpace))
+        argexpr <- c(argexpr, eval_header[index], eval_header[!index][!keep_space_index], eval_header[!index][keep_space_index])
+    }
+    
+    # Add namespaces saparator
+    if (!is.null(tag)) {
+        formatDataVW <- paste0(formatDataVW, collapse = '|')
+    } else {
+        formatDataVW_label <- formatDataVW[1]
+        formatDataVW <- paste0(formatDataVW[2:length(formatDataVW)], collapse = '|')
+        formatDataVW <- paste0(formatDataVW_label, ' |', formatDataVW)
+    }
+    
+    if(!is.null(multiline)) {
+        formatDataVW <- 
+            writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))],
+                                     c(rep("", multiline - 1), "\n"),
+                                     collapse = '\n'),
+                       con = vw_file)
+    } else {
+        writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))], collapse = '\n'),
+                   con = vw_file)
+    }
+    
+    close(vw_file)
 }
-
-
