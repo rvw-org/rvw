@@ -40,8 +40,8 @@
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
-vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_model = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
+vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, passes, cache, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
 }
 
 #'Compute predictions using Vowpal Wabbit model
@@ -82,7 +82,7 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtrain(test_vwmodel, data = ext_test_data)
-vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
+vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, passes = 1L, cache = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, passes, cache, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
 }
 

@@ -171,8 +171,9 @@
 #'  reduction = "binary"
 #')
 #'
-vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
+vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl"),
                     general_params = list(),
+                    feature_params = list(),
                     optimization_params = list(),
                     dir = tempdir(),
                     model = "mdl.vw",
@@ -212,6 +213,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
   params <- list(
       algorithm = algorithm,
       general_params = general_params,
+      feature_params = feature_params,
       optimization_params = optimization_params,
       reductions = reductions
       # input_mode = input_mode
@@ -257,7 +259,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
 add_reduction <- function(vwmodel, reduction = c("binary", "oaa", "ect", "csoaa", "wap", "log_multi",
                                 "lda", "mf", "lrq", "stage_poly", "bootstrap",
                                 "autolink", "cb", "cbify", "nn", "topk",
-                                "struct_search", "boosting"), ...) {
+                                "struct_search", "boosting", "ksvm"), ...) {
     
     reduction <- match.arg(reduction)
     

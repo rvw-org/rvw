@@ -56,24 +56,30 @@
         return(valid_input)
     }
     # Initialise default/check lists
-    general_check <- list(cache=FALSE,
-                          passes=1,
-                          bit_precision=18,
+    general_check <- list(random_seed=0,
+                          ring_size="",
+                          holdout_off=FALSE,
+                          holdout_period=10,
+                          holdout_after=0,
+                          early_terminate=3,
+                          loss_function="squared",
+                          link="identity",
+                          quantile_tau=0.5,
+                          confidence=FALSE,
+                          confidence_after_training=FALSE)
+    feature_check <- list(bit_precision=18,
                           quadratic="",
                           cubic="",
                           interactions="",
                           permutations=FALSE,
-                          holdout_period=10,
-                          early_terminate=3,
-                          sort_features=FALSE,
-                          noconstant=FALSE,
+                          leave_duplicate_interactions=FALSE,
+                          noconstant=FALSE, 
+                          feature_limit="",
                           ngram="",
                           skips="",
                           hash="",
                           affix="",
-                          random_weights=FALSE,
-                          sparse_weights=FALSE,
-                          initial_weight=0)
+                          spelling="")
     # Learning parameters/reductions default/check lists
     binary_check <- list()
     oaa_check <- list(num_classes=3)
@@ -109,27 +115,35 @@
     topk <- list(k=3)
     struct_search <- list(id=0)
     boosting_check <- list(num_learners=5)
-    # Learning algorithm default/check lists
-    sgd_check <- list(adaptive=TRUE,
-                      normalized=TRUE,
-                      invariant=TRUE)
-    bfgs_check <- list(conjugate_gradient=FALSE)
-    ftrl_check <- list(ftrl_alpha=0.005,
-                       ftrl_beta=0.1)
     ksvm_check <- list(reprocess=1,
                        kernel="linear",
                        bandwidth=1.0)
-    optimization_check <- list(hessian_on=FALSE,
+    # Learning algorithm default/check lists
+    sgd_check <- list(adaptive=TRUE,
+                      normalized=TRUE,
+                      invariant=TRUE,
+                      adax=FALSE,
+                      sparse_l2=0,
+                      l1_state=0,
+                      l2_state=1)
+    bfgs_check <- list(conjugate_gradient=FALSE)
+    ftrl_check <- list(ftrl_alpha=0.005,
+                       ftrl_beta=0.1)
+    optimization_check <- list(learning_rate=0.5,
                                initial_pass_length="",
                                l1=0,
                                l2=0,
+                               no_bias_regularization=FALSE,
+                               feature_mask="",
                                decay_learning_rate=1,
                                initial_t=0,
                                power_t=0.5,
-                               learning_rate=0.5,
-                               link="",
-                               loss_function="squared",
-                               quantile_tau=0.5)
+                               initial_weight=0,
+                               random_weights="",
+                               normal_weights="",
+                               truncated_normal_weights="",
+                               sparse_weights=FALSE,
+                               input_feature_regularizer="")
     
     # Create default parameters list if no parameters provided
     # Else check parameters and return validated parameters
@@ -156,6 +170,14 @@
             check = general_check
         )
     }
+    if(length(params$feature_params) == 0) {
+        params$feature_params <- feature_check
+    } else {
+        params$feature_params <- check_param_values(
+            input = params$feature_params,
+            check = feature_check
+        )
+    }
     if(length(params$optimization_params) == 0) {
         algorithm_parameters <- get(paste0(params$algorithm, "_check"))
         params$optimization_params <- c(algorithm_parameters, optimization_check)
@@ -167,13 +189,14 @@
         )
     }
     
-    # Cache should be created, if passes > 1
-    if(params$general_params$passes > 1) {
-        params$general_params$cache <- TRUE
-    }
+    # # Cache should be created, if passes > 1
+    # if(params$general_params$passes > 1) {
+    #     params$general_params$cache <- TRUE
+    # }
     # Return validated parameters
     return(list(algorithm = params$algorithm,
                 general_params = params$general_params,
+                feature_params = params$feature_params,
                 optimization_params = params$optimization_params,
                 reductions = params$reductions))
 }
@@ -232,13 +255,12 @@
     algorithm_string <- switch (temp_params$algorithm,
                                 sgd = {tmp <- ""; tmp},
                                 bfgs = {tmp <- "--bfgs"; tmp},
-                                ftrl = {tmp <- "--ftrl"; tmp},
-                                ksvm = {tmp <- "--ksvm"; tmp}
+                                ftrl = {tmp <- "--ftrl"; tmp}
     )
-    # Disable cache here, because it's checked in vwtrain and vwtest
-    if (temp_params$general_params$cache) {
-        temp_params$general_params$cache <- NA
-    }
+    # # Disable cache here, because it's checked in vwtrain and vwtest
+    # if (temp_params$general_params$cache) {
+    #     temp_params$general_params$cache <- NA
+    # }
     # Flatten list
     flat_params <- flatten(temp_params[-c(1)])
     # Convert parameters list to "--arg _" list

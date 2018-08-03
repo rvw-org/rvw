@@ -20,14 +20,14 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
     example* ec = nullptr;
     while (cache_model->early_terminate == false) {
         if ((ec = VW::get_example(cache_model->p)) != nullptr) {
-            VW::finish_example(*cache_model, ec);
+            VW::finish_example(*cache_model, *ec);
         } else {
             break;
         }
     }
     if (cache_model->early_terminate) { //drain any extra examples from parser.
         while ((ec = VW::get_example(cache_model->p)) != nullptr) {
-            VW::finish_example(*cache_model, ec);
+            VW::finish_example(*cache_model, *ec);
         }
     } 
     VW::end_parser(*cache_model);
@@ -71,6 +71,7 @@ void create_cache(std::string dir="", std::string data_file="", std::string cach
 //'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
 void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
+             int passes=1, bool cache=false,
              Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
              Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
@@ -95,7 +96,12 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     // Commented for testing
-    train_init_str += " -d " + data_str + " -f " + model_str;
+    train_init_str += " -d " + data_str + " -f " + model_str + " --passes " + std::to_string(passes);
+    
+    // Cache should be created, if passes > 1
+    if(passes > 1) {
+        cache = true;
+    }
     
     // Use existing train file to continue training
     if (update_model) {
@@ -114,7 +120,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
             read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
-            if (Rcpp::as<int>(vwmodel_general_params["passes"]) == 1) {
+            if (passes == 1) {
                 train_init_str += " --invert_hash " + readable_model_str;
                 read_model_file = true;
             } else {
@@ -126,7 +132,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
         }
     }
     // Use correct cache file
-    if (vwmodel_general_params["cache"]) {
+    if (cache) {
         Rcpp::String model_md5sum = vwmodel_md5sums["train"];
         if(model_md5sum != new_data_md5sum) {
             // kill cache if data is in data.frame format because we need to convert it first and then prepare new cache
@@ -141,6 +147,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     if (!quiet)
     {
         Rcpp::Rcout << "Starting VW training session" << std::endl;
+        Rcpp::Rcout << "VW v" << version.to_string() << std::endl;
         Rcpp::Rcout << "Using data file: " << data_str << std::endl;
         Rcpp::Rcout << "Using model file: " << model_str << std::endl;
         Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
@@ -228,6 +235,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'vwtrain(test_vwmodel, data = ext_test_data)
 // [[Rcpp::export]]
 Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
+                           int passes=1, bool cache=false,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
                            Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
@@ -259,8 +267,14 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         probs_str = probs_path;
     }
     
-    std::string test_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
-    test_init_str += " -t -d " + data_str + " -p " + probs_str + " -i " + model_str;
+    std::string test_init_str;
+    // std::string test_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
+    test_init_str += " -t -d " + data_str + " -p " + probs_str + " -i " + model_str + " --passes " + std::to_string(passes);
+    
+    // Cache should be created, if passes > 1
+    if(passes > 1) {
+        cache = true;
+    }
     
     // Check readable model output mode: hashed features and original features (invert hash)
     bool read_model_file = false;
@@ -271,7 +285,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
             read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
-            if (Rcpp::as<int>(vwmodel_general_params["passes"]) == 1) {
+            if (passes == 1) {
                 test_init_str += " --invert_hash " + readable_model_str;
                 read_model_file = true;
             } else {
@@ -284,7 +298,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         }
     }
     // Use correct cache file
-    if (vwmodel_general_params["cache"]) {
+    if (cache) {
         Rcpp::String model_md5sum = vwmodel_md5sums["test"];
         if(model_md5sum != data_md5sum) {
             // kill cache if data is in data.frame format because we need to convert it first and then prepare new cache
@@ -298,7 +312,8 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     // Ignore output from VW
     if (!quiet)
     {
-        Rcpp::Rcout << "Starting VW training session" << std::endl;
+        Rcpp::Rcout << "Starting VW testing session" << std::endl;
+        Rcpp::Rcout << "VW v" << version.to_string() << std::endl;
         Rcpp::Rcout << "Using data file: " << data_str << std::endl;
         Rcpp::Rcout << "Using model file: " << model_str << std::endl;
         Rcpp::Rcout << "Command line parameters: " << std::endl << test_init_str << std::endl;

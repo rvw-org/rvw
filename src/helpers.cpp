@@ -74,7 +74,7 @@ Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP
         
         
         if (model_md5sum != data_md5sum) {
-            Rcpp::Rcout << "Converting data.frame to VW frame" << std::endl;
+            Rcpp::Rcout << "Converting data.frame to VW format" << std::endl;
             Rcpp::Environment env("package:rvwgsoc");
             Rcpp::Function r_df2vw = env["df2vw"];
             // Convert data.frame to VW
@@ -97,21 +97,3 @@ int get_num_example(vw& all) {
     return all.sd->example_number + all.sd->weighted_holdout_examples;
 }
 
-// Custom driver to test example creation using libvw
-void custom_driver(vw& model, std::string & file_path) {
-    std::ifstream input_file_stream (file_path);
-    std::string input_file_line;
-    if (input_file_stream.is_open())
-    {
-        while ( getline (input_file_stream, input_file_line) )
-        {
-            // Rcpp::Rcout << "Line = " << input_file_line << std::endl;
-            example *ec = VW::read_example(model, input_file_line);
-            model.learn(ec);
-            // Rcpp::Rcout << "Pred = " << ec->pred.scalar << std::endl;
-            VW::finish_example(model, ec);
-        }
-        input_file_stream.close();
-        Rcpp::Rcout << std::endl;
-    }
-}

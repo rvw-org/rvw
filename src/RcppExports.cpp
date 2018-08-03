@@ -18,8 +18,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtrain
-void vwtrain(Rcpp::List& vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, bool update_model, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
-RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP update_modelSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
+void vwtrain(Rcpp::List& vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, bool update_model, int passes, bool cache, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
+RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP update_modelSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List& >::type vwmodel(vwmodelSEXP);
@@ -27,6 +27,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
     Rcpp::traits::input_parameter< bool >::type update_model(update_modelSEXP);
+    Rcpp::traits::input_parameter< int >::type passes(passesSEXP);
+    Rcpp::traits::input_parameter< bool >::type cache(cacheSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<SEXP *> >::type namespaces(namespacesSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type keep_space(keep_spaceSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type targets(targetsSEXP);
@@ -35,13 +37,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type base(baseSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type tag(tagSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type multiline(multilineSEXP);
-    vwtrain(vwmodel, data, readable_model, quiet, update_model, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline);
+    vwtrain(vwmodel, data, readable_model, quiet, update_model, passes, cache, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline);
     return R_NilValue;
 END_RCPP
 }
 // vwtest
-Rcpp::NumericVector vwtest(Rcpp::List& vwmodel, SEXP data, std::string probs_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
-RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
+Rcpp::NumericVector vwtest(Rcpp::List& vwmodel, SEXP data, std::string probs_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, int passes, bool cache, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
+RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -50,6 +52,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type probs_path(probs_pathSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
+    Rcpp::traits::input_parameter< int >::type passes(passesSEXP);
+    Rcpp::traits::input_parameter< bool >::type cache(cacheSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<SEXP *> >::type namespaces(namespacesSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type keep_space(keep_spaceSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type targets(targetsSEXP);
@@ -58,15 +62,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type base(baseSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type tag(tagSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type multiline(multilineSEXP);
-    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data, probs_path, readable_model, quiet, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline));
+    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data, probs_path, readable_model, quiet, passes, cache, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 3},
-    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 13},
-    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 13},
+    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 15},
+    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 15},
     {NULL, NULL, 0}
 };
 
