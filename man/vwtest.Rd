@@ -5,9 +5,9 @@
 \title{Compute predictions using Vowpal Wabbit model}
 \usage{
 vwtest(vwmodel, data, probs_path = "", readable_model = NULL,
-  quiet = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL,
-  probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
-  multiline = NULL)
+  quiet = FALSE, passes = 1L, cache = FALSE, namespaces = NULL,
+  keep_space = NULL, targets = NULL, probabilities = NULL,
+  weight = NULL, base = NULL, tag = NULL, multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
@@ -60,5 +60,5 @@ ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 test_vwmodel <- vwsetup()
 vwtrain(test_vwmodel, data = ext_train_data)
-vwtrain(test_vwmodel, data = ext_test_data)
+vwtest(test_vwmodel, data = ext_test_data)
 }

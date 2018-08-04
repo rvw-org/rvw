@@ -6,7 +6,7 @@
 \usage{
 add_reduction(vwmodel, reduction = c("binary", "oaa", "ect", "csoaa", "wap",
   "log_multi", "lda", "mf", "lrq", "stage_poly", "bootstrap", "autolink", "cb",
-  "cbify", "nn", "topk", "struct_search", "boosting"), ...)
+  "cbify", "nn", "topk", "struct_search", "boosting", "ksvm"), ...)
 }
 \arguments{
 \item{vwmodel}{Model of vw class}

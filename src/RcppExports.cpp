@@ -66,11 +66,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// vwaudit
+Rcpp::DataFrame vwaudit(Rcpp::List& vwmodel);
+RcppExport SEXP _rvwgsoc_vwaudit(SEXP vwmodelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List& >::type vwmodel(vwmodelSEXP);
+    rcpp_result_gen = Rcpp::wrap(vwaudit(vwmodel));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 3},
     {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 15},
     {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 15},
+    {"_rvwgsoc_vwaudit", (DL_FUNC) &_rvwgsoc_vwaudit, 1},
     {NULL, NULL, 0}
 };
 

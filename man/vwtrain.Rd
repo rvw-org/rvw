@@ -5,9 +5,9 @@
 \title{Train Vowpal Wabbit model}
 \usage{
 vwtrain(vwmodel, data, readable_model = NULL, quiet = FALSE,
-  update_model = FALSE, namespaces = NULL, keep_space = NULL,
-  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
-  tag = NULL, multiline = NULL)
+  update_model = FALSE, passes = 1L, cache = FALSE, namespaces = NULL,
+  keep_space = NULL, targets = NULL, probabilities = NULL,
+  weight = NULL, base = NULL, tag = NULL, multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}

@@ -4,8 +4,8 @@
 \alias{vwsetup}
 \title{Create Vowpal Wabbit model, setup model parameters and data}
 \usage{
-vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "ksvm"),
-  general_params = list(), optimization_params = list(), dir = tempdir(),
+vwsetup(algorithm = c("sgd", "bfgs", "ftrl"), general_params = list(),
+  feature_params = list(), optimization_params = list(), dir = tempdir(),
   model = "mdl.vw", eval = FALSE, reduction = c("", "binary", "oaa",
   "ect", "csoaa", "wap", "log_multi", "lda", "mf", "lrq", "stage_poly",
   "bootstrap", "autolink", "cb", "cbify", "nn", "topk", "struct_search",

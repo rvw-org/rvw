@@ -97,3 +97,8 @@ int get_num_example(vw& all) {
     return all.sd->example_number + all.sd->weighted_holdout_examples;
 }
 
+bool file_exists(std::string file_name)
+{
+    std::ifstream infile (file_name.c_str());
+    return infile.good();
+}

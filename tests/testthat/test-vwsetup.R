@@ -61,6 +61,7 @@ params_str = paste0(" --random_seed 0 --holdout_period 10 --holdout_after 0",
                     " --initial_weight 0  "),
 data_md5sum = list(train = "",
             test = ""),
+train_file = "",
 eval = "")
 class(test_model) <- "vw"
 

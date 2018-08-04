@@ -189,6 +189,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl"),
   train_md5sum = ""
   test_md5sum = ""
   eval_results = ""
+  train_file = ""
   if(substr(dir, nchar(dir), nchar(dir)) != "/") {
     dir <- paste0(dir, "/")
   }
@@ -245,6 +246,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl"),
                   params_str = params_str,
                   data_md5sum = list(train = train_md5sum,
                                test = test_md5sum),
+                  train_file = train_file,
                   eval = eval_results)
   class(vwmodel) <- "vw"
   return(vwmodel)

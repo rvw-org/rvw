@@ -16,3 +16,5 @@ int get_num_example(vw& all);
 
 // Custom driver to test example creation using libvw
 void custom_driver(vw& model, std::string & file_path);
+
+bool file_exists(std::string file_name);

@@ -88,6 +88,9 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
                                       namespaces, keep_space,
                                       targets, probabilities,
                                       weight, base, tag, multiline);
+    // Update train data file name
+    vwmodel["train_file"] = data_str;
+    
     Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
     std::string readable_model_str = Rcpp::as<std::string>(vwmodel["dir"]) + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
@@ -232,7 +235,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data = ext_train_data)
-//'vwtrain(test_vwmodel, data = ext_test_data)
+//'vwtest(test_vwmodel, data = ext_test_data)
 // [[Rcpp::export]]
 Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
                            int passes=1, bool cache=false,
@@ -371,4 +374,81 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     }
     
     return data_vec;
+}
+
+
+//'Audit Vowpal Wabbit model
+//'
+//'Get feature names and their model values. 
+//'
+//'@param vwmodel Model of vw class to train
+//'@return Data.frame containing feature names, feature hashes and model values
+//'@examples
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+//'test_vwmodel <- vwsetup()
+//'vwtrain(test_vwmodel, data = ext_train_data)
+//'vwaudit(test_vwmodel)
+// [[Rcpp::export]]
+Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
+    // vwmodel should be of class vw
+    if(!Rf_inherits(vwmodel, "vw")) {
+        Rcpp::stop("vwmodel should be of class vw");
+    }
+    
+    // Initialize file names
+    std::string data_str = Rcpp::as<std::string>(vwmodel["train_file"]);
+    std::string audit_str = Rcpp::as<std::string>(vwmodel["dir"]) + "aud.vw";
+    std::string model_str = Rcpp::as<std::string>(vwmodel["dir"]) + Rcpp::as<std::string>(vwmodel["model"]);
+    
+    // Reading from audit file and write results to data.frame
+    if(file_exists(data_str)){
+        
+        std::string test_init_str = "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
+        vw* aud_model = VW::initialize(test_init_str);
+        VW::start_parser(*aud_model);
+        LEARNER::generic_driver(*aud_model);
+        VW::end_parser(*aud_model);
+        VW::finish(*aud_model);
+        
+        std::ifstream audit_stream (audit_str);
+        std::string audit_line;
+        std::stringstream audit_line_stream;
+        std::string audit_line_elem;
+        std::vector<std::string> splitted_line;
+
+        Rcpp::CharacterVector feature_names;
+        Rcpp::NumericVector feature_hashes;
+        Rcpp::NumericVector model_values;
+        
+        if (audit_stream.is_open())
+        {   
+            // Split lines from audit file and write results to vectors
+            while ( getline(audit_stream, audit_line) )
+            {
+                std::stringstream().swap(audit_line_stream);
+                audit_line_stream << audit_line;
+                while( getline(audit_line_stream, audit_line_elem, ':') )
+                {
+                    splitted_line.push_back(audit_line_elem);
+                }
+                feature_names.push_back(splitted_line[0]);
+                feature_hashes.push_back(std::stof(splitted_line[1]));
+                model_values.push_back(std::stof(splitted_line[2]));
+                
+                splitted_line.clear();
+
+            }
+            audit_stream.close();
+            
+            Rcpp::DataFrame audit_output = Rcpp::DataFrame::create(Rcpp::Named("Names") = feature_names,
+                                                                   Rcpp::Named("Hashes") = feature_hashes,
+                                                                   Rcpp::Named("Model.values") = model_values);
+            return(audit_output);
+            
+        } else {
+            Rcpp::stop("Something's wrong with the audit file");
+        }
+    } else {
+        Rcpp::stop("No training datafile avaliable");
+    }
 }

@@ -81,8 +81,23 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
-#'vwtrain(test_vwmodel, data = ext_test_data)
+#'vwtest(test_vwmodel, data = ext_test_data)
 vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, passes = 1L, cache = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
     .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, passes, cache, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
+}
+
+#'Audit Vowpal Wabbit model
+#'
+#'Get feature names and their model values. 
+#'
+#'@param vwmodel Model of vw class to train
+#'@return Data.frame containing feature names, feature hashes and model values
+#'@examples
+#'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+#'test_vwmodel <- vwsetup()
+#'vwtrain(test_vwmodel, data = ext_train_data)
+#'vwaudit(test_vwmodel)
+vwaudit <- function(vwmodel) {
+    .Call(`_rvwgsoc_vwaudit`, vwmodel)
 }
 
