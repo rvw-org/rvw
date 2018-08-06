@@ -73,7 +73,8 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
 #'@param base [string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.
 #'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
-#'@param multiline [integer] number of labels (separate lines) for multilines examle
+#'@param multiline [integer] Number of labels (separate lines) for multilines examle
+#'@param raw [bool] Output unnormalized predictions. Default is FALSE.
 #'@return Numerical vector containing predictions
 #'@import tools
 #'@examples
@@ -82,8 +83,8 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtest(test_vwmodel, data = ext_test_data)
-vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, passes = 1L, cache = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, passes, cache, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
+vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, passes, cache, raw, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
 }
 
 #'Audit Vowpal Wabbit model

@@ -31,7 +31,6 @@
 #'  \item \code{sgd} adaptive, normalized, invariant stochastic gradient descent
 #'  \item \code{bfgs}
 #'  \item \code{ftrl}
-#'  \item \code{ksvm}
 #'}
 #'@param general_params List of parameters:
 #'\itemize{
@@ -154,6 +153,26 @@
 #'  \item \code{struct_search}:
 #'    \itemize{
 #'      \item \code{id} - maximum action id or 0 for LDF
+#'      \item \code{search_task} - search task: sequence, sequencespan, sequence_ctg, argmax, sequence_demoldf, multiclasstask, dep_parser, entity_relation, hook, graph
+#'      \item \code{search_interpolation} - at what level should interpolation happen? (data or policy)
+#'      \item \code{search_rollout} - how should rollouts be executed? (policy, oracle, mix_per_state, mix_per_roll, none)
+#'      \item \code{search_rollin} - how should past trajectories be generated? (policy, oracle, mix_per_state, mix_per_roll)
+#'      \item \code{search_passes_per_policy} - number of passes per policy (only valid for search_interpolation=policy). default = 1
+#'      \item \code{search_beta} - interpolation rate for policies (only valid for search_interpolation=policy). default = 0.5
+#'      \item \code{search_alpha} - annealed beta = 1-(1-alpha)^t (only valid for search_interpolation=data). default = 1e-10
+#'      \item \code{search_total_nb_policies} - if we are going to train the policies through multiple separate calls to vw, we need to specify this parameter and tell vw how many policies are eventually going to be trained
+#'      \item \code{search_trained_nb_policies} - the number of trained policies in a file
+#'      \item \code{search_allowed_transitions} - read file of allowed transitions. default: all transitions are allowed
+#'      \item \code{search_subsample_time} - instead of training at all timesteps, use a subset. if value in (0,1), train on a random v%. if v>=1, train on precisely v steps per example, if v<=-1, use active learning
+#'      \item \code{search_neighbor_features} - copy features from neighboring lines. argument looks like: '-1:a,+2' meaning copy previous line from namespace "a" and next line from namespace "unnamed", where ',' separates them
+#'      \item \code{search_rollout_num_steps} - how many calls of "loss" before we stop really predicting on rollouts and switch to oracle (default means "infinite")
+#'      \item \code{search_history_length} - some tasks allow you to specify how much history their depend on; specify that here. default = 1
+#'      \item \code{search_no_caching} - turn off the built-in caching ability (makes things slower, but technically more safe) default = FALSE
+#'      \item \code{search_xv} - train two separate policies, alternating prediction/learning. default = FALSE
+#'      \item \code{search_perturb_oracle} - perturb the oracle on rollin with this probability. default = 0
+#'      \item \code{search_linear_ordering} - insist on generating examples in linear order. default = FALSE and using hoopla permutation
+#'      \item \code{search_active_verify} - verify that active learning is doing the right thing (arg = multiplier, should be = cost_range * range_c)
+#'      \item \code{search_save_every_k_runs} - save model every k runs
 #'    }
 #'  \item \code{boosting}:
 #'    \itemize{
@@ -288,7 +307,6 @@ add_reduction <- function(vwmodel, reduction = c("binary", "oaa", "ect", "csoaa"
 #'
 print.vw <- function(x, ...) {
   cat("\tVowpal Wabbit model\n")
-  cat("Learning mode:  ", x$params$learning_mode, "\n")
   cat("Learning algorithm:  ", x$params$algorithm, "\n")
   cat("Working directory:  ", x$dir, "\n")
   cat("General parameters:", "\n")
@@ -298,6 +316,14 @@ print.vw <- function(x, ...) {
     } else {
       cat("\t", i, ":  ", x$params$general_params[[i]], "\n")
     }
+  })
+  cat("Feature parameters:", "\n")
+  sapply(names(x$params$feature_params), FUN = function(i) {
+      if(x$params$feature_params[[i]] == "") {
+          cat("\t", i, ":  Not defined\n")
+      } else {
+          cat("\t", i, ":  ", x$params$feature_params[[i]], "\n")
+      }
   })
   cat("Reductions:", "\n")
   sapply(names(x$params$reductions), function(reduction_name) {

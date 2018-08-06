@@ -108,9 +108,16 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     
     // Use existing train file to continue training
     if (update_model) {
-        std::ifstream model_file(model_str);
-        if (model_file.good()) {
-            train_init_str += " -i " + model_str;
+        if(file_exists(model_str)) {
+            std::ifstream model_file(model_str);
+            if (model_file.good()) {
+                // Drop model parameters because they are recorded in model file
+                train_init_str = " -d " + data_str + " -f " + model_str + " --passes " + std::to_string(passes) + " -i " + model_str + " --save_resume";
+            } else {
+                Rcpp::Rcerr << "Something is wrong with the model file" << std::endl;
+            }
+        } else {
+            train_init_str += " --save_resume";
         }
     }
     
@@ -227,7 +234,8 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
 //'@param base [string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.
 //'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
-//'@param multiline [integer] number of labels (separate lines) for multilines examle
+//'@param multiline [integer] Number of labels (separate lines) for multilines examle
+//'@param raw [bool] Output unnormalized predictions. Default is FALSE.
 //'@return Numerical vector containing predictions
 //'@import tools
 //'@examples
@@ -238,7 +246,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'vwtest(test_vwmodel, data = ext_test_data)
 // [[Rcpp::export]]
 Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
-                           int passes=1, bool cache=false,
+                           int passes=1, bool cache=false, bool raw=false,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
                            Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
@@ -272,7 +280,14 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     
     std::string test_init_str;
     // std::string test_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
-    test_init_str += " -t -d " + data_str + " -p " + probs_str + " -i " + model_str + " --passes " + std::to_string(passes);
+    test_init_str += " -t -d " + data_str + " -i " + model_str + " --passes " + std::to_string(passes);
+    
+    // Normalized predictions (default)
+    if (!raw) {
+        test_init_str += " -p " + probs_str;
+    } else {
+        test_init_str += " -r " + probs_str;
+    }
     
     // Cache should be created, if passes > 1
     if(passes > 1) {

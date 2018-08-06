@@ -132,23 +132,23 @@ test_that("Updating model with new data works as CL version", {
         model = "pk_mdl.vw"
     )
     vwtrain(test_vwmodel, data = ext_train_data, update_model = TRUE, quiet = T)
-    vw_pk_initial_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
+    vw_pk_initial_mdl_checksum <- unname(tools::md5sum("./pk_mdl.vw"))
     vwtrain(test_vwmodel, data = ext_test_data, update_model = TRUE, quiet = T)
-    vw_pk_updated_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
+    vw_pk_updated_mdl_checksum <- unname(tools::md5sum("./pk_mdl.vw"))
     vw_pk_output <- vwtest(test_vwmodel, data = ext_test_data)
     file.remove("pk_mdl.vw")
     
     # Command Line session
     system(
         paste0("vw",
-               " -d ", ext_train_data, " -f ./cl_mdl.vw"),
+               " -d ", ext_train_data, " -f ./cl_mdl.vw --save_resume"),
         intern = FALSE,
         ignore.stderr = TRUE
     )
     vw_cl_initial_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
     system(
         paste0("vw",
-               " -d ", ext_test_data, " -i ./cl_mdl.vw -f ./cl_mdl.vw"),
+               " -d ", ext_test_data, " -i ./cl_mdl.vw -f ./cl_mdl.vw --save_resume"),
         intern = FALSE,
         ignore.stderr = TRUE
     )
