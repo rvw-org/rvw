@@ -10,7 +10,7 @@ multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package =
 multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvwgsoc")
 
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
-                         general_params = list(cache = TRUE, hash="all", passes=10),
+                         feature_params = list(hash="all", bit_precision=25),
                          optimization_params = list(adaptive=FALSE, learning_rate=0.1))
 vwtrain(test_vwmodel, data = ext_train_data)
 vw_output <- vwtest(test_vwmodel, data = ext_test_data, probs_path = "./probs.vw")
@@ -26,8 +26,8 @@ vwtest(test_vwmodel, data = ext_train_data, quiet = T)
 # Add reductions via new interface
 library(magrittr)
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
-                         reduction = "ect", num_classes=3) %>%
-    add_reduction(reduction = "boosting", num_learners=10)
+                         option = "ect", num_classes=3) %>%
+    add_option(option = "boosting", num_learners=10)
 # Print vwmodel contents
 test_vwmodel
 # Access vw parameters

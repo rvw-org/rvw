@@ -3,9 +3,8 @@
 #'Sets up VW model together with parameters and data
 #'
 #'@param dir Working directory, default is tempdir()
-#'@param model File name for model weights
-#'@param eval Compute model evaluation
-#'@param reduction Add reduction: 
+#'@param model File name for model weights or path to existng model file.
+#'@param option Add Learning algorithm / reduction option: 
 #'\itemize{
 #'  \item \code{binary} - Reports loss as binary classification with -1,1 labels
 #'  \item \code{oaa} - One-against-all multiclass learning with  labels
@@ -28,44 +27,59 @@
 #'}
 #'@param algorithm Optimzation algorithm
 #'\itemize{
-#'  \item \code{sgd} adaptive, normalized, invariant stochastic gradient descent
-#'  \item \code{bfgs}
-#'  \item \code{ftrl}
+#'  \item \code{sgd} - adaptive, normalized, invariant stochastic gradient descent
+#'  \item \code{bfgs} - Limited-memory Broyden-Fletcher-Goldfarb-Shanno optimization algorithm
+#'  \item \code{ftrl} - FTRL: Follow the Regularized Leader optimization algorithm
+#'  \item \code{pistol} - FTRL: Parameter-free Stochastic Learning
+#'  \item \code{ksvm} - Kernel svm
+#'  \item \code{OjaNewton} - Online Newton with Oja's Sketch
+#'  \item \code{svrg} - Stochastic Variance Reduced Gradient
 #'}
 #'@param general_params List of parameters:
 #'\itemize{
-#'  \item \code{cache} - Create and use cache files
-#'  \item \code{passes} - Number of Training Passes
-#'  \item \code{bit_precision} - number of bits in the feature table
+#'  \item \code{random_seed} - Seed random number generator
+#'  \item \code{ring_size} - Size of example ring
+#'  \item \code{holdout_off} - No holdout data in multiple passes
+#'  \item \code{holdout_period} - Holdout period for test only
+#'  \item \code{holdout_after} - Holdout after n training examples, default off (disables holdout_period)
+#'  \item \code{early_terminate} - Specify the number of passes tolerated when holdout loss doesn't decrease before early termination
+#'  \item \code{loss_function} - Specify the loss function to be used, uses squared by default. Currently available ones are squared, classic, hinge, logistic, quantile and poisson. default = squared
+#'  \item \code{link} - Specify the link function: identity, logistic, glf1 or poisson. default = identity
+#'  \item \code{quantile_tau} - Parameter "tau" associated with Quantileloss. Defaults to 0.5
+#'}
+#'@param feature_params List of parameters:
+#'\itemize{
+#'  \item \code{bit_precision} - Number of bits in the feature table
 #'  \item \code{quadratic} - Create and use quadratic features
 #'  \item \code{cubic} - Create and use cubic features
-#'  \item \code{interactions} - Create feature interactions of any level between namespaces
-#'  \item \code{permutations} - Use permutations instead of combinations for feature interactions of same namespace
-#'  \item \code{holdout_period} - holdout period for test only
-#'  \item \code{early_terminate} - Specify the number of passes tolerated when holdout loss doesn't decrease before early termination
-#'  \item \code{sort_features} - Turn this on to disregard order in which features have been defined. This will lead  to smaller cache sizes
+#'  \item \code{interactions} - Use second derivative in line searchCreate feature interactions of any level between namespaces.
+#'  \item \code{permutations} - Use permutations instead of combinations for feature interactions of same namespace.
+#'  \item \code{leave_duplicate_interactions} - Don't remove interactions with duplicate combinations of namespaces. For ex. this is a duplicate: 'quadratic="ab", quadratic="ba"' and a lot more in 'quadratic="::"'.
 #'  \item \code{noconstant} - Don't add a constant feature
-#'  \item \code{ngram} - Generate N grams
-#'  \item \code{skips} - Generate skips in N grams
-#'  \item \code{hash} - How to hash the features. Available options: strings, all
-#'  \item \code{affix} - Generate prefixes/suffixes of features
-#'  \item \code{random_weights} - Make initial weights random
-#'  \item \code{sparse_weights} - Use a sparse datastructure for weights
-#'  \item \code{initial_weight} - Set all weights to initial value
+#'  \item \code{feature_limit} - limit to N features. To apply to a single namespace 'foo', arg should be "fN"
+#'  \item \code{ngram} - Generate N grams. To generate N grams for a single namespace 'foo', arg should be "fN".
+#'  \item \code{skips} - Use second derivative in line searchGenerate skips in N grams. This in conjunction with the ngram tag can be used to generate generalized n-skip-k-gram. To generate n-skips for a single namespace 'foo', arg should be "fN".
+#'  \item \code{hash} - How to hash the features. Available options: "strings", "all"
+#'  \item \code{affix} - Generate prefixes/suffixes of features; argument "+2a,-3b,+1" means generate 2-char prefixes for namespace a, 3-char suffixes for b and 1 char prefixes for default namespace
+#'  \item \code{spelling} - Compute spelling features for a given namespace (use '_' for default namespace)
 #'}
 #'@param optimization_params List of parameters:
 #'\itemize{
-#'  \item \code{hessian_on} - Use second derivative in line search
+#'  \item \code{learning_rate} - Set initial learning Rate
 #'  \item \code{initial_pass_length} - Initial number of examples per pass
 #'  \item \code{l1} - L1 regularization
 #'  \item \code{l2} - L2 regularization
+#'  \item \code{no_bias_regularization} - no bias in regularization
+#'  \item \code{feature_mask} - Use existing regressor to determine which parameters may be updated.  If no initial_regressor given, also used for initial weights.
 #'  \item \code{decay_learning_rate} - Set Decay factor for learning_rate between passes
 #'  \item \code{initial_t} - initial t value
 #'  \item \code{power_t} - t power value
-#'  \item \code{learning_rate} - Set initial learning Rate
-#'  \item \code{link} - Convert output predictions using specified link function. Options: identity, logistic, glf1 or poisson.
-#'  \item \code{loss_function} - Specify the loss function to be used
-#'  \item \code{quantile_tau} - Parameter Tau associated with Quantile loss
+#'  \item \code{initial_weight} - Set all weights to an initial value of arg.
+#'  \item \code{random_weights} - Make initial weights random.
+#'  \item \code{normal_weights} - Make initial weights normal.
+#'  \item \code{truncated_normal_weights} - Make initial weights truncated normal.
+#'  \item \code{sparse_weights} - Use a sparse datastructure for weights.
+#'  \item \code{input_feature_regularizer} - Per feature regularization input file.
 #'}
 #'Additional parameters depending on \code{algorithm} choice:
 #'\itemize{
@@ -74,18 +88,52 @@
 #'      \item \code{adaptive} - Use adaptive, individual learning rates (on by default)
 #'      \item \code{normalized} - Use per feature normalized updates (on by default)
 #'      \item \code{invariant} - Use safe/importance aware updates (on by default)
+#'      \item \code{adax} - Use adaptive learning rates with x^2 instead of g^2x^2
+#'      \item \code{sparse_l2} - use per feature normalized updates
+#'      \item \code{l1_state} - use per feature normalized updates
+#'      \item \code{l2_state} - use per feature normalized updates
 #'    }
 #'  \item \code{bfgs}: 
 #'    \itemize{
 #'      \item \code{conjugate_gradient} - Use conjugate gradient based optimization
+#'      \item \code{hessian_on} - Use second derivative in line search
+#'      \item \code{mem} - Memory in bfgs. default=15
+#'      \item \code{termination} - Termination threshold. default=0.00100000005
 #'    }
 #'  \item \code{ftrl}: 
 #'    \itemize{
-#'      \item \code{ftrl_alpha}
-#'      \item \code{ftrl_beta}
+#'      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
+#'      \item \code{ftrl_beta} - FTRL beta parameter
+#'    }
+#'  \item \code{pistol}: 
+#'    \itemize{
+#'      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
+#'      \item \code{ftrl_beta} - FTRL beta parameter
+#'    }
+#'  \item \code{ksvm}: 
+#'    \itemize{
+#'      \item \code{reprocess} - number of reprocess steps for LASVM default=1
+#'      \item \code{kernel} - type of kernel (rbf or linear (default))
+#'      \item \code{bandwidth} - bandwidth of rbf kernel
+#'      \item \code{degree} - degree of poly kernel
+#'      \item \code{lambda} - saving regularization for test time
+#'    }
+#'  \item \code{OjaNewton}: 
+#'    \itemize{
+#'      \item \code{sketch_size} - size of sketch
+#'      \item \code{epoch_size} - size of epoch
+#'      \item \code{alpha} - mutiplicative constant for indentiy
+#'      \item \code{alpha_inverse} - one over alpha, similar to learning rate
+#'      \item \code{learning_rate_cnt} - constant for the learning rate 1/t
+#'      \item \code{normalize} - normalize the features or not
+#'      \item \code{random_init} - randomize initialization of Oja or not
+#'    }
+#'  \item \code{svrg}: 
+#'    \itemize{
+#'      \item \code{stage_size} - Number of passes per SVRG stage
 #'    }
 #'}
-#'@param ... Options for reduction
+#'@param ... Additional options for a learning algorithm / reduction
 #'\itemize{
 #'  \item \code{oaa} or \code{ect} or \code{log_multi}:
 #'    \itemize{ 
@@ -133,10 +181,15 @@
 #'  \item \code{cb}:
 #'    \itemize{
 #'      \item \code{costs} - number of costs
+#'      \item \code{cb_type} - contextual bandit method to use in {ips,dm,dr} default=dr
+#'      \item \code{eval} - Evaluate a policy rather than optimizing.
 #'    }
 #'  \item \code{cbify}:
 #'    \itemize{
 #'      \item \code{num_classes} - number of classes
+#'      \item \code{cbify_cs} - consume cost-sensitive classification examples instead of multiclass
+#'      \item \code{loss0} - loss for correct label
+#'      \item \code{loss1} - loss for incorrect label
 #'    }
 #'  \item \code{nn}:
 #'    \itemize{
@@ -177,6 +230,8 @@
 #'  \item \code{boosting}:
 #'    \itemize{
 #'      \item \code{num_learners} - number of weak learners
+#'      \item \code{gamma} - weak learner's edge (=0.1), used only by online BBM
+#'      \item \code{alg} - specify the boosting algorithm: BBM (default), logistic (AdaBoost.OL.W), adaptive (AdaBoost.OL)
 #'    }
 #'}
 #'@return vwmodel list class 
@@ -185,47 +240,70 @@
 #'vwsetup(
 #'  dir = tempdir(),
 #'  model = "pk_mdl.vw",
-#'  general_params = list(cache = TRUE, passes=10),
+#'  general_params = list(loss_function="logistic", link="logistic"),
 #'  optimization_params = list(adaptive=FALSE),
-#'  reduction = "binary"
+#'  option = "binary"
 #')
 #'
-vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl"),
+vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaNewton", "svrg"),
                     general_params = list(),
                     feature_params = list(),
                     optimization_params = list(),
                     dir = tempdir(),
-                    model = "mdl.vw",
-                    eval = FALSE,
-                    reduction = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
+                    model = NULL,
+                    option = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
                                   "lda", "mf", "lrq", "stage_poly", "bootstrap",
                                   "autolink", "cb", "cbify", "nn", "topk",
                                   "struct_search", "boosting"),
                     ...
 ) {
-    
-  # library(tools)
+
+  # Initialize defaults
   train_md5sum = ""
   test_md5sum = ""
-  eval_results = ""
   train_file = ""
-  if(substr(dir, nchar(dir), nchar(dir)) != "/") {
-    dir <- paste0(dir, "/")
-  }
   
-  # Delete model files from previous setups
-  if (file.exists(paste0(dir, model))) {
-      file.remove(paste0(dir, model))
-  }
+  empty_eval_list = list(
+      num_examples = NA_integer_,
+      weighted_example_sum = NA_real_,
+      weighted_label_sum = NA_real_,
+      avg_loss = NA_real_,
+      avg_multiclass_log_loss = NA_real_,
+      best_const = NA_real_,
+      best_const_loss = NA_real_,
+      total_feature = NA_integer_
+  )
+  eval_results = list(
+      train=empty_eval_list,
+      test=empty_eval_list
+  )
   
-  algorithm <- match.arg(algorithm)
-  reduction <- match.arg(reduction)
-  
-  # Setreductions
-  if(reduction == "") {
-      reductions = list()
+  # Remove last trailing path separator, because it's handled in vwtrain and vwtest
+  last_char_dir <-  substr(dir, nchar(dir), nchar(dir))
+  if(last_char_dir == "/" || last_char_dir == "\\") {
+      dir <- substr(dir, 1, nchar(dir) - 1)
+  } 
+
+  # If user provides model file path, use it for setup
+  if(!is.null(model)) {
+      # If just filename provided, use it in model's directory
+      # If path provided, copy file to model's directory first
+      if(dirname(model) != ".") {
+          file.copy(from = model, to = dir)
+          model <- basename(model)
+      } 
   } else {
-      reductions <- setNames(list(list(...)), reduction)
+      model <- paste0("vw_", floor(as.numeric(Sys.time())), "_mdl.vw")
+  }
+
+  algorithm <- match.arg(algorithm)
+  option <- match.arg(option)
+  
+  # Set options
+  if(option == "") {
+      options = list()
+  } else {
+      options <- setNames(list(list(...)), option)
   }
 
   
@@ -235,7 +313,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl"),
       general_params = general_params,
       feature_params = feature_params,
       optimization_params = optimization_params,
-      reductions = reductions
+      options = options
       # input_mode = input_mode
   )
   # Parse parameters and write them to string
@@ -255,9 +333,6 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl"),
   #     .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
   #   }
   # }
-  if(eval) {
-    eval_results = "palaceholder for eveluation results"
-  }
   
   vwmodel <- list(params = params,
                   dir = dir,
@@ -266,30 +341,31 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl"),
                   data_md5sum = list(train = train_md5sum,
                                test = test_md5sum),
                   train_file = train_file,
-                  eval = eval_results)
+                  eval = eval_results,
+                  parser_opts = NA)
   class(vwmodel) <- "vw"
   return(vwmodel)
 }
 
-#'Add reduction to the model
+#'Add option to the model
 #'
-#'@description Add reduction to the reduction stack inside model
+#'@description Add a learning algorithm / reduction to the option stack inside model
 #'@param vwmodel Model of vw class
-#'@param reduction Name of reduction
-#'@param ... Reduction options
-add_reduction <- function(vwmodel, reduction = c("binary", "oaa", "ect", "csoaa", "wap", "log_multi",
+#'@param option Name of an option
+#'@param ... Additional options for a learning algorithm / reduction
+add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap", "log_multi",
                                 "lda", "mf", "lrq", "stage_poly", "bootstrap",
                                 "autolink", "cb", "cbify", "nn", "topk",
                                 "struct_search", "boosting", "ksvm"), ...) {
     
-    reduction <- match.arg(reduction)
+    option <- match.arg(option)
     
-    if (reduction %in% names(vwmodel$params$reductions)) {
-        stop("Trying to overwrite reduction")
+    if (option %in% names(vwmodel$params$options)) {
+        stop("Trying to overwrite option")
     }
     
-    new_reduction <- setNames(list(list(...)), reduction)
-    vwmodel$params$reductions <- c(vwmodel$params$reductions, new_reduction)
+    new_option <- setNames(list(list(...)), option)
+    vwmodel$params$options <- c(vwmodel$params$options, new_option)
     vwmodel$params <- .check_parameters(vwmodel$params)
     vwmodel$params_str <- .create_parameters_string(vwmodel$params)
     vwmodel
@@ -309,9 +385,10 @@ print.vw <- function(x, ...) {
   cat("\tVowpal Wabbit model\n")
   cat("Learning algorithm:  ", x$params$algorithm, "\n")
   cat("Working directory:  ", x$dir, "\n")
+  cat("Model file:  ", file.path(x$dir, x$model), "\n")
   cat("General parameters:", "\n")
   sapply(names(x$params$general_params), FUN = function(i) {
-    if(x$params$general_params[[i]] == "") {
+    if(is.na(x$params$general_params[[i]])) {
       cat("\t", i, ":  Not defined\n")
     } else {
       cat("\t", i, ":  ", x$params$general_params[[i]], "\n")
@@ -319,32 +396,57 @@ print.vw <- function(x, ...) {
   })
   cat("Feature parameters:", "\n")
   sapply(names(x$params$feature_params), FUN = function(i) {
-      if(x$params$feature_params[[i]] == "") {
+      if(is.na(x$params$feature_params[[i]])) {
           cat("\t", i, ":  Not defined\n")
       } else {
           cat("\t", i, ":  ", x$params$feature_params[[i]], "\n")
       }
   })
-  cat("Reductions:", "\n")
-  sapply(names(x$params$reductions), function(reduction_name) {
-      cat("\t", reduction_name, ":\n")
-      sapply(names(x$params$reductions[[reduction_name]]), FUN = function(i) {
-          if(x$params$reductions[[reduction_name]][[i]] == "") {
+  cat("Learning algorithms / Reductions:", "\n")
+  sapply(names(x$params$options), function(option_name) {
+      cat("\t", option_name, ":\n")
+      sapply(names(x$params$options[[option_name]]), FUN = function(i) {
+          if(is.na(x$params$options[[option_name]][[i]])) {
               cat("\t\t", i, ":  Not defined\n")
           } else {
-              cat("\t\t", i, ":  ", x$params$reductions[[reduction_name]][[i]], "\n")
+              cat("\t\t", i, ":  ", x$params$options[[option_name]][[i]], "\n")
           }
       })
   })
   cat("Optimization parameters:", "\n")
   sapply(names(x$params$optimization_params), FUN = function(i) {
-    if(x$params$optimization_params[[i]] == "") {
+    if(is.na(x$params$optimization_params[[i]])) {
       cat("\t", i, ":  Not defined\n")
     } else {
       cat("\t", i, ":  ", x$params$optimization_params[[i]], "\n")
     }
   })
+  
+  if(!all(is.na(.flatten(x$eval$train)))) {
+      cat("Model evaluation. Training:", "\n")
+      sapply(names(x$eval$train), FUN = function(i) {
+          if(!is.na(x$eval$train[[i]])) {
+              cat("\t", i, ":  ", x$eval$train[[i]], "\n")
+          }
+      }) 
   }
+  if(!all(is.na(.flatten(x$eval$test)))) {
+      cat("Model evaluation. Testing:", "\n")
+      sapply(names(x$eval$test), FUN = function(i) {
+          if(!is.na(x$eval$test[[i]])) {
+              cat("\t", i, ":  ", x$eval$test[[i]], "\n")
+          }
+      }) 
+  }
+}
+
+#'@rdname vwtest
+predict.vw <- function(object, data, probs_path = "",
+                       readable_model = NULL, quiet = FALSE, ...) {
+    vwtest(object, data = data, probs_path = probs_path,
+           readable_model = readable_model, quiet = quiet)
+}
+
 #'Access and modify parameters of VW model
 #'
 #'@description These functions allow to access VW model parameters by name and correctly modify them
@@ -355,9 +457,9 @@ print.vw <- function(x, ...) {
 #'@examples 
 #'vwmodel <- vwsetup()
 #'# Access parameter 
-#'vwparams(vwmodel, "passes")
+#'vwparams(vwmodel, "bit_precision")
 #'# Modify parameter
-#'vwparams(vwmodel, "passes") <- 10
+#'vwparams(vwmodel, "bit_precision") <- 25
 #'
 #'@rdname vwparams
 vwparams <- function(vwmodel, name) {

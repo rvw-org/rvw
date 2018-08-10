@@ -26,16 +26,13 @@ df_train <- data_full[ind_train,]
 df_test <- data_full[-ind_train,]
 
 vwmodel <- vwsetup(dir = "./", 
-                   reduction = "csoaa", num_classes = 3)
+                   option = "csoaa", num_classes = 3)
 
 vwtrain(vwmodel, data = df_train,
         namespaces = list(NS1 = list("sex", "rings"), NS2 = list("diameter", "length", "height")),
         targets = c("cost_class_1", "cost_class_2", "cost_class_3"), tag = "tag"
 )
-vwtest(vwmodel, data = df_test,
-       namespaces = list(NS1 = list("sex", "rings"), NS2 = list("diameter", "length", "height")),
-       targets = c("cost_class_1", "cost_class_2", "cost_class_3"), tag = "tag"
-)
+predict.vw(vwmodel, data = df_test)
 
 setwd(curr_dir)   
 

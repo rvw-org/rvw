@@ -5,9 +5,10 @@
 \title{Train Vowpal Wabbit model}
 \usage{
 vwtrain(vwmodel, data, readable_model = NULL, quiet = FALSE,
-  update_model = FALSE, passes = 1L, cache = FALSE, namespaces = NULL,
-  keep_space = NULL, targets = NULL, probabilities = NULL,
-  weight = NULL, base = NULL, tag = NULL, multiline = NULL)
+  update_model = FALSE, passes = 1L, cache = FALSE, progress = NULL,
+  namespaces = NULL, keep_space = NULL, targets = NULL,
+  probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
+  multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
@@ -21,6 +22,12 @@ and also with human readable features ("inverted")}
 \item{quiet}{[logical] Do not print anything to the console}
 
 \item{update_model}{[logical] Update an existing model, when training with new data. \code{FALSE} by default.}
+
+\item{passes}{[int] Number of times the algorithm will cycle over the data (epochs).}
+
+\item{cache}{[bool] Use a cache for a data file.}
+
+\item{progress}{[integer/real] Progress update frequency. int: additive, real: multiplicative}
 
 \item{namespaces}{[list or yaml file] For \code{df2vw}. Name of each namespace and
 each variable for each namespace can be a R list, or a YAML

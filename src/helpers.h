@@ -2,6 +2,8 @@
 #include <Rcpp.h>
 
 
+
+
 // Helper functions
 
 // Check if data from vwmodel should be used or from function arguments
@@ -18,3 +20,13 @@ int get_num_example(vw& all);
 void custom_driver(vw& model, std::string & file_path);
 
 bool file_exists(std::string file_name);
+
+// setup function from VW main.cc file
+// modified to work in library mode using Rcpp
+vw* setup_model(std::string args_str);
+
+// Collect final performance evaluation results
+Rcpp::List get_eval(vw& all);
+
+// Copy of get_best_constant function from best_constant.cc file
+bool copy_get_best_constant(vw& all, float& best_constant, float& best_constant_loss);

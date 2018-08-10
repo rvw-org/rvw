@@ -16,6 +16,9 @@
 #'and also with human readable features ("inverted")
 #'@param quiet [logical] Do not print anything to the console 
 #'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
+#'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
+#'@param cache [bool] Use a cache for a data file.
+#'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
 #'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 #'  each variable for each namespace can be a R list, or a YAML
 #'  file example namespace with the IRIS database: namespaces =
@@ -40,21 +43,27 @@
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
-vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, passes, cache, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
+vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    invisible(.Call(`_rvwgsoc_vwtrain`, vwmodel, data, readable_model, quiet, update_model, passes, cache, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
 }
 
 #'Compute predictions using Vowpal Wabbit model
 #'
-#'vwtest computes predictions using VW model from \code{\link{vwsetup}}
+#'\code{vwtest} computes predictions using VW model from \code{\link{vwsetup}}
+#'\code{predict.vw} compute predictions using parser settings from \code{\link{vwtrain}}
 #'
-#'@param vwmodel Model of vw class to train
+#'@param vwmodel Model of vw class to train.
+#'@param object Model of vw class to train for \code{predict.vw}
 #'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 #'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
-#'@param probs_path Path to file where to save predictions
-#'@param readable_model Print trained model in human readable format ("hashed") 
-#'and also with human readable features ("inverted")
-#'@param quiet Do not print anything to the console
+#'@param probs_path [string] Path to file where to save predictions.
+#'@param readable_model [string] Print trained model in human readable format ("hashed") 
+#'and also with human readable features ("inverted").
+#'@param quiet [bool] Do not print anything to the console.
+#'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
+#'@param cache [bool] Use a cache for a data file.
+#'@param raw [bool] Output unnormalized predictions. Default is FALSE.
+#'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
 #'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 #'  each variable for each namespace can be a R list, or a YAML
 #'  file example namespace with the IRIS database: namespaces =
@@ -73,8 +82,8 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'@param weight [string] For \code{df2vw}. Weight (importance) of each line of the dataset.
 #'@param base [string] For \code{df2vw}. Base of each line of the dataset. Used for residual regression.
 #'@param tag [string] For \code{df2vw}. Tag of each line of the dataset.
-#'@param multiline [integer] Number of labels (separate lines) for multilines examle
-#'@param raw [bool] Output unnormalized predictions. Default is FALSE.
+#'@param multiline [integer] Number of labels (separate lines) for multilines example
+#'@param ... Parameters passed to \code{predict.vw}
 #'@return Numerical vector containing predictions
 #'@import tools
 #'@examples
@@ -83,8 +92,9 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtest(test_vwmodel, data = ext_test_data)
-vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, passes, cache, raw, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
+#'@rdname vwtest
+vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    .Call(`_rvwgsoc_vwtest`, vwmodel, data, probs_path, readable_model, quiet, passes, cache, raw, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
 }
 
 #'Audit Vowpal Wabbit model

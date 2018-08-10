@@ -5,29 +5,27 @@
 
     # Initialise default/check lists
     general_check <- list(random_seed=0,
-                          ring_size="",
+                          ring_size=NA_integer_,
                           holdout_off=FALSE,
                           holdout_period=10,
                           holdout_after=0,
                           early_terminate=3,
                           loss_function="squared",
                           link="identity",
-                          quantile_tau=0.5,
-                          confidence=FALSE,
-                          confidence_after_training=FALSE)
+                          quantile_tau=0.5)
     feature_check <- list(bit_precision=18,
-                          quadratic="",
-                          cubic="",
-                          interactions="",
+                          quadratic=NA_character_,
+                          cubic=NA_character_,
+                          interactions=NA_character_,
                           permutations=FALSE,
                           leave_duplicate_interactions=FALSE,
                           noconstant=FALSE, 
-                          feature_limit="",
-                          ngram="",
-                          skips="",
-                          hash="",
-                          affix="",
-                          spelling="")
+                          feature_limit=NA_character_,
+                          ngram=NA_character_,
+                          skips=NA_character_,
+                          hash=NA_character_,
+                          affix=NA_character_,
+                          spelling=NA_character_)
     # Learning algorithm default/check lists
     sgd_check <- list(adaptive=TRUE,
                       normalized=TRUE,
@@ -36,24 +34,43 @@
                       sparse_l2=0,
                       l1_state=0,
                       l2_state=1)
-    bfgs_check <- list(conjugate_gradient=FALSE)
+    bfgs_check <- list(conjugate_gradient=FALSE,
+                       hessian_on=FALSE,
+                       mem=15,
+                       termination=0.00100000005)
     ftrl_check <- list(ftrl_alpha=0.005,
                        ftrl_beta=0.1)
+    pistol_check <- list(ftrl_alpha=0.005,
+                       ftrl_beta=0.1)
+    ksvm_check <- list(reprocess=1,
+                       kernel="linear",
+                       bandwidth=1.0,
+                       degree=2,
+                       lambda=NA_character_)
+    OjaNewton_check <- list(sketch_size=10,
+                       epoch_size=1,
+                       alpha=1,
+                       alpha_inverse=NA_real_,
+                       learning_rate_cnt=2,
+                       normalize=1,
+                       random_init=1)
+    svrg_check <- list(stage_size=1)
+
     optimization_check <- list(learning_rate=0.5,
-                               initial_pass_length="",
+                               initial_pass_length=NA_integer_,
                                l1=0,
                                l2=0,
-                               no_bias_regularization=FALSE,
-                               feature_mask="",
+                               no_bias_regularization=NA_character_,
+                               feature_mask=NA_character_,
                                decay_learning_rate=1,
                                initial_t=0,
                                power_t=0.5,
                                initial_weight=0,
-                               random_weights="",
-                               normal_weights="",
-                               truncated_normal_weights="",
+                               random_weights=NA_character_,
+                               normal_weights=NA_character_,
+                               truncated_normal_weights=NA_character_,
                                sparse_weights=FALSE,
-                               input_feature_regularizer="")
+                               input_feature_regularizer=NA_character_)
 
     # Learning parameters/reductions default/check lists
     binary_check <- list()
@@ -80,8 +97,13 @@
     bootstrap_check <- list(rounds=10,
                             bs_type="mean")
     autolink <- list(degree=2)
-    cb <- list(costs=2)
-    cbify <- list(num_classes=3)
+    cb <- list(costs=2,
+               cb_type="dr",
+               eval=FALSE)
+    cbify <- list(num_classes=3,
+                  cbify_cs=FALSE,
+                  loss0=0,
+                  loss1=1)
     nn_check <- list(hidden=3,
                      inpass=FALSE,
                      multitask=FALSE,
@@ -108,17 +130,17 @@
                    search_linear_ordering=FALSE,
                    search_active_verify=NA_real_,
                    search_save_every_k_runs=NA_integer_)
-    boosting_check <- list(num_learners=5)
-    ksvm_check <- list(reprocess=1,
-                       kernel="linear",
-                       bandwidth=1.0)
+    boosting_check <- list(num_learners=5,
+                           gamma=0.100000001,
+                           alg="BBM")
 
     check_lists <- list(general_check=general_check, feature_check=feature_check, optimization_check=optimization_check,
-        sgd_check=sgd_check, bfgs_check=bfgs_check, ftrl_check=ftrl_check,
+        sgd_check=sgd_check, bfgs_check=bfgs_check, ftrl_check=ftrl_check, pistol_check=pistol_check, ksvm_check=ksvm_check,
+        OjaNewton_check=OjaNewton_check, svrg_check=svrg_check,
         binary_check=binary_check, oaa_check=oaa_check, ect_check=ect_check, csoaa_check=csoaa_check, wap_check=wap_check,
         log_multi=log_multi, lda_check=lda_check, mf_check=mf_check, lrq_check=lrq_check, stage_poly=stage_poly, bootstrap_check=bootstrap_check, autolink=autolink,
         cb=cb, cbify=cbify,
-        nn_check=nn_check, topk=topk, search=search, boosting_check=boosting_check, ksvm_check=ksvm_check)
+        nn_check=nn_check, topk=topk, search=search, boosting_check=boosting_check)
     flatten_check_lists <- .flatten(check_lists)
 
     assign("check_lists", check_lists, envir=.pkgenv)
