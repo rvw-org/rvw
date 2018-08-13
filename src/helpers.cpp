@@ -31,9 +31,7 @@ extern "C" {
 // Copyright (C) 2003 - 2016  Dirk Eddelbuettel <edd@debian.org>
 std::string md5sum(char * char_x, uint32_t nChar) {
     char output[33+1];
-    int output_length = -1;
     md5_context ctx;
-    output_length = 16;
     unsigned char md5sum[16];
     int j;
     md5_starts( &ctx );

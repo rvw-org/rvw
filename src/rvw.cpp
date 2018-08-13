@@ -13,33 +13,37 @@
 #endif 
 
 
-
-// [[Rcpp::export(".create_cache")]]
-void create_cache(std::string dir="", std::string data_file="", std::string cache_file="") {
-    std::string data_str = dir + data_file;
-    std::string cache_str = dir + cache_file;
-    
-    std::string cache_init_str = "-d " + data_str + " --cache_file " + cache_str;
-    vw* cache_model = VW::initialize(cache_init_str);
-    VW::start_parser(*cache_model);
-    
-    // Modified version of LEARNER::generic_driver that only creates cache and doesn't train
-    example* ec = nullptr;
-    while (cache_model->early_terminate == false) {
-        if ((ec = VW::get_example(cache_model->p)) != nullptr) {
-            VW::finish_example(*cache_model, *ec);
-        } else {
-            break;
-        }
-    }
-    if (cache_model->early_terminate) { //drain any extra examples from parser.
-        while ((ec = VW::get_example(cache_model->p)) != nullptr) {
-            VW::finish_example(*cache_model, *ec);
-        }
-    } 
-    VW::end_parser(*cache_model);
-    VW::finish(*cache_model);
+// [[Rcpp::export(".get_vw_version")]]
+std::string get_vw_version() {
+    return version.to_string();
 }
+
+// // [[Rcpp::export(".create_cache")]]
+// void create_cache(std::string dir="", std::string data_file="", std::string cache_file="") {
+//     std::string data_str = dir + data_file;
+//     std::string cache_str = dir + cache_file;
+//     
+//     std::string cache_init_str = "-d " + data_str + " --cache_file " + cache_str;
+//     vw* cache_model = VW::initialize(cache_init_str);
+//     VW::start_parser(*cache_model);
+//     
+//     // Modified version of LEARNER::generic_driver that only creates cache and doesn't train
+//     example* ec = nullptr;
+//     while (cache_model->early_terminate == false) {
+//         if ((ec = VW::get_example(cache_model->p)) != nullptr) {
+//             VW::finish_example(*cache_model, *ec);
+//         } else {
+//             break;
+//         }
+//     }
+//     if (cache_model->early_terminate) { //drain any extra examples from parser.
+//         while ((ec = VW::get_example(cache_model->p)) != nullptr) {
+//             VW::finish_example(*cache_model, *ec);
+//         }
+//     } 
+//     VW::end_parser(*cache_model);
+//     VW::finish(*cache_model);
+// }
 
 //'Train Vowpal Wabbit model
 //'
@@ -169,7 +173,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     if (!quiet)
     {
         Rcpp::Rcout << "Starting VW training session" << std::endl;
-        Rcpp::Rcout << "VW v" << version.to_string() << std::endl;
+        Rcpp::Rcout << "VW v" << get_vw_version() << std::endl;
         Rcpp::Rcout << "Using data file: " << data_str << std::endl;
         Rcpp::Rcout << "Using model file: " << model_str << std::endl;
         Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
@@ -349,7 +353,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     if (!quiet)
     {
         Rcpp::Rcout << "Starting VW testing session" << std::endl;
-        Rcpp::Rcout << "VW v" << version.to_string() << std::endl;
+        Rcpp::Rcout << "VW v" << get_vw_version() << std::endl;
         Rcpp::Rcout << "Using data file: " << data_str << std::endl;
         Rcpp::Rcout << "Using model file: " << model_str << std::endl;
         Rcpp::Rcout << "Command line parameters: " << std::endl << test_init_str << std::endl;

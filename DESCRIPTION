@@ -9,6 +9,9 @@ Description: R interface for Vowpal Wabbit using 'Rcpp' and the 'Vowpal Wabbit' 
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.16), tools, RApiSerialize, data.table
 LinkingTo: Rcpp, RApiSerialize
-Suggests: testthat, yaml, utils
+Suggests: testthat, yaml, utils,
+    knitr,
+    rmarkdown
 SystemRequirements: C++11, Vowpal Wabbit library
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr

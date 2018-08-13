@@ -67,7 +67,7 @@
     if(length(params$options) != 0) {
         valid_options <- list()
         params$options <- sapply(names(params$options), function(option_name) {
-            option_check_type <- .pkgenv[["check_lists"]][[paste0(option_name, "_check")]]
+            option_check_type <- .rvw_global[["check_lists"]][[paste0(option_name, "_check")]]
             valid_option <- check_param_values(
                 input = params$options[[option_name]],
                 check = option_check_type
@@ -79,30 +79,30 @@
         
     }
     if(length(params$general_params) == 0) {
-        params$general_params <- .pkgenv[["check_lists"]][["general_check"]]
+        params$general_params <- .rvw_global[["check_lists"]][["general_check"]]
     } else {
         params$general_params <- check_param_values(
             input = params$general_params,
             # input = c(list(cache=params$cache), params$general_params),
-            check = .pkgenv[["check_lists"]][["general_check"]]
+            check = .rvw_global[["check_lists"]][["general_check"]]
         )
     }
     if(length(params$feature_params) == 0) {
-        params$feature_params <- .pkgenv[["check_lists"]][["feature_check"]]
+        params$feature_params <- .rvw_global[["check_lists"]][["feature_check"]]
     } else {
         params$feature_params <- check_param_values(
             input = params$feature_params,
-            check = .pkgenv[["check_lists"]][["feature_check"]]
+            check = .rvw_global[["check_lists"]][["feature_check"]]
         )
     }
     if(length(params$optimization_params) == 0) {
-        algorithm_parameters <- .pkgenv[["check_lists"]][[paste0(params$algorithm, "_check")]]
-        params$optimization_params <- c(algorithm_parameters, .pkgenv[["check_lists"]][["optimization_check"]])
+        algorithm_parameters <- .rvw_global[["check_lists"]][[paste0(params$algorithm, "_check")]]
+        params$optimization_params <- c(algorithm_parameters, .rvw_global[["check_lists"]][["optimization_check"]])
     } else {
-        algorithm_check_type <- .pkgenv[["check_lists"]][[paste0(params$algorithm, "_check")]]
+        algorithm_check_type <- .rvw_global[["check_lists"]][[paste0(params$algorithm, "_check")]]
         params$optimization_params <- check_param_values(
             input = params$optimization_params,
-            check = c(algorithm_check_type, .pkgenv[["check_lists"]][["optimization_check"]])
+            check = c(algorithm_check_type, .rvw_global[["check_lists"]][["optimization_check"]])
         )
     }
     
@@ -120,7 +120,7 @@
 
 .create_parameters_string <- function(params) {
     params_to_strings <- function(i) {
-        if(is.na(flat_params[[i]]) || isTRUE(flat_params[[i]] == .pkgenv[["flatten_check_lists"]][[i]])) {
+        if(is.na(flat_params[[i]]) || isTRUE(flat_params[[i]] == .rvw_global[["flatten_check_lists"]][[i]])) {
             return("")
         };
         if(is.logical(flat_params[[i]][[1]]) & flat_params[[i]][[1]] == TRUE) {

@@ -5,16 +5,14 @@
 
 using namespace Rcpp;
 
-// create_cache
-void create_cache(std::string dir, std::string data_file, std::string cache_file);
-RcppExport SEXP _rvwgsoc_create_cache(SEXP dirSEXP, SEXP data_fileSEXP, SEXP cache_fileSEXP) {
+// get_vw_version
+std::string get_vw_version();
+RcppExport SEXP _rvwgsoc_get_vw_version() {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type dir(dirSEXP);
-    Rcpp::traits::input_parameter< std::string >::type data_file(data_fileSEXP);
-    Rcpp::traits::input_parameter< std::string >::type cache_file(cache_fileSEXP);
-    create_cache(dir, data_file, cache_file);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(get_vw_version());
+    return rcpp_result_gen;
 END_RCPP
 }
 // vwtrain
@@ -82,7 +80,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rvwgsoc_create_cache", (DL_FUNC) &_rvwgsoc_create_cache, 3},
+    {"_rvwgsoc_get_vw_version", (DL_FUNC) &_rvwgsoc_get_vw_version, 0},
     {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 16},
     {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 17},
     {"_rvwgsoc_vwaudit", (DL_FUNC) &_rvwgsoc_vwaudit, 1},
