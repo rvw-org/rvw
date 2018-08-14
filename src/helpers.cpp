@@ -76,6 +76,11 @@ Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP
         // Use path to file as model input
         valid_data_str = Rcpp::as<std::string>(data);
         
+        // Check path for whitespace
+        if(valid_data_str.find_first_of("\t\n ") != valid_data_str.npos) {
+            Rcpp::stop("Whitespace characters are not allowed in `data` path");
+        }
+        
         std::ifstream data_instream(valid_data_str);
         std::string data_contents((std::istreambuf_iterator<char>(data_instream)), 
                              std::istreambuf_iterator<char>());

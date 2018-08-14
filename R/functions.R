@@ -278,6 +278,11 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
       test=empty_eval_list
   )
   
+  # Check dir
+  if(grepl("[[:space:]]", dir)) {
+      stop("Whitespace characters are not allowed in `dir` path", call. = FALSE)
+  }
+  
   # Remove last trailing path separator, because it's handled in vwtrain and vwtest
   last_char_dir <-  substr(dir, nchar(dir), nchar(dir))
   if(last_char_dir == "/" || last_char_dir == "\\") {
