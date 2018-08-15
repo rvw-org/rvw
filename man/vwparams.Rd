@@ -25,8 +25,8 @@ These functions allow to access VW model parameters by name and correctly modify
 \examples{
 vwmodel <- vwsetup()
 # Access parameter 
-vwparams(vwmodel, "passes")
+vwparams(vwmodel, "bit_precision")
 # Modify parameter
-vwparams(vwmodel, "passes") <- 10
+vwparams(vwmodel, "bit_precision") <- 25
 
 }

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+: ${R_HOME:=`R RHOME`}
+
+cmd="${R_HOME}/bin/Rscript ${PWD}/tools/r_configure.R"
+
+$cmd

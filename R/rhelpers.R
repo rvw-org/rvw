@@ -36,151 +36,91 @@
 .check_parameters <- function(params) {
     # Helper function to check parameters
     check_param_values <- function(input, check) {
-        if(!all(names(input) %in% names(check))) {
+        bool_check_names <- names(input) %in% names(check)
+        if(!all(bool_check_names)) {
+            cat(paste0("Wrong argument names: ",
+                       paste0(names(input)[!bool_check_names], collapse = ", ")))
             stop("Wrong argument names!")
         }
         
         valid_input <- check
-        if(!all(sapply(names(input), FUN = function(i) {
+        bool_check_values <- sapply(names(input), FUN = function(i) {
             # First check if types of input argument values are correct (same as of check lists)
             bool_check <- (typeof(input[[i]]) == typeof(check[[i]])) | (is.na(input[[i]]))
             # Replace default/check values with values from input
             valid_input[[i]] <<- input[[i]]
             # And return bool values to raise errors
             bool_check
-        }))) {
+        })
+        if(!all(bool_check_values)) {
+            cat(paste0("Wrong argument values: ",
+                        paste0(names(input)[!bool_check_values], collapse = ", ")))
             stop("Wrong argument values!")
         }
         
         # Return check with modified values
         return(valid_input)
     }
-    # Initialise default/check lists
-    general_check <- list(cache=FALSE,
-                          passes=1,
-                          bit_precision=18,
-                          quadratic="",
-                          cubic="",
-                          interactions="",
-                          permutations=FALSE,
-                          holdout_period=10,
-                          early_terminate=3,
-                          sort_features=FALSE,
-                          noconstant=FALSE,
-                          ngram="",
-                          skips="",
-                          hash="",
-                          affix="",
-                          random_weights=FALSE,
-                          sparse_weights=FALSE,
-                          initial_weight=0)
-    # Learning parameters/reductions default/check lists
-    binary_check <- list()
-    oaa_check <- list(num_classes=3)
-    ect_check <- list(num_classes=3)
-    csoaa_check <- list(num_classes=3,
-                        csoaa_ldf="")
-    wap_check <- list(num_classes=3,
-                      wap_ldf="")
-    log_multi <- list(num_classes=3)
-    lda_check <- list(num_topics=0,
-                      lda_alpha=0.100000001,
-                      lda_rho=0.100000001,
-                      lda_D=10000,
-                      lda_epsilon=0.00100000005,
-                      math_mode=0,
-                      minibatch=1)
-    mf_check <- list(rank=0)
-    lrq_check <- list(features="",
-                      lrqdropout=FALSE)
-    stage_poly <- list(sched_exponent = 1.0,
-                       batch_sz = 1000,
-                       batch_sz_no_doubling = TRUE)
-    bootstrap_check <- list(rounds=10,
-                            bs_type="mean")
-    autolink <- list(degree=2)
-    cb <- list(costs=2)
-    cbify <- list(num_classes=3)
-    nn_check <- list(hidden=3,
-                     inpass=FALSE,
-                     multitask=FALSE,
-                     dropout=FALSE,
-                     meanfield=FALSE)
-    topk <- list(k=3)
-    struct_search <- list(id=0)
-    boosting_check <- list(num_learners=5)
-    # Learning algorithm default/check lists
-    sgd_check <- list(adaptive=TRUE,
-                      normalized=TRUE,
-                      invariant=TRUE)
-    bfgs_check <- list(conjugate_gradient=FALSE)
-    ftrl_check <- list(ftrl_alpha=0.005,
-                       ftrl_beta=0.1)
-    ksvm_check <- list(reprocess=1,
-                       kernel="linear",
-                       bandwidth=1.0)
-    optimization_check <- list(hessian_on=FALSE,
-                               initial_pass_length="",
-                               l1=0,
-                               l2=0,
-                               decay_learning_rate=1,
-                               initial_t=0,
-                               power_t=0.5,
-                               learning_rate=0.5,
-                               link="",
-                               loss_function="squared",
-                               quantile_tau=0.5)
     
     # Create default parameters list if no parameters provided
     # Else check parameters and return validated parameters
-    if(length(params$reductions) != 0) {
-        valid_reductions <- list()
-        params$reductions <- sapply(names(params$reductions), function(reduction_name) {
-            reduction_check_type <- get(paste0(reduction_name, "_check"))
-            valid_reduction <- check_param_values(
-                input = params$reductions[[reduction_name]],
-                check = reduction_check_type
+    if(length(params$options) != 0) {
+        valid_options <- list()
+        params$options <- sapply(names(params$options), function(option_name) {
+            option_check_type <- .rvw_global[["check_lists"]][[paste0(option_name, "_check")]]
+            valid_option <- check_param_values(
+                input = params$options[[option_name]],
+                check = option_check_type
             )
-            valid_reduction <- setNames(list(valid_reduction), reduction_name)
-            valid_reductions <<- c(valid_reductions, valid_reduction)
+            valid_option <- setNames(list(valid_option), option_name)
+            valid_options <<- c(valid_options, valid_option)
         })
-        params$reductions <- valid_reductions
+        params$options <- valid_options
         
     }
     if(length(params$general_params) == 0) {
-        params$general_params <- general_check
+        params$general_params <- .rvw_global[["check_lists"]][["general_check"]]
     } else {
         params$general_params <- check_param_values(
             input = params$general_params,
             # input = c(list(cache=params$cache), params$general_params),
-            check = general_check
+            check = .rvw_global[["check_lists"]][["general_check"]]
+        )
+    }
+    if(length(params$feature_params) == 0) {
+        params$feature_params <- .rvw_global[["check_lists"]][["feature_check"]]
+    } else {
+        params$feature_params <- check_param_values(
+            input = params$feature_params,
+            check = .rvw_global[["check_lists"]][["feature_check"]]
         )
     }
     if(length(params$optimization_params) == 0) {
-        algorithm_parameters <- get(paste0(params$algorithm, "_check"))
-        params$optimization_params <- c(algorithm_parameters, optimization_check)
+        algorithm_parameters <- .rvw_global[["check_lists"]][[paste0(params$algorithm, "_check")]]
+        params$optimization_params <- c(algorithm_parameters, .rvw_global[["check_lists"]][["optimization_check"]])
     } else {
-        algorithm_check_type <- get(paste0(params$algorithm, "_check"))
+        algorithm_check_type <- .rvw_global[["check_lists"]][[paste0(params$algorithm, "_check")]]
         params$optimization_params <- check_param_values(
             input = params$optimization_params,
-            check = c(algorithm_check_type, optimization_check)
+            check = c(algorithm_check_type, .rvw_global[["check_lists"]][["optimization_check"]])
         )
     }
     
-    # Cache should be created, if passes > 1
-    if(params$general_params$passes > 1) {
-        params$general_params$cache <- TRUE
-    }
+    # # Cache should be created, if passes > 1
+    # if(params$general_params$passes > 1) {
+    #     params$general_params$cache <- TRUE
+    # }
     # Return validated parameters
     return(list(algorithm = params$algorithm,
                 general_params = params$general_params,
+                feature_params = params$feature_params,
                 optimization_params = params$optimization_params,
-                reductions = params$reductions))
+                options = params$options))
 }
 
 .create_parameters_string <- function(params) {
     params_to_strings <- function(i) {
-        if(is.na(flat_params[[i]]) | flat_params[[i]] == "") {
+        if(is.na(flat_params[[i]]) || isTRUE(flat_params[[i]] == .rvw_global[["flatten_check_lists"]][[i]])) {
             return("")
         };
         if(is.logical(flat_params[[i]][[1]]) & flat_params[[i]][[1]] == TRUE) {
@@ -193,61 +133,66 @@
         }
     }
     
-    flatten <- function(x) {
-        repeat {
-            if(!any(vapply(x,is.list, logical(1)))) return(x)
-            x <- Reduce(c, x)
-        }
-    }
     temp_params <- params
     
-    # Convert different reductions into string with CL arguments
-    reductions_params <- sapply(names(temp_params$reductions), function(reduction_name) {
-        if (length(temp_params$reductions[[reduction_name]]) == 0) {
-            tmp <- paste0("--", reduction_name)
+    # Convert different options into string with CL arguments
+    options_params <- sapply(names(temp_params$options), function(option_name) {
+        if (length(temp_params$options[[option_name]]) == 0) {
+            tmp <- paste0("--", option_name)
         } else {
-            tmp <- paste0("--", reduction_name, " ", temp_params$reductions[[reduction_name]][1])
+            tmp <- paste0("--", option_name, " ", temp_params$options[[option_name]][1])
         }
-        temp_params$reductions[[reduction_name]][1] <<- NA
+        temp_params$options[[option_name]][1] <<- NA
         tmp
     })
     
-    # temp_params$reductions <- list()
+    # temp_params$options <- list()
     # Filter empty strings
-    reductions_params <- Filter(reductions_params, f = function(x) nchar(x) > 0)
-    reductions_string <-  paste0(reductions_params, collapse = " ")
+    options_params <- Filter(options_params, f = function(x) nchar(x) > 0)
+    options_string <-  paste0(options_params, collapse = " ")
     
-    # Flatten reduction
-    flat_params <- flatten(temp_params$reductions)
-    # Convert reduction parameters list to "--arg _" list
-    flat_reduction_params <- sapply(names(flat_params), FUN = params_to_strings)
+    # Flatten option
+    flat_params <- .flatten(temp_params$options)
+    # Convert option parameters list to "--arg _" list
+    flat_option_params <- sapply(names(flat_params), FUN = params_to_strings)
     # Filter empty strings
-    flat_reduction_params <- Filter(flat_reduction_params, f = function(x) nchar(x) > 0)
+    flat_option_params <- Filter(flat_option_params, f = function(x) nchar(x) > 0)
     # Create string "--passes 0 --bit_precision 18" for parser
-    reduction_params_string <- paste0(flat_reduction_params, collapse = " ")
+    option_params_string <- paste0(flat_option_params, collapse = " ")
     
-    temp_params$reductions <- list()
+    temp_params$options <- list()
     
     #Set learning mode string argument
     algorithm_string <- switch (temp_params$algorithm,
                                 sgd = {tmp <- ""; tmp},
                                 bfgs = {tmp <- "--bfgs"; tmp},
                                 ftrl = {tmp <- "--ftrl"; tmp},
-                                ksvm = {tmp <- "--ksvm"; tmp}
+                                pistol = {tmp <- "--pistol"; tmp},
+                                ksvm = {tmp <- "--ksvm"; tmp},
+                                OjaNewton = {tmp <- "--OjaNewton"; tmp},
+                                svrg = {tmp <- "--svrg"; tmp}
     )
-    # Disable cache here, because it's checked in vwtrain and vwtest
-    if (temp_params$general_params$cache) {
-        temp_params$general_params$cache <- NA
-    }
+    # # Disable cache here, because it's checked in vwtrain and vwtest
+    # if (temp_params$general_params$cache) {
+    #     temp_params$general_params$cache <- NA
+    # }
     # Flatten list
-    flat_params <- flatten(temp_params[-c(1)])
+    flat_params <- .flatten(temp_params[-c(1)])
     # Convert parameters list to "--arg _" list
     flat_params <- sapply(names(flat_params), FUN = params_to_strings)
     # Filter empty strings
     flat_params <- Filter(flat_params, f = function(x) nchar(x) > 0)
     # Create string "--passes 0 --bit_precision 18" for parser
     parameters_string <- paste0(flat_params, collapse = " ")
-    parameters_string <- paste(algorithm_string, parameters_string, reductions_string, reduction_params_string, sep = " ")
+    parameters_string <- paste(algorithm_string, parameters_string, options_string, option_params_string, sep = " ")
     
-    return(parameters_string)
+    return(trimws(parameters_string))
+}
+
+# Flatten parameters list
+.flatten <- function(x) {
+    repeat {
+        if(!any(vapply(x,is.list, logical(1)))) return(x)
+        x <- Reduce(c, x)
+    }
 }
