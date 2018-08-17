@@ -3,15 +3,17 @@ library(rvwgsoc)
 curr_dir <- getwd()
 setwd(tempdir())
 
-# Right now using only files in .vw format, later will also accept R formats
+# Get VW format datafiles
 ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
 ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
 multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package = "rvwgsoc")
 multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvwgsoc")
 
+# Setup model
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
                          feature_params = list(hash="all", bit_precision=25),
                          optimization_params = list(adaptive=FALSE, learning_rate=0.1))
+# Basic training and testing
 vwtrain(test_vwmodel, data = ext_train_data)
 vw_output <- vwtest(test_vwmodel, data = ext_test_data, probs_path = "./probs.vw")
 
@@ -19,11 +21,13 @@ vw_output <- vwtest(test_vwmodel, data = ext_test_data, probs_path = "./probs.vw
 test_vwmodel <- vwsetup()
 vwtrain(test_vwmodel, data = ext_train_data, readable_model = "hashed")
 vwtest(test_vwmodel, data = ext_test_data, readable_model = "inverted")
+# Model audit
+vwaudit(test_vwmodel)
 # No console output
 vwtrain(test_vwmodel, data = ext_train_data, quiet = T)
 vwtest(test_vwmodel, data = ext_train_data, quiet = T)
 
-# Add reductions via new interface
+# Add learning options
 library(magrittr)
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",
                          option = "ect", num_classes=3) %>%

@@ -7,9 +7,11 @@
 vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaNewton",
   "svrg"), general_params = list(), feature_params = list(),
   optimization_params = list(), dir = tempdir(), model = NULL,
-  option = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi", "lda",
-  "mf", "lrq", "stage_poly", "bootstrap", "autolink", "cb", "cbify", "nn",
-  "topk", "struct_search", "boosting"), ...)
+  option = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
+  "recall_tree", "lda", "multilabel_oaa", "classweight", "mf", "lrq",
+  "stage_poly", "bootstrap", "autolink", "replay", "explore_eval", "cb",
+  "cb_explore", "cbify", "multiworld_test_check", "nn", "topk", "search",
+  "boosting", "marginal"), ...)
 }
 \arguments{
 \item{algorithm}{Optimzation algorithm
@@ -51,6 +53,7 @@ vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaNewton",
  \item \code{hash} - How to hash the features. Available options: "strings", "all"
  \item \code{affix} - Generate prefixes/suffixes of features; argument "+2a,-3b,+1" means generate 2-char prefixes for namespace a, 3-char suffixes for b and 1 char prefixes for default namespace
  \item \code{spelling} - Compute spelling features for a given namespace (use '_' for default namespace)
+ \item \code{interact} - Put weights on feature products from namespaces <n1> and <n2>
 }}
 
 \item{optimization_params}{List of parameters:
@@ -133,33 +136,64 @@ Additional parameters depending on \code{algorithm} choice:
  \item \code{binary} - Reports loss as binary classification with -1,1 labels
  \item \code{oaa} - One-against-all multiclass learning with  labels
  \item \code{ect} - Error correcting tournament with  labels
- \item \code{csoaa} - One-against-all multiclass learning with  costs
- \item \code{wap} - Weighted all-pairs multiclass learning with  costs
+ \item \code{csoaa} - One-against-all multiclass learning with costs
+ \item \code{wap} - Weighted all-pairs multiclass learning with costs
+ \item \code{multilabel_oaa} - One-against-all multilabel with multiple labels
  \item \code{log_multi} - Online (decision) trees for  classes
+ \item \code{classweight} - Importance weight classes
  \item \code{lda} - Latent Dirichlet Allocation
+ \item \code{recall_tree} - Use online tree for multiclass
  \item \code{mf} - Matrix factorization mode
  \item \code{lrq} - Low rank quadratic features
  \item \code{stage_poly} - Stagewise polynomial features
  \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
  \item \code{autolink} - Create link function with polynomial N
- \item \code{cb} - Contextual bandit learning with K costs
+ \item \code{replay} - Experience Replay
+ \item \code{explore_eval} - Explore evaluation
+ \item \code{cb} - Contextual bandit learning
+ \item \code{cb_explore} - Contextual Bandit Exploration
  \item \code{cbify} - Convert multiclass on K classes into a contextual bandit problem
+ \item \code{multiworld_test} - Multiworld Testing
  \item \code{nn} - Sigmoidal feedforward network
  \item \code{topk} - Top K recommendation
  \item \code{struct_search} - Search-based structured prediction (SEARN or DAgger)
- \item \code{boosting} - online boosting with weak learners
+ \item \code{boosting} - Online boosting with weak learners
+ \item \code{marginal} - Substitute marginal label estimates for ids
 }}
 
 \item{...}{Additional options for a learning algorithm / reduction
 \itemize{
- \item \code{oaa} or \code{ect} or \code{log_multi}:
+ \item \code{oaa} or \code{ect}:
    \itemize{ 
      \item \code{num_classes} - Number of classes
+   }
+ \item \code{multilabel_oaa}:
+   \itemize{ 
+     \item \code{num_labels} - Number of labels
    }
  \item \code{csoaa} or \code{wap}:
    \itemize{ 
      \item \code{num_classes} - Number of classes
      \item \code{csoaa_ldf} or \code{wap_ldf} - \code{singleline} (Default) or \code{multiline} label dependent features
+   }
+ \item \code{log_multi}:
+   \itemize{
+     \item \code{num_classes} - Number of classes
+     \item \code{no_progress} - Disable progressive validation
+     \item \code{swap_resistance} - Higher = more resistance to swap, default=4
+   }
+ \item \code{classweight}:
+   \itemize{ 
+     \item \code{class_multiplier} - importance weight multiplier for class
+   }
+ \item \code{recall_tree}:
+   \itemize{ 
+     \item \code{num_classes} - Number of classes
+     \item \code{max_candidates} - Maximum number of labels per leaf in the tree
+     \item \code{bern_hyper} - Recall tree depth penalty (default=1)
+     \item \code{max_depth} - Maximum depth of the tree, default=log_2(number of classes)
+     \item \code{node_only} - Only use node features, not full path (default = 0)
+     \item \code{randomized_routing} - Randomized routing (default = 0)
    }
  \item \code{lda}:
    \itemize{ 
@@ -188,18 +222,48 @@ Additional parameters depending on \code{algorithm} choice:
    }
  \item \code{bootstrap}:
    \itemize{
-     \item \code{rounds} - number of rounds
+     \item \code{num_rounds} - number of rounds
      \item \code{bs_type} - the bootstrap mode: 'mean' or 'vote'
    }
  \item \code{autolink}:
    \itemize{
      \item \code{degree} - polynomial degree
    }
+ \item \code{replay}:
+   \itemize{
+     \item \code{level} - Use experience replay at a specified level (b=classification/regression, m=multiclass, c=cost sensitive)
+     \item \code{buffer} - Buffer size
+     \item \code{count} - how many times (in expectation) should each example be played (default: 1 = permuting)
+   }
+ \item \code{explore_eval}:
+   \itemize{
+     \item \code{multiplier} - Multiplier used to make all rejection sample probabilities <= 1
+   }
  \item \code{cb}:
    \itemize{
-     \item \code{costs} - number of costs
-     \item \code{cb_type} - contextual bandit method to use in {ips,dm,dr} default=dr
+     \item \code{num_costs} - number of num_costs If costs=0, contextual bandit learning
+     with multiline action dependent features (ADF) is triggered ("--cb_adf").
+     \item \code{cb_type} - contextual bandit method to use in {ips,dm,dr, mtr (for ADF)} default=dr
      \item \code{eval} - Evaluate a policy rather than optimizing.
+     \item \code{rank_all} - Return actions sorted by score order. (for ADF)
+     \item \code{no_predict} - Do not do a prediction when training. (for ADF)
+   }
+ \item \code{cb_explore}:
+   \itemize{
+     \item \code{num_actions} - number of actions in online explore-exploit for a <k> action contextual bandit problem.
+     If num_actions=0, online explore-exploit for a contextual bandit problem with multiline action dependent features (ADF) is triggered ("--cb_explore_adf").
+     \item \code{explore_type} - Type of exploration to use: "epsilon" (epsilon-greedy exploration) (default),
+      "first" (tau-first exploration), "bag" (bagging-based exploration), "cover" (Online cover based exploration), "softmax" (softmax exploration),
+      "regcb" (RegCB-elim exploration), "regcbopt" (RegCB optimistic exploration). "softmax", "regcb" and "regcbopt" types are only avaliable for exploration with ADF.
+     \item \code{explore_arg} - Parameter for exploration algorithm. Applicable for "epsilon", "first", "bag" and "cover" types of exploration.
+     \item \code{psi} - Disagreement parameter for "cover" algorithm. (default=1)
+     \item \code{nounif} - Do not explore uniformly on zero-probability actions in "cover" algorithm.
+     \item \code{mellowness} - "RegCB" mellowness parameter c_0. (default = 0.1)
+     \item \code{greedify} - Always update first policy once in "bag"
+     \item \code{lambda} - Parameter for "softmax". (default = -1)
+     \item \code{cb_min_cost} - Lower bound on cost. (default = 0) For ADF only
+     \item \code{cb_max_cost} - Upper bound on cost. (default = 1) For ADF only
+     \item \code{first_only} - Only explore the first action in a tie-breaking event. For ADF only
    }
  \item \code{cbify}:
    \itemize{
@@ -208,9 +272,15 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{loss0} - loss for correct label
      \item \code{loss1} - loss for incorrect label
    }
+ \item \code{multiworld_test}:
+   \itemize{
+     \item \code{features} - Evaluate features as a policies
+     \item \code{learn} - Do Contextual Bandit learning on <n> classes.
+     \item \code{num_classes} - Discard mwt policy features before learning
+   }
  \item \code{nn}:
    \itemize{
-     \item \code{hidden} - number of hidden units
+     \item \code{num_hidden} - number of hidden units
      \item \code{inpass} - Train or test sigmoidal feedforward network with input passthrough
      \item \code{multitask} - Share hidden layer across all reduced tasks
      \item \code{dropout} - Train or test sigmoidal feedforward network using dropout.
@@ -218,7 +288,7 @@ Additional parameters depending on \code{algorithm} choice:
    }
  \item \code{topk}:
    \itemize{
-     \item \code{k} - number of top k recomendations
+     \item \code{num_k} - number of top k recomendations
    }
  \item \code{struct_search}:
    \itemize{
@@ -249,6 +319,16 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{num_learners} - number of weak learners
      \item \code{gamma} - weak learner's edge (=0.1), used only by online BBM
      \item \code{alg} - specify the boosting algorithm: BBM (default), logistic (AdaBoost.OL.W), adaptive (AdaBoost.OL)
+   }
+ \item \code{marginal}:
+   \itemize{ 
+     \item \code{ids} - Substitute marginal label estimates for ids
+     \item \code{initial_denominator} - Initial denominator (default=1)
+     \item \code{initial_numerator} - Initial numerator (default=0.5)
+     \item \code{compete} - Enable competition with marginal features
+     \item \code{update_before_learn} - Update marginal values before learning (default=0)
+     \item \code{unweighted_marginals} - Ignore importance weights when computing marginals (default=0)
+     \item \code{decay} - Decay multiplier per event (1e-3 for example) (default=0)
    }
 }}
 }

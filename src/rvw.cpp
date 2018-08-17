@@ -283,6 +283,11 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
                                       targets, probabilities,
                                       weight, base, tag, multiline);
     
+    // Check probs_path for whitespace
+    if(probs_path.find_first_of("\t\n ") != probs_path.npos) {
+        Rcpp::stop("Whitespace characters are not allowed in probs_path");
+    }
+    
     Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     Rcpp::List vwmodel_eval = vwmodel["eval"];
     std::string model_dir = Rcpp::as<std::string>(vwmodel["dir"]) + PATH_SEPARATOR;
@@ -445,9 +450,9 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
     
     // Reading from audit file and write results to data.frame
     if(file_exists(data_str)){
-        
-        std::string test_init_str = "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
-        vw* aud_model = VW::initialize(test_init_str);
+        std::string aud_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
+        aud_init_str += "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
+        vw* aud_model = VW::initialize(aud_init_str);
         VW::start_parser(*aud_model);
         LEARNER::generic_driver(*aud_model);
         VW::end_parser(*aud_model);

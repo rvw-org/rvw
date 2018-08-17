@@ -49,7 +49,7 @@ test_that("nn vwsetup works as CL version", {
     dir = "./",
     model = "pk_mdl.vw",
     option = "nn",
-    hidden = 4
+    num_hidden = 4
   )
   vwtrain(test_vwmodel, data = ext_train_data, quiet = T)
   vw_pk_output <- vwtest(test_vwmodel, data = ext_test_data, quiet = T)
