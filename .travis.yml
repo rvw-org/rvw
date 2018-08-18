@@ -1,0 +1,35 @@
+# Run Travis CI for R via Docker
+#
+# Made by Dirk Eddelbuettel in August 2018 and released under GPL (>=2)
+
+os: linux
+dist: trusty
+sudo: required
+language: cpp
+compiler: gcc
+services: docker
+
+env:
+  global:
+    - DOCKER_OPTS="--rm -ti -v $(pwd):/mnt -w /mnt"
+      DOCKER_CNTR="eddelbuettel/rvw"
+      R_BLD_CHK_OPTS="--no-build-vignettes --no-manual"
+
+before_install:
+ - docker pull ${DOCKER_CNTR}
+ - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} r -p -e 'sessionInfo()'
+
+install:
+ - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} R CMD build ${R_BLD_CHK_OPTS} .
+
+script:
+ - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} R CMD check ${R_BLD_CHK_OPTS} rvw*.tar.gz
+
+after_failure:
+  - ./run.sh dump_logs
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+
