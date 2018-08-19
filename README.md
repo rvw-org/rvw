@@ -1,6 +1,8 @@
-## rvw_gsoc2018
+[![Build Status](https://travis-ci.org/rvw-org/rvw.svg?branch=master)](https://travis-ci.org/rvw-org/rvw)
 
-R Vowpal Wabbit (Google Summer of Code 2018) project
+## rvw
+
+Development of **rvw** package started as R Vowpal Wabbit (Google Summer of Code 2018) [project](https://summerofcode.withgoogle.com/projects/#5511455416254464).
 
 **Vowpal Wabbit** is an online machine learning system that is known for its speed and scalability and is widely used in research and industry.
 
@@ -10,9 +12,12 @@ This package aims to bring it's functionality to **R**.
 
 First you have to install **Vowpal Wabbit** from [here](https://github.com/JohnLangford/vowpal_wabbit#getting-the-code).
 
-And then install the **rvwgsoc** package:
+And then install the **rvwgsoc** package using `devtools`:
 
-`devtools::install_github("ivan-pavlov/rvwgsoc", ref = "feature/new-learning-modes")`
+```
+install.packages("devtools")
+devtools::install_github("ivan-pavlov/rvwgsoc")
+```
 
 ## Example 
 
@@ -43,7 +48,7 @@ df_train <- data_full[ind_train,]
 df_test <- data_full[-ind_train,]
 ```
 
-Then we setup a *Vowpal Wabbit* model:
+Then we set up a *Vowpal Wabbit* model:
 ```
 vwmodel <- vwsetup(option = "ect", num_classes = 3)
 ```

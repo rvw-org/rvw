@@ -450,8 +450,8 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
     
     // Reading from audit file and write results to data.frame
     if(file_exists(data_str)){
-        std::string aud_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
-        aud_init_str += "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
+        // std::string aud_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
+        std::string aud_init_str = "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
         vw* aud_model = VW::initialize(aud_init_str);
         VW::start_parser(*aud_model);
         LEARNER::generic_driver(*aud_model);

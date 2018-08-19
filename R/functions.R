@@ -640,8 +640,8 @@ vwparams <- function(vwmodel, name) {
 #'@param weight [string] weight (importance) of each line of the dataset.
 #'@param base [string] base of each line of the dataset. Used for residual regression.
 #'@param tag [string] tag of each line of the dataset.
-#'@param multiline [integer] number of labels (separate lines) for multilines examle
-#'@param append [bool] data to be appended to result file
+#'@param multiline [integer] number of labels (separate lines) for multilines example
+#'@param append [bool] data to be appended to the result file
 #'@import yaml
 #'@import tools 
 df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
