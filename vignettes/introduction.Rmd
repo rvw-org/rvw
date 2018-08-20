@@ -12,7 +12,7 @@ vignette: >
 ```{r knitr_setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = FALSE,
-  comment = "#>"
+    comment = "#>"
 )
 ```
 
@@ -43,9 +43,8 @@ Here we will try to predict the age group of abalone (based on number of abalone
 
 ```{r data}
 library(rvwgsoc)
-# We need "mltools" for data preparation
-library("mltools")
-library("magrittr")
+library("mltools") # We need "mltools" for data preparation
+library("magrittr") # We use "magrittr" for its "pipe" operator
 
 set.seed(1)
 data_url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
@@ -128,16 +127,97 @@ Arguments we use here:
 
 Now we are ready to start training our model:
 
-```{r training, error=TRUE}
+```{r training, error=FALSE, message=FALSE, results="hide"}
 vwtrain(vwmodel = vwmodel, data = train_file_path, passes = 100)
+```
+
+```{}
+#> Starting VW training session
+#> VW v8.6.1
+#> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_train.vw
+#> Using model file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534797886_mdl.vw
+#> Command line parameters:
+#> --random_seed 1 --quadratic bc --learning_rate 0.05 --l1 1e-07 --ect 3 -d /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_train.vw -f /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534797886_mdl.vw --passes 100 --kill_cache --cache_file /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_train.vw.cache
+#> creating quadratic features for pairs: bc
+#> using l1 regularization = 1e-07
+#> final_regressor = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534797886_mdl.vw
+#> Num weight bits = 18
+#> learning rate = 0.05
+#> initial_t = 0
+#> power_t = 0.5
+#> decay_learning_rate = 1
+#> creating cache_file = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_train.vw.cache
+#> Reading datafile = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_train.vw
+#> num sources = 1
+#> average  since         example        example  current  current  current
+#> loss     last          counter         weight    label  predict features
+#> 1.000000 1.000000            1            1.0        2        1       21
+#> 1.000000 1.000000            2            2.0        1        2       21
+#> 0.500000 0.000000            4            4.0        2        2       21
+#> 0.500000 0.500000            8            8.0        2        2       21
+#> 0.562500 0.625000           16           16.0        3        2       21
+#> 0.531250 0.500000           32           32.0        3        2       21
+#> 0.546875 0.562500           64           64.0        2        2       21
+#> 0.500000 0.453125          128          128.0        1        2       21
+#> 0.484375 0.468750          256          256.0        2        2       21
+#> 0.476562 0.468750          512          512.0        2        2       21
+#> 0.451172 0.425781         1024         1024.0        2        2       21
+#> 0.417969 0.384766         2048         2048.0        1        2       21
+#> 0.411894 0.411894         4096         4096.0        1        1       21 h
+#> 0.405941 0.400000         8192         8192.0        2        2       21 h
+#> 
+#> finished run
+#> number of examples per pass = 3007
+#> passes used = 5
+#> weighted example sum = 15035.000000
+#> weighted label sum = 0.000000
+#> average loss = 0.386228 h
+#> total feature number = 315685
 ```
 
 And finally compute predictions using trained model:
 
-```{r predicting, error=TRUE}
+```{r predicting, error=FALSE, message=FALSE, results="hide"}
 vw_pred <- predict(object = vwmodel, data = test_file_path)
 ```
 
+```{}
+#> Starting VW testing session
+#> VW v8.6.1
+#> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
+#> Using model file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534797886_mdl.vw
+#> Command line parameters: 
+#>  -t -d /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw -i /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534797886_mdl.vw --passes 1 -p /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/temp_probs_out.vw
+#> creating quadratic features for pairs: bc 
+#> only testing
+#> predictions = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/temp_probs_out.vw
+#> Num weight bits = 18
+#> learning rate = 0.5
+#> initial_t = 0
+#> power_t = 0.5
+#> using no cache
+#> Reading datafile = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
+#> num sources = 1
+#> average  since         example        example  current  current  current
+#> loss     last          counter         weight    label  predict features
+#> 1.000000 1.000000            1            1.0        2        1       21
+#> 1.000000 1.000000            2            2.0        3        2       21
+#> 1.000000 1.000000            4            4.0        3        2       21
+#> 0.500000 0.000000            8            8.0        2        2       21
+#> 0.562500 0.625000           16           16.0        2        2       21
+#> 0.343750 0.125000           32           32.0        2        2       21
+#> 0.437500 0.531250           64           64.0        1        1       21
+#> 0.453125 0.468750          128          128.0        3        2       21
+#> 0.378906 0.304688          256          256.0        1        2       21
+#> 0.337891 0.296875          512          512.0        3        3       21
+#> 
+#> finished run
+#> number of examples = 836
+#> weighted example sum = 836.000000
+#> weighted label sum = 0.000000
+#> average loss = 0.363636
+#> total feature number = 17556
+```
 Arguments we use here:
 
 * *vwmodel* - our model object
@@ -152,7 +232,7 @@ vwmodel
 ```
 
 For more in-depth analysis of our model we can inspect weights of the final regressor:
-```{r audit}
+```{r audit, error=FALSE, message=FALSE}
 vwaudit(vwmodel = vwmodel)
 ```
 
@@ -170,18 +250,58 @@ vwparams(vwmodel = vwmodel, name = "learning_rate")
 
 We can add more learning algorithms to our model. For example we want to use *boosting* algorithm with 100 "weak" learners. Then we will just add this option to our model and train again:
 
-```{r boosting, error=TRUE}
+```{r boosting, error=FALSE, message=FALSE, results="hide"}
 vwmodel <- add_option(vwmodel, option = "boosting", num_learners=100)
 # We add *quiet = T* to hide output diagnostics.
 vwtrain(vwmodel = vwmodel, data = train_file_path, passes = 100, quiet = T)
 vw_pred <- predict(object = vwmodel, data = test_file_path)
+```
+
+```{}
+#> Starting VW testing session
+#> VW v8.6.1
+#> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
+#> Using model file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534797886_mdl.vw
+#> Command line parameters: 
+#>  -t -d /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw -i /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534797886_mdl.vw --passes 1 -p /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/temp_probs_out.vw
+#> creating quadratic features for pairs: bc 
+#> only testing
+#> predictions = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/temp_probs_out.vw
+#> Number of weak learners = 100
+#> Gamma = 0.100000
+#> Num weight bits = 18
+#> learning rate = 0.5
+#> initial_t = 0
+#> power_t = 0.5
+#> using no cache
+#> Reading datafile = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
+#> num sources = 1
+#> average  since         example        example  current  current  current
+#> loss     last          counter         weight    label  predict features
+#> 1.000000 1.000000            1            1.0        2        1       21
+#> 1.000000 1.000000            2            2.0        3        2       21
+#> 1.000000 1.000000            4            4.0        3        2       21
+#> 0.500000 0.000000            8            8.0        2        2       21
+#> 0.500000 0.500000           16           16.0        2        2       21
+#> 0.343750 0.187500           32           32.0        2        2       21
+#> 0.406250 0.468750           64           64.0        1        1       21
+#> 0.429688 0.453125          128          128.0        3        2       21
+#> 0.375000 0.320312          256          256.0        1        2       21
+#> 0.341797 0.308594          512          512.0        3        3       21
+#> 
+#> finished run
+#> number of examples = 836
+#> weighted example sum = 836.000000
+#> weighted label sum = 0.000000
+#> average loss = 0.348086
+#> total feature number = 17556
 ```
   
 
 ### Contextual Bandit algorithms in Vowpal Wabbit
 
 **Vowpal Wabbit** is famous for its the highly optimized Contextual Bandit algorithms and we can use them in **rvw** as well:
-```{r cb, error=TRUE}
+```{r cb, error=FALSE, message=FALSE, results="hide"}
 cb_model <- vwsetup(general_params = list(random_seed=1),
                     feature_params = list(quadratic="bc"),
                     option = "cbify", num_classes = 3) %>%
@@ -190,6 +310,44 @@ cb_model <- vwsetup(general_params = list(random_seed=1),
 
 vwtrain(vwmodel = cb_model, data = train_file_path, passes = 100, quiet = T)
 vw_pred <- predict(object = cb_model, data = test_file_path)
+```
+
+```{}
+#> Starting VW testing session
+#> VW v8.6.1
+#> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
+#> Using model file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534798468_mdl.vw
+#> Command line parameters: 
+#>  -t -d /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw -i /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/vw_1534798468_mdl.vw --passes 1 -p /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/temp_probs_out.vw
+#> creating quadratic features for pairs: bc 
+#> only testing
+#> predictions = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/temp_probs_out.vw
+#> Num weight bits = 18
+#> learning rate = 0.5
+#> initial_t = 0
+#> power_t = 0.5
+#> using no cache
+#> Reading datafile = /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
+#> num sources = 1
+#> average  since         example        example  current  current  current
+#> loss     last          counter         weight    label  predict features
+#> 1.000000 1.000000            1            1.0        2        1       21
+#> 0.500000 0.000000            2            2.0        3        3       21
+#> 0.250000 0.000000            4            4.0        3        3       21
+#> 0.500000 0.750000            8            8.0        2        3       21
+#> 0.312500 0.125000           16           16.0        2        3       21
+#> 0.500000 0.687500           32           32.0        2        3       21
+#> 0.406250 0.312500           64           64.0        1        1       21
+#> 0.335938 0.265625          128          128.0        3        3       21
+#> 0.378906 0.421875          256          256.0        1        1       21
+#> 0.453125 0.527344          512          512.0        3        3       21
+#> 
+#> finished run
+#> number of examples = 836
+#> weighted example sum = 836.000000
+#> weighted label sum = 0.000000
+#> average loss = 0.470096
+#> total feature number = 17556
 ```
 
 New arguments we use here:
