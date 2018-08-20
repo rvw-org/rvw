@@ -11,9 +11,7 @@ Imports: Rcpp (>= 0.12.16), tools, RApiSerialize, data.table
 LinkingTo: Rcpp, RApiSerialize
 Suggests: testthat, yaml, utils,
     knitr,
-    rmarkdown,
-    magrittr,
-    mltools
+    rmarkdown
 SystemRequirements: C++11, Vowpal Wabbit library
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
