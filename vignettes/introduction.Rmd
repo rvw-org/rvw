@@ -44,7 +44,7 @@ Here we will try to predict the age group of abalone (based on number of abalone
 ```{r data}
 library(rvwgsoc)
 # We need "mltools" for data preparation
-if (!require("mltools", quietly = TRUE)) install.packages("mltools")
+if (!require("mltools", quietly = TRUE)) install.packages("mltools", repos = "http://cran.us.r-project.org")
 
 set.seed(1)
 data_url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
@@ -182,7 +182,7 @@ vw_pred <- predict(object = vwmodel, data = test_file_path)
 **Vowpal Wabbit** is famous for its the highly optimized Contextual Bandit algorithms and we can use them in **rvw** as well:
 ```{r cb, error=TRUE}
 # We use "magrittr" for "pipe" operator
-if (!require("magrittr", quietly = TRUE)) install.packages("magrittr") 
+if (!require("magrittr", quietly = TRUE)) install.packages("magrittr", repos = "http://cran.us.r-project.org") 
 
 cb_model <- vwsetup(general_params = list(random_seed=1),
                     feature_params = list(quadratic="bc"),
