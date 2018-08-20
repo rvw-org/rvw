@@ -1,0 +1,210 @@
+---
+title: "An Introduction to *rvw* Package"
+author: "Ivan Pavlov"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r knitr_setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+[Vowpal Wabbit](http://hunch.net/~vw/) is an online machine learning system that is known for its speed and scalability and is widely used in research and industry.
+
+This package aims to bring its functionality to **R**.
+
+## Installation
+
+First you have to get **Vowpal Wabbit** from [here](https://github.com/JohnLangford/vowpal_wabbit#getting-the-code).
+
+And then install the **rvw** package using `devtools`:
+
+```{r installation, message=FALSE, eval=FALSE}
+library(devtools)
+install_github("rvw-org/rvw")
+```
+
+## Using **rvw**
+
+**rvw** package gives you an access to various learning algorithms from **Vowpal Wabbit**. In this tutorial, you will see how you can use **rvw** for a multiclass classification problem.
+
+### Data preparation
+
+Here we will try to predict the age group of abalone (based on number of abalone shell rings) from physical measurements. We will use Abalone Data Set from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Abalone).
+
+```{r data}
+library(rvwgsoc)
+library(mltools)
+
+set.seed(1)
+data_url = 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
+data_names = c('sex','length','diameter','height','weight.w','weight.s','weight.v','weight.sh','rings')
+data_full = read.table(data_url, header = F , sep = ',', col.names = data_names)
+
+# Split number of rings into groups with equal (as possible) number of observations
+classes = 3 # Split into 3 groups
+data_full$group <- bin_data(data_full$rings, bins=classes, binType = "quantile")
+group_lvls <- levels(data_full$group)
+levels(data_full$group) <- seq_len(classes)
+
+# Prepare indices to split data
+ind_train <- sample(1:nrow(data_full), 0.8*nrow(data_full))
+# Split data into train and test subsets
+df_train <- data_full[ind_train,]
+df_test <- data_full[-ind_train,]
+```
+
+### Vowpal Wabbit input format
+
+In order to use **Vowpal Wabbit** we have to convert our data from `data.frame` format to  `.vw` [plain text format](https://github.com/JohnLangford/vowpal_wabbit/wiki/Input-format).  
+
+Each example should be formatted as follows:
+
+```
+[Label] [Importance] [Base] [Tag]|Namespace Features |Namespace Features ... |Namespace Features
+```
+One row from `df_train`:   
+```{r df_train} 
+df_train[1,]
+```
+will be converted to:  
+`2 |a sex^M |b diameter:0.4 length:0.52 height:0.145 |c weight.w:0.7765 weight.s:0.3525 weight.v:0.1845 weight.sh:0.185`  
+
+Such conversion can be done using `df2vw()` function:
+
+```{r conversion}
+
+train_file_path <- file.path(tempdir(), "df_train.vw")
+test_file_path <- file.path(tempdir(), "df_test.vw")
+# For df_train
+df2vw(data = df_train, file_path = train_file_path,
+      namespaces = list(a = list("sex") ,
+                        b = list("diameter", "length", "height"),
+                        c = list("weight.w","weight.s","weight.v","weight.sh")),
+      targets = "group")
+# And for df_test
+df2vw(data = df_test, file_path = test_file_path,
+      namespaces = list(a = list("sex") ,
+                        b = list("diameter", "length", "height"),
+                        c = list("weight.w","weight.s","weight.v","weight.sh")),
+      targets = "group")
+```
+
+Arguments we use here:
+
+* *data* - data to convert in `data.frame` format
+* *file_path* - the file path for converted data in `.vw` file format
+* *namespaces* - specify namespace for a list of features. All the features in one namespace will be hashed  together in a same feature space. This is used extensively in **Vowpal Wabbit** (e.g. for feature interactions)
+* *targets* - name of a column containing a label (real number) that we are trying to predict
+
+### Basic usage
+
+First we set up our **Vowpal Wabbit** model:
+```{r setup}
+vwmodel <- vwsetup(general_params = list(random_seed=1),
+                   feature_params = list(quadratic="bc"),
+                   optimization_params = list(learning_rate=0.05, l1=1E-7),
+                   option = "ect", num_classes = 3)
+```
+
+Arguments we use here:
+
+* *general_params* - list of parameters that define general behavior of `vwmodel`. Here we specify *random_seed=1* - seed for random number generator
+* *feature_params* - list of parameters associated with feature hashing and interactions. Here we use *quadratic="bc"*. This will create an interaction feature for every pair of features from namespace *b* and namespace *c*. You can read more about feature interactions [here](https://github.com/JohnLangford/vowpal_wabbit/wiki/Command-line-arguments#example-manipulation-options)
+* *optimization_params* - list of parameters for optimization process. *learning_rate=0.05* sets initial learning rate and *l2=1E-7* defines L2 regularization
+* *option* - specify learning algorithm/reduction to use. Here we will use *ect* - [Error Correcting Tournament](https://github.com/JohnLangford/vowpal_wabbit/wiki/Error-Correcting-Tournament-(ect)-multi-class-example) algorithm to train multiclass classification model;
+* *...* - additional arguments for *option*. *num_classes = 3* - number of classes in our data;
+
+Now we are ready to start training our model:
+
+```{r training, error=TRUE}
+vwtrain(vwmodel = vwmodel, data = train_file_path, passes = 100)
+```
+
+And finally compute predictions using trained model:
+
+```{r predicting, error=TRUE}
+vw_pred <- predict(object = vwmodel, data = test_file_path)
+```
+
+Arguments we use here:
+
+* *vwmodel* - our model object
+* *data* - data to use. Can be of type `character` (will be interpreted as a file path) or of type `data.frame` (then `df2vw()` will be used to convert *data* first)
+* *passes* - number of times the learning algorithm will cycle over the data 
+
+### Accessing the results
+
+If we want to review parameters of our model and evaluation results we can simply print `vwmodel`:
+```{r printing}
+vwmodel
+```
+
+For more in-depth analysis of our model we can inspect weights of the final regressor:
+```{r audit}
+vwaudit(vwmodel = vwmodel)
+```
+
+Also it is possible to access and modify parameters of our model
+```{r params}
+# Show the learning rate of our model
+vwparams(vwmodel = vwmodel, name = "learning_rate")
+# Change it to 0.1
+vwparams(vwmodel = vwmodel, name = "learning_rate") <- 0.1
+# And show again
+vwparams(vwmodel = vwmodel, name = "learning_rate")
+```
+
+### Extending our model
+
+We can add more learning algorithms to our model. For example we want to use *boosting* algorithm with 100 "weak" learners. Then we will just add this option to our model and train again:
+
+```{r boosting, error=TRUE}
+vwmodel <- add_option(vwmodel, option = "boosting", num_learners=100)
+# We add *quiet = T* to hide output diagnostics.
+vwtrain(vwmodel = vwmodel, data = train_file_path, passes = 100, quiet = T)
+vw_pred <- predict(object = vwmodel, data = test_file_path)
+```
+  
+
+### Contextual Bandit algorithms in Vowpal Wabbit
+
+**Vowpal Wabbit** is famous for its the highly optimized Contextual Bandit algorithms and we can use them in **rvw** as well:
+```{r cb, error=TRUE}
+library(magrittr) # We use it for "pipe" operator
+cb_model <- vwsetup(general_params = list(random_seed=1),
+                    feature_params = list(quadratic="bc"),
+                    option = "cbify", num_classes = 3) %>%
+    add_option(option = "cb_explore",
+               num_actions=3, explore_type="bag", explore_arg=7)
+
+vwtrain(vwmodel = cb_model, data = train_file_path, passes = 100, quiet = T)
+vw_pred <- predict(object = cb_model, data = test_file_path)
+```
+
+New arguments we use here:
+
+* *option = "cbify"* - datasets for Contextual Bandit are highly proprietary and often hard to come by, but we can transform any multiclass classification training set into a contextual bandit training set using this option
+* *num_classes* - number of classes in our multiclass training set
+* *option = "cb_explore"* - we train a Contextual Bandit algorithm with fixed maximum number of actions. You can read more about Contextual Bandit algorithms in **Vowpal Wabbit** [here](https://github.com/JohnLangford/vowpal_wabbit/wiki/Contextual-Bandit-algorithms)
+* *num_actions* - maximum number of actions for an algorithm
+* *explore_type* - exploration strategy. We use **Bagging Explorer** - the exploration rule that is based on an ensemble approach
+* *explore_arg* - argument for the exploration algorithm. For **Bagging Explorer** it is number of different policies to train.
+
+We can see that, unsurprisingly, Contextual Bandit model performs worser than multiclass classification model under full information in terms of the average testing error:  
+  
+**`r vwmodel$eval$test$avg_loss`** for multiclass classification model    
+**`r cb_model$eval$test$avg_loss`** for Contextual Bandit model  
+
+## Acknowledgements
+
+Development of **rvw** package started as R Vowpal Wabbit (Google Summer of Code 2018) [project](https://summerofcode.withgoogle.com/projects/#5511455416254464). with [Dirk Eddelbuettel](http://dirk.eddelbuettel.com) and [James J Balamuta](http://thecoatlessprofessor.com) mentoring this project and [the R Project for Statistical Computing](https://www.r-project.org) as the mentor organization.  

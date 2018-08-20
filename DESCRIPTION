@@ -1,8 +1,8 @@
 Package: rvwgsoc
 Type: Package
 Title: R Interface for Vowpal Wabbit
-Version: 0.5
-Date: 2018-08-10
+Version: 0.5.1
+Date: 2018-08-20
 Author: Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
 Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
 Description: R interface for Vowpal Wabbit using 'Rcpp' and the 'Vowpal Wabbit' library 'libvw' for the Google Summer of Code 2018.
@@ -11,7 +11,9 @@ Imports: Rcpp (>= 0.12.16), tools, RApiSerialize, data.table
 LinkingTo: Rcpp, RApiSerialize
 Suggests: testthat, yaml, utils,
     knitr,
-    rmarkdown
+    rmarkdown,
+    magrittr,
+    mltools
 SystemRequirements: C++11, Vowpal Wabbit library
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr

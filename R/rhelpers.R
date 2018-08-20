@@ -39,7 +39,7 @@
         bool_check_names <- names(input) %in% names(check)
         if(!all(bool_check_names)) {
             error_msg <- paste0("Wrong argument names: ",
-                       paste0(names(input)[!bool_check_names], collapse = ", "))
+                                paste0(names(input)[!bool_check_names], collapse = ", "))
             stop(error_msg, call. = FALSE)
         }
         
@@ -54,7 +54,7 @@
         })
         if(!all(bool_check_values)) {
             error_msg <- paste0("Wrong argument values: ",
-                        paste0(names(input)[!bool_check_values], collapse = ", "))
+                                paste0(names(input)[!bool_check_values], collapse = ", "))
             stop(error_msg, call. = FALSE)
         }
         
@@ -75,9 +75,9 @@
             # Check for missing first argument value in option parameters
             if(is.na(valid_option[[1]])){
                 error_msg <- paste0("Missing value for argument: ",
-                                 names(valid_option)[[1]],
-                                 "\nFor option: ",
-                                 option_name, "\n"
+                                    names(valid_option)[[1]],
+                                    "\nFor option: ",
+                                    option_name, "\n"
                 )
                 stop(error_msg, call. = FALSE)
             }
@@ -180,7 +180,7 @@
             exceptions_params,
             paste0("--replay_", temp_params$options[["replay"]][1], " ", temp_params$options[["replay"]][2]),
             paste0("--replay_", temp_params$options[["replay"]][1], "_count ", temp_params$options[["replay"]][3])
-            )
+        )
         temp_params$options[["replay"]][1] <- NA
         temp_params$options[["replay"]][2] <- NA
         temp_params$options[["replay"]][3] <- NA
