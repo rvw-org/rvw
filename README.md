@@ -1,18 +1,23 @@
-## rvw_gsoc2018
+[![Build Status](https://travis-ci.org/rvw-org/rvw.svg?branch=master)](https://travis-ci.org/rvw-org/rvw)
 
-R Vowpal Wabbit (Google Summer of Code 2018) project
+## rvw
+
+Development of **rvw** package started as R Vowpal Wabbit (Google Summer of Code 2018) [project](https://summerofcode.withgoogle.com/projects/#5511455416254464).
 
 **Vowpal Wabbit** is an online machine learning system that is known for its speed and scalability and is widely used in research and industry.
 
-This package aims to bring it's functionality to **R**.
+This package aims to bring its functionality to **R**.
 
 ## Installation
 
 First you have to install **Vowpal Wabbit** from [here](https://github.com/JohnLangford/vowpal_wabbit#getting-the-code).
 
-And then install the **rvwgsoc** package:
+And then install the **rvwgsoc** package using `devtools`:
 
-`devtools::install_github("ivan-pavlov/rvwgsoc", ref = "feature/new-learning-modes")`
+```r
+install.packages("devtools")
+devtools::install_github("ivan-pavlov/rvwgsoc")
+```
 
 ## Example 
 
@@ -20,8 +25,7 @@ In this example we will try to predict age groups (based on number of abalone sh
 
 First we prepare our data:
 
-```
-library(magrittr)
+```r
 library(mltools)
 library(rvwgsoc)
 
@@ -43,8 +47,8 @@ df_train <- data_full[ind_train,]
 df_test <- data_full[-ind_train,]
 ```
 
-Then we setup a *Vowpal Wabbit* model:
-```
+Then we set up a *Vowpal Wabbit* model:
+```r
 vwmodel <- vwsetup(option = "ect", num_classes = 3)
 ```
 
@@ -53,7 +57,7 @@ vwmodel <- vwsetup(option = "ect", num_classes = 3)
 
 Now we start training:
 
-```
+```r
 vwtrain(vwmodel, data = df_train,
         namespaces = list(NS1 = list("sex", "rings"),
                           NS2 = list("weight.w","weight.s","weight.v","weight.sh", "diameter", "length", "height")),
@@ -68,14 +72,14 @@ And we get: `average loss = 0.278060`
 
 And finally compute predictions using trained model:
 
-```
+```r
 predict.vw(vwmodel, data = df_test)
 ```
 Here we get: `average loss = 0.221292`
 
 We can add more learning algorithms to our model. For example we want to use *boosting* algorithm with 100 "weak" learners. Then we will just add this option to our model and train again:
 
-```
+```r
 vwmodel <- add_option(vwmodel, option = "boosting", num_learners=100)
 
 vwtrain(vwmodel, data = df_train,
@@ -88,14 +92,14 @@ We get: `average loss = 0.229273`
 
 And compute predictions:
 
-```
+```r
 predict.vw(vwmodel, data = df_test)
 ```
 Finally we get: `average loss = 0.081340`
 
 In order to inspect parameters of our model we can simply print it:
 
-```
+```r
 vwmodel
 ```
 

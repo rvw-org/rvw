@@ -39,9 +39,9 @@ multi-class classification algorithms or as vectors with actions for Contextual 
 
 \item{tag}{[string] tag of each line of the dataset.}
 
-\item{multiline}{[integer] number of labels (separate lines) for multilines examle}
+\item{multiline}{[integer] number of labels (separate lines) for multilines example}
 
-\item{append}{[bool] data to be appended to result file}
+\item{append}{[bool] data to be appended to the result file}
 }
 \description{
 Create a VW data file from a R data.frame object

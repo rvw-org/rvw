@@ -38,9 +38,9 @@
     check_param_values <- function(input, check) {
         bool_check_names <- names(input) %in% names(check)
         if(!all(bool_check_names)) {
-            cat(paste0("Wrong argument names: ",
-                       paste0(names(input)[!bool_check_names], collapse = ", ")))
-            stop("Wrong argument names!")
+            error_msg <- paste0("Wrong argument names: ",
+                                paste0(names(input)[!bool_check_names], collapse = ", "))
+            stop(error_msg, call. = FALSE)
         }
         
         valid_input <- check
@@ -53,9 +53,9 @@
             bool_check
         })
         if(!all(bool_check_values)) {
-            cat(paste0("Wrong argument values: ",
-                        paste0(names(input)[!bool_check_values], collapse = ", ")))
-            stop("Wrong argument values!")
+            error_msg <- paste0("Wrong argument values: ",
+                                paste0(names(input)[!bool_check_values], collapse = ", "))
+            stop(error_msg, call. = FALSE)
         }
         
         # Return check with modified values
@@ -72,6 +72,15 @@
                 input = params$options[[option_name]],
                 check = option_check_type
             )
+            # Check for missing first argument value in option parameters
+            if(is.na(valid_option[[1]])){
+                error_msg <- paste0("Missing value for argument: ",
+                                    names(valid_option)[[1]],
+                                    "\nFor option: ",
+                                    option_name, "\n"
+                )
+                stop(error_msg, call. = FALSE)
+            }
             valid_option <- setNames(list(valid_option), option_name)
             valid_options <<- c(valid_options, valid_option)
         })
@@ -135,9 +144,56 @@
     
     temp_params <- params
     
+    # Options exceptions
+    exceptions_params <- c()
+    # cb exception
+    if(isTRUE(temp_params$options[["cb"]][1] == 0)){
+        # Use --cb_adf if num_costs == 0
+        exceptions_params <- c(
+            exceptions_params,
+            paste0("--cb_adf")
+        )
+        temp_params$options[["cb"]][1] <- NA 
+    }
+    # cb_explore exception
+    if("cb_explore" %in% names(temp_params$options)) {
+        # Use --cb_explore_adf if num_actions == 0
+        if(isTRUE(temp_params$options[["cb_explore"]][1] == 0)){
+            exceptions_params <- c(
+                exceptions_params,
+                paste0("--cb_explore_adf")
+            )
+            temp_params$options[["cb_explore"]][1] <- NA 
+        }
+        # create exploration type string like "--first arg"
+        exceptions_params <- c(
+            exceptions_params,
+            paste0("--", temp_params$options[["cb_explore"]][2], " ", temp_params$options[["cb_explore"]][3])
+        )
+        temp_params$options[["cb_explore"]][2] <- NA
+        temp_params$options[["cb_explore"]][3] <- NA
+    }
+    # Experience Replay exception
+    if("replay" %in% names(temp_params$options)) {
+        # --replay_c 100, --replay_m 100, --replay_b 100 like exception
+        exceptions_params <- c(
+            exceptions_params,
+            paste0("--replay_", temp_params$options[["replay"]][1], " ", temp_params$options[["replay"]][2]),
+            paste0("--replay_", temp_params$options[["replay"]][1], "_count ", temp_params$options[["replay"]][3])
+        )
+        temp_params$options[["replay"]][1] <- NA
+        temp_params$options[["replay"]][2] <- NA
+        temp_params$options[["replay"]][3] <- NA
+    }
+    exceptions_params <- Filter(exceptions_params, f = function(x) nchar(x) > 0)
+    exceptions_string <-  paste0(exceptions_params, collapse = " ")
+    
+    
     # Convert different options into string with CL arguments
     options_params <- sapply(names(temp_params$options), function(option_name) {
-        if (length(temp_params$options[[option_name]]) == 0) {
+        if(is.na(temp_params$options[[option_name]][1])) {
+            tmp <- ""
+        } else if (option_name == names(temp_params$options[[option_name]])[1]) {
             tmp <- paste0("--", option_name)
         } else {
             tmp <- paste0("--", option_name, " ", temp_params$options[[option_name]][1])
@@ -184,9 +240,14 @@
     flat_params <- Filter(flat_params, f = function(x) nchar(x) > 0)
     # Create string "--passes 0 --bit_precision 18" for parser
     parameters_string <- paste0(flat_params, collapse = " ")
-    parameters_string <- paste(algorithm_string, parameters_string, options_string, option_params_string, sep = " ")
+    final_params <- c(algorithm_string, parameters_string, exceptions_string, options_string, option_params_string)
+    # parameters_string <- paste(algorithm_string, parameters_string, exceptions_string, options_string, option_params_string, sep = " ")
+    parameters_string <-  paste0(
+        Filter(final_params,f = function(x) nchar(x) > 0),
+        collapse = " "
+    )
     
-    return(trimws(parameters_string))
+    return(parameters_string)
 }
 
 # Flatten parameters list
