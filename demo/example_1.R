@@ -1,13 +1,13 @@
-library(rvwgsoc)
+library(rvw)
 
 curr_dir <- getwd()
 setwd(tempdir())
 
 # Get VW format datafiles
-ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
-ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
-multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package = "rvwgsoc")
-multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
+ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvw")
+multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package = "rvw")
+multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvw")
 
 # Setup model
 test_vwmodel <-  vwsetup(dir = "./", model = "mdl.vw",

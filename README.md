@@ -12,11 +12,11 @@ This package aims to bring its functionality to **R**.
 
 First you have to install **Vowpal Wabbit** from [here](https://github.com/JohnLangford/vowpal_wabbit#getting-the-code).
 
-And then install the **rvwgsoc** package using `devtools`:
+And then install the **rvw** package using `devtools`:
 
 ```r
 install.packages("devtools")
-devtools::install_github("ivan-pavlov/rvwgsoc")
+devtools::install_github("rvw-org/rvw")
 ```
 
 ## Example 
@@ -27,7 +27,7 @@ First we prepare our data:
 
 ```r
 library(mltools)
-library(rvwgsoc)
+library(rvw)
 
 set.seed(1)
 aburl = 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'

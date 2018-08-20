@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // get_vw_version
 std::string get_vw_version();
-RcppExport SEXP _rvwgsoc_get_vw_version() {
+RcppExport SEXP _rvw_get_vw_version() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -17,7 +17,7 @@ END_RCPP
 }
 // vwtrain
 void vwtrain(Rcpp::List& vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, bool update_model, int passes, bool cache, Rcpp::Nullable<float> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
-RcppExport SEXP _rvwgsoc_vwtrain(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP update_modelSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
+RcppExport SEXP _rvw_vwtrain(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP update_modelSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List& >::type vwmodel(vwmodelSEXP);
@@ -42,7 +42,7 @@ END_RCPP
 }
 // vwtest
 Rcpp::NumericVector vwtest(Rcpp::List& vwmodel, SEXP data, std::string probs_path, Rcpp::Nullable<Rcpp::String> readable_model, bool quiet, int passes, bool cache, bool raw, Rcpp::Nullable<float> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
-RcppExport SEXP _rvwgsoc_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP rawSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
+RcppExport SEXP _rvw_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP quietSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP rawSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -69,7 +69,7 @@ END_RCPP
 }
 // vwaudit
 Rcpp::DataFrame vwaudit(Rcpp::List& vwmodel);
-RcppExport SEXP _rvwgsoc_vwaudit(SEXP vwmodelSEXP) {
+RcppExport SEXP _rvw_vwaudit(SEXP vwmodelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,14 +80,14 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rvwgsoc_get_vw_version", (DL_FUNC) &_rvwgsoc_get_vw_version, 0},
-    {"_rvwgsoc_vwtrain", (DL_FUNC) &_rvwgsoc_vwtrain, 16},
-    {"_rvwgsoc_vwtest", (DL_FUNC) &_rvwgsoc_vwtest, 17},
-    {"_rvwgsoc_vwaudit", (DL_FUNC) &_rvwgsoc_vwaudit, 1},
+    {"_rvw_get_vw_version", (DL_FUNC) &_rvw_get_vw_version, 0},
+    {"_rvw_vwtrain", (DL_FUNC) &_rvw_vwtrain, 16},
+    {"_rvw_vwtest", (DL_FUNC) &_rvw_vwtest, 17},
+    {"_rvw_vwaudit", (DL_FUNC) &_rvw_vwaudit, 1},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_rvwgsoc(DllInfo *dll) {
+RcppExport void R_init_rvw(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

@@ -27,8 +27,8 @@ With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature}
 
 \item{targets}{[string or string vector]
-If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
-If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
+If \code{[string]} then will be treated as vector with real number labels for regular VW input format.
+If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa
 multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm.}
 
 \item{probabilities}{[string vector] vectors with action probabilities for Contextual Bandit algorithm.}

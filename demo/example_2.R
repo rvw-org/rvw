@@ -1,5 +1,5 @@
 library(mltools)
-library(rvwgsoc)
+library(rvw)
 
 curr_dir <- getwd()
 setwd(tempdir())
@@ -25,7 +25,7 @@ ind_train <- sample(1:nrow(data_full), 0.8*nrow(data_full))
 df_train <- data_full[ind_train,]
 df_test <- data_full[-ind_train,]
 
-vwmodel <- vwsetup(dir = "./", 
+vwmodel <- vwsetup(dir = "./",
                    option = "csoaa", num_classes = 3)
 
 vwtrain(vwmodel, data = df_train,
@@ -34,5 +34,5 @@ vwtrain(vwmodel, data = df_train,
 )
 predict.vw(vwmodel, data = df_test)
 
-setwd(curr_dir)   
+setwd(curr_dir)
 

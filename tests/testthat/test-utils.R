@@ -1,12 +1,12 @@
 context("Check auxiliary functionality")
-library(rvwgsoc)
+library(rvw)
 
 # Switch to temporary directory
 curr_dir <- getwd()
 setwd(tempdir())
 
-ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
-ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
+ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvw")
 
 test_that("vwtrain and vwtest output correct readable model", {
     # Package session
@@ -22,9 +22,9 @@ test_that("vwtrain and vwtest output correct readable model", {
     vw_pk_test_hashed_mdl_checksum = unname(tools::md5sum("readable_pk_mdl.vw"))
     vwtest(test_vwmodel, data = ext_test_data, readable_model = "inverted", quiet = T)
     vw_pk_test_inverted_mdl_checksum <- unname(tools::md5sum("readable_pk_mdl.vw"))
-    
+
     file.remove("pk_mdl.vw","readable_pk_mdl.vw")
-    
+
     # Command Line session
     # train
     system(
@@ -53,13 +53,13 @@ test_that("vwtrain and vwtest output correct readable model", {
     )
     vw_cl_test_inverted_mdl_checksum = unname(tools::md5sum("readable_cl_mdl.vw"))
     file.remove("cl_mdl.vw","readable_cl_mdl.vw")
-    
+
     # Results comparison
     unique_checksums_hashed <- length(unique(c(vw_pk_train_hashed_mdl_checksum,
                                                vw_pk_test_hashed_mdl_checksum,
                                                vw_cl_train_hashed_mdl_checksum,
                                                vw_cl_test_hashed_mdl_checksum)))
-    
+
     expect_equal(vw_pk_train_hashed_mdl_checksum, vw_cl_train_hashed_mdl_checksum)
     expect_equal(vw_pk_test_hashed_mdl_checksum, vw_cl_test_hashed_mdl_checksum)
     expect_equal(vw_pk_train_inverted_mdl_checksum, vw_cl_train_inverted_mdl_checksum)
@@ -88,11 +88,11 @@ test_that("vwaudit outputs correct audit data.frame", {
                                           0.273036986589432, 0.126379996538162, 0.171755000948906,
                                           -0.108182996511459, -0.328087002038956, 0.246926993131638,
                                           0.451092004776001, -0.148938998579979))
-    
+
     test_vwmodel <- vwsetup()
     vwtrain(test_vwmodel, data = ext_train_data)
     aud_df <- vwaudit(test_vwmodel)
-    
+
     expect_equal(aud_df, ref_df)
 })
 

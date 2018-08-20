@@ -1,6 +1,6 @@
-\name{rvwgsoc-package}
-\alias{rvwgsoc-package}
-\alias{rvwgsoc}
+\name{rvw-package}
+\alias{rvw-package}
+\alias{rvw}
 \docType{package}
 \title{
   R interface for Vowpal Wabbit

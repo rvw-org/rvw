@@ -107,7 +107,7 @@ Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP
         
         if (model_md5sum != data_md5sum) {
             Rcpp::Rcout << "Converting data.frame to VW format" << std::endl;
-            Rcpp::Environment env("package:rvwgsoc");
+            Rcpp::Environment env("package:rvw");
             Rcpp::Function r_df2vw = env["df2vw"];
             // Convert data.frame to VW
             
