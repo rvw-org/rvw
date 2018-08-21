@@ -74,11 +74,20 @@ Each example should be formatted as follows:
 [Label] [Importance] [Base] [Tag]|Namespace Features |Namespace Features ... |Namespace Features
 ```
 One row from `df_train`:   
-```{r df_train} 
+```{r df_train, error=FALSE, message=FALSE, results="hide"} 
 df_train[1,]
 ```
-will be converted to:  
-`2 |a sex^M |b diameter:0.4 length:0.52 height:0.145 |c weight.w:0.7765 weight.s:0.3525 weight.v:0.1845 weight.sh:0.185`  
+
+```r
+#>      sex length diameter height weight.w weight.s weight.v weight.sh rings group
+#> 1110   M   0.52      0.4  0.145   0.7765   0.3525   0.1845     0.185     9     2     
+```
+
+will be converted to:
+
+```r
+#> 2 |a sex^M |b diameter:0.4 length:0.52 height:0.145 |c weight.w:0.7765 weight.s:0.3525 weight.v:0.1845 weight.sh:0.185
+```  
 
 Such conversion can be done using `df2vw()` function:
 
@@ -131,7 +140,7 @@ Now we are ready to start training our model:
 vwtrain(vwmodel = vwmodel, data = train_file_path, passes = 100)
 ```
 
-```{}
+```r
 #> Starting VW training session
 #> VW v8.6.1
 #> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_train.vw
@@ -181,7 +190,7 @@ And finally compute predictions using trained model:
 vw_pred <- predict(object = vwmodel, data = test_file_path)
 ```
 
-```{}
+```r
 #> Starting VW testing session
 #> VW v8.6.1
 #> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
@@ -227,23 +236,134 @@ Arguments we use here:
 ### Accessing the results
 
 If we want to review parameters of our model and evaluation results we can simply print `vwmodel`:
-```{r printing}
+```{r printing, error=FALSE, message=FALSE, results="hide"}
 vwmodel
 ```
 
+```r
+#>  Vowpal Wabbit model
+#> Learning algorithm:   sgd 
+#> Working directory:   /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//Rtmp6bFZCA 
+#> Model file:   /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//Rtmp6bFZCA/vw_1534797504_mdl.vw 
+#> General parameters: 
+#>   random_seed :   1 
+#>   ring_size :  Not defined
+#>   holdout_off :   FALSE 
+#>   holdout_period :   10 
+#>   holdout_after :   0 
+#>   early_terminate :   3 
+#>   loss_function :   squared 
+#>   link :   identity 
+#>   quantile_tau :   0.5 
+#> Feature parameters: 
+#>   bit_precision :   18 
+#>   quadratic :   bc 
+#>   cubic :  Not defined
+#>   interactions :  Not defined
+#>   permutations :   FALSE 
+#>   leave_duplicate_interactions :   FALSE 
+#>   noconstant :   FALSE 
+#>   feature_limit :  Not defined
+#>   ngram :  Not defined
+#>   skips :  Not defined
+#>   hash :  Not defined
+#>   affix :  Not defined
+#>   spelling :  Not defined
+#>   interact :  Not defined
+#> Learning algorithms / Reductions: 
+#>   ect :
+#>       num_classes :   3 
+#> Optimization parameters: 
+#>   adaptive :   TRUE 
+#>   normalized :   TRUE 
+#>   invariant :   TRUE 
+#>   adax :   FALSE 
+#>   sparse_l2 :   0 
+#>   l1_state :   0 
+#>   l2_state :   1 
+#>   learning_rate :   0.05 
+#>   initial_pass_length :  Not defined
+#>   l1 :   1e-07 
+#>   l2 :   0 
+#>   no_bias_regularization :  Not defined
+#>   feature_mask :  Not defined
+#>   decay_learning_rate :   1 
+#>   initial_t :   0 
+#>   power_t :   0.5 
+#>   initial_weight :   0 
+#>   random_weights :  Not defined
+#>   normal_weights :  Not defined
+#>   truncated_normal_weights :  Not defined
+#>   sparse_weights :   FALSE 
+#>   input_feature_regularizer :  Not defined
+#> Model evaluation. Training: 
+#>   num_examples :   15035 
+#>   weighted_example_sum :   15035 
+#>   weighted_label_sum :   0 
+#>   avg_loss :   0.3862275 
+#>   total_feature :   315685 
+#> Model evaluation. Testing: 
+#>   num_examples :   836 
+#>   weighted_example_sum :   836 
+#>   weighted_label_sum :   0 
+#>   avg_loss :   0.3636364 
+#>   total_feature :   17556
+
+```
+
+
 For more in-depth analysis of our model we can inspect weights of the final regressor:
-```{r audit, error=FALSE, message=FALSE}
+```{r audit, error=FALSE, message=FALSE, results="hide"}
 vwaudit(vwmodel = vwmodel)
 ```
 
+```r
+#>                     Names Hashes Model.values
+#> 1                 a^sex^M  58028    0.0363983
+#> 2              b^diameter  57998   -0.0403499
+#> 3                b^length 145012   -0.0496383
+#> 4                b^height 107988   -0.0787311
+#> 5              c^weight.w  90732    0.0901030
+#> 6              c^weight.s 212300    0.1253380
+#> 7              c^weight.v  65196    0.3800930
+#> 8             c^weight.sh  76534    0.4210850
+#> 9                Constant 232120   -0.1986420
+#> 10  b^diameter*c^weight.w 116710    0.2348970
+#> 11  b^diameter*c^weight.s 235718    0.4218860
+#> 12  b^diameter*c^weight.v  23334    1.0003500
+#> 13 b^diameter*c^weight.sh 102268    1.0187700
+#> 14    b^length*c^weight.w 187120    0.1662080
+#> 15    b^length*c^weight.s  34256    0.2956240
+#> 16    b^length*c^weight.v 214576    0.7064920
+#> 17   b^length*c^weight.sh 168554    0.7264760
+#> 18    b^height*c^weight.w  93904    0.6733480
+#> 19    b^height*c^weight.s 209392    1.1952400
+#> 20    b^height*c^weight.v  61968    2.8984900
+#> 21   b^height*c^weight.sh  75338    2.9625199
+#> 22                a^sex^I  64526   -0.3009660
+#> 23                a^sex^F 244246    0.0278317
+```
+
 Also it is possible to access and modify parameters of our model
-```{r params}
+```{r params_1, error=FALSE, message=FALSE, results="hide"}
 # Show the learning rate of our model
 vwparams(vwmodel = vwmodel, name = "learning_rate")
+```
+
+```r
+#> [1] 0.05
+
+```
+
+```{r params_2, error=FALSE, message=FALSE, results="hide"}
 # Change it to 0.1
 vwparams(vwmodel = vwmodel, name = "learning_rate") <- 0.1
 # And show again
 vwparams(vwmodel = vwmodel, name = "learning_rate")
+```
+
+```r
+#> [1] 0.1
 ```
 
 ### Extending our model
@@ -257,7 +377,7 @@ vwtrain(vwmodel = vwmodel, data = train_file_path, passes = 100, quiet = T)
 vw_pred <- predict(object = vwmodel, data = test_file_path)
 ```
 
-```{}
+```r
 #> Starting VW testing session
 #> VW v8.6.1
 #> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
@@ -312,7 +432,7 @@ vwtrain(vwmodel = cb_model, data = train_file_path, passes = 100, quiet = T)
 vw_pred <- predict(object = cb_model, data = test_file_path)
 ```
 
-```{}
+```r
 #> Starting VW testing session
 #> VW v8.6.1
 #> Using data file: /var/folders/yx/6949djdd3yb4qsw7x_95wfjr0000gn/T//RtmpVQMLUo/df_test.vw
