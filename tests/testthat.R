@@ -1,4 +1,4 @@
 library(testthat)
-library(rvwgsoc)
+library(rvw)
 
-test_check("rvwgsoc")
+test_check("rvw")

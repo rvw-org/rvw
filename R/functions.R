@@ -4,7 +4,7 @@
 #'
 #'@param dir Working directory, default is tempdir()
 #'@param model File name for model weights or path to existng model file.
-#'@param option Add Learning algorithm / reduction option: 
+#'@param option Add Learning algorithm / reduction option:
 #'\itemize{
 #'  \item \code{binary} - Reports loss as binary classification with -1,1 labels
 #'  \item \code{oaa} - One-against-all multiclass learning with  labels
@@ -92,7 +92,7 @@
 #'}
 #'Additional parameters depending on \code{algorithm} choice:
 #'\itemize{
-#'  \item \code{sgd}: 
+#'  \item \code{sgd}:
 #'    \itemize{
 #'      \item \code{adaptive} - Use adaptive, individual learning rates (on by default)
 #'      \item \code{normalized} - Use per feature normalized updates (on by default)
@@ -102,24 +102,24 @@
 #'      \item \code{l1_state} - use per feature normalized updates
 #'      \item \code{l2_state} - use per feature normalized updates
 #'    }
-#'  \item \code{bfgs}: 
+#'  \item \code{bfgs}:
 #'    \itemize{
 #'      \item \code{conjugate_gradient} - Use conjugate gradient based optimization
 #'      \item \code{hessian_on} - Use second derivative in line search
 #'      \item \code{mem} - Memory in bfgs. default=15
 #'      \item \code{termination} - Termination threshold. default=0.00100000005
 #'    }
-#'  \item \code{ftrl}: 
+#'  \item \code{ftrl}:
 #'    \itemize{
 #'      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
 #'      \item \code{ftrl_beta} - FTRL beta parameter
 #'    }
-#'  \item \code{pistol}: 
+#'  \item \code{pistol}:
 #'    \itemize{
 #'      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
 #'      \item \code{ftrl_beta} - FTRL beta parameter
 #'    }
-#'  \item \code{ksvm}: 
+#'  \item \code{ksvm}:
 #'    \itemize{
 #'      \item \code{reprocess} - number of reprocess steps for LASVM default=1
 #'      \item \code{kernel} - type of kernel (rbf or linear (default))
@@ -127,7 +127,7 @@
 #'      \item \code{degree} - degree of poly kernel
 #'      \item \code{lambda} - saving regularization for test time
 #'    }
-#'  \item \code{OjaNewton}: 
+#'  \item \code{OjaNewton}:
 #'    \itemize{
 #'      \item \code{sketch_size} - size of sketch
 #'      \item \code{epoch_size} - size of epoch
@@ -137,7 +137,7 @@
 #'      \item \code{normalize} - normalize the features or not
 #'      \item \code{random_init} - randomize initialization of Oja or not
 #'    }
-#'  \item \code{svrg}: 
+#'  \item \code{svrg}:
 #'    \itemize{
 #'      \item \code{stage_size} - Number of passes per SVRG stage
 #'    }
@@ -145,15 +145,15 @@
 #'@param ... Additional options for a learning algorithm / reduction
 #'\itemize{
 #'  \item \code{oaa} or \code{ect}:
-#'    \itemize{ 
+#'    \itemize{
 #'      \item \code{num_classes} - Number of classes
 #'    }
 #'  \item \code{multilabel_oaa}:
-#'    \itemize{ 
+#'    \itemize{
 #'      \item \code{num_labels} - Number of labels
 #'    }
 #'  \item \code{csoaa} or \code{wap}:
-#'    \itemize{ 
+#'    \itemize{
 #'      \item \code{num_classes} - Number of classes
 #'      \item \code{csoaa_ldf} or \code{wap_ldf} - \code{singleline} (Default) or \code{multiline} label dependent features
 #'    }
@@ -164,11 +164,11 @@
 #'      \item \code{swap_resistance} - Higher = more resistance to swap, default=4
 #'    }
 #'  \item \code{classweight}:
-#'    \itemize{ 
+#'    \itemize{
 #'      \item \code{class_multiplier} - importance weight multiplier for class
 #'    }
 #'  \item \code{recall_tree}:
-#'    \itemize{ 
+#'    \itemize{
 #'      \item \code{num_classes} - Number of classes
 #'      \item \code{max_candidates} - Maximum number of labels per leaf in the tree
 #'      \item \code{bern_hyper} - Recall tree depth penalty (default=1)
@@ -177,7 +177,7 @@
 #'      \item \code{randomized_routing} - Randomized routing (default = 0)
 #'    }
 #'  \item \code{lda}:
-#'    \itemize{ 
+#'    \itemize{
 #'      \item \code{num_topics} - Number of topics
 #'      \item \code{lda_alpha} - Prior on sparsity of per-document topic weights
 #'      \item \code{lda_rho} - Prior on sparsity of topic distributions
@@ -302,7 +302,7 @@
 #'      \item \code{alg} - specify the boosting algorithm: BBM (default), logistic (AdaBoost.OL.W), adaptive (AdaBoost.OL)
 #'    }
 #'  \item \code{marginal}:
-#'    \itemize{ 
+#'    \itemize{
 #'      \item \code{ids} - Substitute marginal label estimates for ids
 #'      \item \code{initial_denominator} - Initial denominator (default=1)
 #'      \item \code{initial_numerator} - Initial numerator (default=0.5)
@@ -312,8 +312,8 @@
 #'      \item \code{decay} - Decay multiplier per event (1e-3 for example) (default=0)
 #'    }
 #'}
-#'@return vwmodel list class 
-#'@import tools 
+#'@return vwmodel list class
+#'@import tools
 #'@examples
 #'vwsetup(
 #'  dir = tempdir(),
@@ -343,7 +343,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
   train_md5sum = ""
   test_md5sum = ""
   train_file = ""
-  
+
   empty_eval_list = list(
       num_examples = NA_integer_,
       weighted_example_sum = NA_real_,
@@ -358,17 +358,17 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
       train=empty_eval_list,
       test=empty_eval_list
   )
-  
+
   # Check dir
   if(grepl("[[:space:]]", dir)) {
       stop("Whitespace characters are not allowed in `dir` path", call. = FALSE)
   }
-  
+
   # Remove last trailing path separator, because it's handled in vwtrain and vwtest
   last_char_dir <-  substr(dir, nchar(dir), nchar(dir))
   if(last_char_dir == "/" || last_char_dir == "\\") {
       dir <- substr(dir, 1, nchar(dir) - 1)
-  } 
+  }
 
   # If user provides model file path, use it for setup
   if(!is.null(model)) {
@@ -381,14 +381,14 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
       if(dirname(model) != ".") {
           file.copy(from = model, to = dir)
           model <- basename(model)
-      } 
+      }
   } else {
       model <- paste0("vw_", floor(as.numeric(Sys.time())), "_mdl.vw")
   }
 
   algorithm <- match.arg(algorithm)
   option <- match.arg(option)
-  
+
   # Set options
   if(option == "") {
       options = list()
@@ -396,8 +396,8 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
       options <- setNames(list(list(...)), option)
   }
 
-  
-  
+
+
   params <- list(
       algorithm = algorithm,
       general_params = general_params,
@@ -423,7 +423,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
   #     .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
   #   }
   # }
-  
+
   vwmodel <- list(params = params,
                   dir = dir,
                   model = model,
@@ -451,13 +451,13 @@ add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap
                                            "cb_explore", "cbify", "multiworld_test_check",
                                            "nn", "topk", "search", "boosting", "marginal"),
                        ...) {
-    
+
     option <- match.arg(option)
-    
+
     if (option %in% names(vwmodel$params$options)) {
         stop("Trying to overwrite option")
     }
-    
+
     new_option <- setNames(list(list(...)), option)
     vwmodel$params$options <- c(vwmodel$params$options, new_option)
     vwmodel$params <- .check_parameters(vwmodel$params)
@@ -471,7 +471,7 @@ add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap
 #'@description Print information about Vowpal Wabbit model
 #'@param x Model of vw class
 #'@param ... Not used currently
-#'@examples 
+#'@examples
 #'vwmodel <- vwsetup()
 #'print(vwmodel)
 #'
@@ -515,14 +515,14 @@ print.vw <- function(x, ...) {
       cat("\t", i, ":  ", x$params$optimization_params[[i]], "\n")
     }
   })
-  
+
   if(!all(is.na(.flatten(x$eval$train)))) {
       cat("Model evaluation. Training:", "\n")
       sapply(names(x$eval$train), FUN = function(i) {
           if(!is.na(x$eval$train[[i]])) {
               cat("\t", i, ":  ", x$eval$train[[i]], "\n")
           }
-      }) 
+      })
   }
   if(!all(is.na(.flatten(x$eval$test)))) {
       cat("Model evaluation. Testing:", "\n")
@@ -530,7 +530,7 @@ print.vw <- function(x, ...) {
           if(!is.na(x$eval$test[[i]])) {
               cat("\t", i, ":  ", x$eval$test[[i]], "\n")
           }
-      }) 
+      })
   }
 }
 
@@ -548,9 +548,9 @@ predict.vw <- function(object, data, probs_path = "",
 #'@param name Name of VW parameter
 #'@param value Replacment value of a parameter
 #'@return Value of a parameter
-#'@examples 
+#'@examples
 #'vwmodel <- vwsetup()
-#'# Access parameter 
+#'# Access parameter
 #'vwparams(vwmodel, "bit_precision")
 #'# Modify parameter
 #'vwparams(vwmodel, "bit_precision") <- 25
@@ -560,7 +560,7 @@ vwparams <- function(vwmodel, name) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
     }
-    
+
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)
     # print(key_string)
     if(length(key_string) > 0) {
@@ -584,7 +584,7 @@ vwparams <- function(vwmodel, name) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
     }
-    
+
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)
     if(length(key_string) > 0) {
         key_params <- unlist(strsplit(key_string, split = ".", fixed = TRUE))
@@ -615,9 +615,9 @@ vwparams <- function(vwmodel, name) {
 ## and by Dirk Eddelbuettel as part of rvw
 ## released under (3 clause) BSD like rest of vowpal_wabbit
 ##
-## now maintained here by Ivan Pavlov as part of rvwgsoc
+## now maintained here by Ivan Pavlov as part of rvw
 
-#'Create a VW data file from a R data.frame object 
+#'Create a VW data file from a R data.frame object
 #'
 #'@param data [data.frame] data.frame object to be converted
 #'@param file_path [string] file name of the resulting data in
@@ -633,9 +633,9 @@ vwparams <- function(vwmodel, name) {
 #'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 #'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
 #'@param targets [string or string vector]
-#'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
-#'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
-#'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm. 
+#'If \code{[string]} then will be treated as vector with real number labels for regular VW input format.
+#'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa
+#'multi-class classification algorithms or as vectors with actions for Contextual Bandit algorithm.
 #'@param probabilities [string vector] vectors with action probabilities for Contextual Bandit algorithm.
 #'@param weight [string] weight (importance) of each line of the dataset.
 #'@param base [string] base of each line of the dataset. Used for residual regression.
@@ -643,36 +643,36 @@ vwparams <- function(vwmodel, name) {
 #'@param multiline [integer] number of labels (separate lines) for multilines example
 #'@param append [bool] data to be appended to the result file
 #'@import yaml
-#'@import tools 
+#'@import tools
 df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                   targets = NULL, probabilities = NULL,
                   weight = NULL, base = NULL, tag = NULL,
                   multiline = NULL, append = FALSE) {
-    
+
     # Check data
     if(grepl("[[:space:]]", file_path)) {
         stop("Whitespace characters are not allowed in `file_path` path", call. = FALSE)
     }
-    
+
     # if namespaces = NULL, define a unique namespace
     if (is.null(namespaces)) {
         all_vars <- colnames(data)[!colnames(data) %in% c(targets, probabilities, weight, base, tag)]
         namespaces <- list(A = list(all_vars))
     }
-    
+
     data <- data.table::copy(data.table::setDT(data))
-    
+
     # parse variable names
     specChar      <- "\\(|\\)|\\||\\:|'"
     specCharSpace <- "\\(|\\)|\\||\\:| |'"
-    
+
     parsingNames <- function(x) {
         ret <- c()
         for (el in x)
             ret <- append(ret, gsub(specCharSpace,'_', el))
         ret
     }
-    
+
     # parse categorical variables
     parsingVar <- function(x, keepSpace) {
         # remove leading and trailing spaces, then remove special characters
@@ -683,7 +683,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
             spch <- specChar
         gsub(spch, '_', x)
     }
-    
+
     # namespace load with a yaml file
     if (typeof(namespaces) == "character" && length(namespaces) == 1 &&
         grepl("yaml$", namespaces)) {
@@ -693,7 +693,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
             stop("The 'yaml' package is needed.", call. = FALSE)
         }
     }
-    
+
     # replace all names to avoid conflicts with VW file format
     names(data) <- parsingNames(names(data))
     names(namespaces) <- parsingNames(names(namespaces))
@@ -703,32 +703,32 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     if (!is.null(weight)) weight <- parsingNames(weight)
     if (!is.null(base)) base <- parsingNames(base)
     if (!is.null(tag)) tag <- parsingNames(tag)
-    
+
     # Preparing file
     if(!append)
         vw_file <- file(file_path,"w")
     else
         vw_file <- file(file_path,"a")
-    
+
     # Construct vw format for labels, weights, base and tag
     formatDataVW <- ""
     argexpr <- c()
     names_indices <- seq_len(ncol(data))
     names(names_indices) <- names(data)
-    
+
     if(!is.null(targets)) {
         formatDataVW <- paste0(formatDataVW, "%s")
         if(length(targets) > 1) {
 
             # Initialize empty labels
             data[["parsed_labels"]] <- rep("", nrow(data))
-            
+
             if(!is.null(probabilities)) {
-                
+
                 if(length(targets) != length(probabilities)) {
                     stop("targets and probabilities should be of the same length")
                 }
-                
+
                 # Construct Labels for multilabel examples with probabilities (e.g. 1:0.6:0.3 2:0.4:0.7)
                 # Iterate cost vectors names
                 for(i in seq_along(targets)) {
@@ -744,7 +744,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                     FUN.VALUE = "character")
                 }
                 data[["parsed_labels"]] <- trimws(data[["parsed_labels"]])
-                
+
             } else {
                 # Construct Labels for multilabel examples without probabilities (e.g. 1:0.6 2:0.4)
                 # Iterate cost vectors names
@@ -760,15 +760,15 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
                     FUN.VALUE = "character")
                 }
                 data[["parsed_labels"]] <- trimws(data[["parsed_labels"]])
-                
+
             }
             formatDataVW <- paste0(formatDataVW, " ")
             argexpr <- c(argexpr, "parsed_labels")
-            
+
         } else {
             # Append regular labels
             argexpr <- c(argexpr, targets)
-            
+
             # For multiline examples
             if(!is.null(multiline) ) {
                 formatDataVW <- paste0("%s:", formatDataVW)
@@ -801,26 +801,26 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     }
     formatDataVW <- trimws(formatDataVW, which = "right")
     argexpr <- unlist(argexpr)
-    
+
     # Constructing features
     ## INITIALIZING THE HEADER AND INDEX
     ##Header: list of variables'name for each namespace
     ##Index: check if the variable is numerical (->TRUE) or categorical (->FALSE)
     Header <- list()
     Index <- list()
-    
+
     for(nsN in names(namespaces)) {
         # Index[[nsN]] <- sapply(data[,namespaces[[nsN]]], is.numeric)
         Index[[nsN]] <- sapply(data[,namespaces[[nsN]],with=F], is.numeric)
         Header[[nsN]] <- namespaces[[nsN]]
-        
+
         ## ESCAPE THE CATEGORICAL VARIABLES
         # Keep space for features stated in "keep_space" argument
         Header[[nsN]][!Index[[nsN]]] <- paste0("eval(parse(text = 'parsingVar(",
                                                Header[[nsN]][!Index[[nsN]]],
                                                ", keepSpace = ", Header[[nsN]][!Index[[nsN]]] %in% keep_space, ")'))")
     }
-    
+
     ## ADDING THE FORMAT FOR THE VARIABLES OF EACH NAMESPACE, AND CREATING THE ARGUMENT VECTOR
     for (nsN in names(namespaces)) {
         header <- namespaces[[nsN]]
@@ -830,17 +830,17 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         formatNumeric <- paste0(header[index], rep(":%s ", sum(index)), collapse = "")
         # appending the name of the variable to its value for each categorical variable
         # if(!is.null(multiline)) {
-        #     formatCategoricalNoSpace <- paste0(rep("%s ", sum(!keep_space_index)), collapse = " ") 
+        #     formatCategoricalNoSpace <- paste0(rep("%s ", sum(!keep_space_index)), collapse = " ")
         # } else {
-        #     formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ") 
+        #     formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ")
         # }
-        formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ") 
+        formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ")
         formatCategoricalWithSpace <- paste0(rep("%s", sum(keep_space_index)), collapse = " ")
-        
+
         formatDataVW <- c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategoricalNoSpace, formatCategoricalWithSpace))
         argexpr <- c(argexpr, eval_header[index], eval_header[!index][!keep_space_index], eval_header[!index][keep_space_index])
     }
-    
+
     # Add namespaces saparator
     if (!is.null(tag)) {
         formatDataVW <- paste0(formatDataVW, collapse = '|')
@@ -849,9 +849,9 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         formatDataVW <- paste0(formatDataVW[2:length(formatDataVW)], collapse = '|')
         formatDataVW <- paste0(formatDataVW_label, ' |', formatDataVW)
     }
-    
+
     if(!is.null(multiline)) {
-        formatDataVW <- 
+        formatDataVW <-
             writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))],
                                      c(rep("", multiline - 1), "\n"),
                                      collapse = '\n'),
@@ -860,6 +860,6 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))], collapse = '\n'),
                    con = vw_file)
     }
-    
+
     close(vw_file)
 }

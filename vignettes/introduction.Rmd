@@ -4,7 +4,7 @@ author: "Ivan Pavlov"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{An Introduction to the rvw Package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -42,8 +42,8 @@ install_github("rvw-org/rvw")
 Here we will try to predict the age group of abalone (based on number of abalone shell rings) from physical measurements. We will use Abalone Data Set from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Abalone).
 
 ```{r data}
-library(rvwgsoc)
-library("mltools") # We need "mltools" for data preparation
+library("rvw")
+library("mltools")  # We need "mltools" for data preparation
 library("magrittr") # We use "magrittr" for its "pipe" operator
 
 set.seed(1)

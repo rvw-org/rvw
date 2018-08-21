@@ -16,7 +16,7 @@ Data.frame containing feature names, feature hashes and model values
 Get feature names and their model values.
 }
 \examples{
-ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 test_vwmodel <- vwsetup()
 vwtrain(test_vwmodel, data = ext_train_data)
 vwaudit(test_vwmodel)

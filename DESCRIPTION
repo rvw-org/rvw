@@ -1,7 +1,7 @@
-Package: rvwgsoc
+Package: rvw
 Type: Package
 Title: R Interface for Vowpal Wabbit
-Version: 0.5.1
+Version: 0.5.2
 Date: 2018-08-20
 Author: Ivan Pavlov, Dirk Eddelbuettel, James J Balamuta
 Maintainer: Ivan Pavlov <pavlov.ivan095@gmail.com>
@@ -15,5 +15,5 @@ Suggests: testthat, yaml, utils,
     mltools,
     magrittr
 SystemRequirements: C++11, Vowpal Wabbit library
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 VignetteBuilder: knitr

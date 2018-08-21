@@ -5,10 +5,10 @@
 \title{Train Vowpal Wabbit model}
 \usage{
 vwtrain(vwmodel, data, readable_model = NULL, quiet = FALSE,
-  update_model = FALSE, passes = 1L, cache = FALSE, progress = NULL,
-  namespaces = NULL, keep_space = NULL, targets = NULL,
-  probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
-  multiline = NULL)
+  update_model = FALSE, passes = 1L, cache = FALSE,
+  progress = NULL, namespaces = NULL, keep_space = NULL,
+  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
+  tag = NULL, multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
@@ -60,7 +60,7 @@ multi-class classification algorithms or as vectors with actions for Contextual 
 vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 }
 \examples{
-ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 test_vwmodel <- vwsetup()
 vwtrain(test_vwmodel, data = ext_train_data)
 }

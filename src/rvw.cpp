@@ -80,7 +80,7 @@ std::string get_vw_version() {
 //'@param multiline [integer] number of labels (separate lines) for multilines examle
 //'@import tools
 //'@examples
-//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
@@ -258,8 +258,8 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@return Numerical vector containing predictions
 //'@import tools
 //'@examples
-//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
-//'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc") 
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
+//'ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvw") 
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data = ext_train_data)
 //'vwtest(test_vwmodel, data = ext_test_data)
@@ -431,7 +431,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
 //'@param vwmodel Model of vw class to train
 //'@return Data.frame containing feature names, feature hashes and model values
 //'@examples
-//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
+//'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data = ext_train_data)
 //'vwaudit(test_vwmodel)

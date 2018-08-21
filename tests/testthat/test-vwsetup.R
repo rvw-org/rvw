@@ -1,5 +1,5 @@
 context("vwsetup")
-library(rvwgsoc)
+library(rvw)
 
 test_model <- list(params = list(algorithm = "sgd",
                                  general_params = list(random_seed=0,
@@ -17,7 +17,7 @@ test_model <- list(params = list(algorithm = "sgd",
                                                        interactions=NA_character_,
                                                        permutations=FALSE,
                                                        leave_duplicate_interactions=FALSE,
-                                                       noconstant=FALSE, 
+                                                       noconstant=FALSE,
                                                        feature_limit=NA_character_,
                                                        ngram=NA_character_,
                                                        skips=NA_character_,
@@ -85,7 +85,7 @@ class(test_model) <- "vw"
 test_that("vwsetup correctly setup model with different learning modes", {
   # Empty setup
     expect_equal(vwsetup(dir = "../my_tmp/", model = "mdl.vw"), test_model)
-  
+
   # Reference test model for nn mode
   nn_test_model <- test_model
   nn_test_model$params$options = list(nn = list(num_hidden=3,
@@ -98,7 +98,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
     vwsetup(dir = "../my_tmp/", model = "mdl.vw", option = "nn", num_hidden=3),
     nn_test_model
   )
-  
+
   # Reference test model for lda mode
   lda_test_model <- test_model
   lda_test_model$params$options = list(lda = list(num_topics=5,
@@ -109,12 +109,12 @@ test_that("vwsetup correctly setup model with different learning modes", {
                                            math_mode=0,
                                            minibatch=1))
   lda_test_model$params_str = paste0("--lda 5")
-  
+
   expect_equal(
     vwsetup(dir = "../my_tmp/", model = "mdl.vw", option = "lda", num_topics=5),
     lda_test_model
   )
-  
+
   # Reference test model with custom parameters
   custom_test_model <- test_model
   custom_test_model$params$optimization_params$adaptive = FALSE
@@ -128,7 +128,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
     option = "binary"
   )
   expect_equal(test_vwmodel, custom_test_model)
-  
+
   # Reference test model with Experience Replay
   replay_test_model <- test_model
   replay_test_model$params$options = list(replay = list(level="m",
@@ -144,7 +144,7 @@ test_that("vwsetup correctly setup model with different learning modes", {
       buffer=200
   )
   expect_equal(test_vwmodel, replay_test_model)
-  
+
   # Reference test model with Contextual Bandit Exploration with Action Dependent Features
   cb_explore_test_model <- test_model
   cb_explore_test_model$params$options = list(cb_explore = list(num_actions=0,

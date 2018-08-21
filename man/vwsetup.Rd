@@ -4,14 +4,15 @@
 \alias{vwsetup}
 \title{Create Vowpal Wabbit model, setup model parameters and data}
 \usage{
-vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaNewton",
-  "svrg"), general_params = list(), feature_params = list(),
-  optimization_params = list(), dir = tempdir(), model = NULL,
-  option = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
-  "recall_tree", "lda", "multilabel_oaa", "classweight", "mf", "lrq",
-  "stage_poly", "bootstrap", "autolink", "replay", "explore_eval", "cb",
-  "cb_explore", "cbify", "multiworld_test_check", "nn", "topk", "search",
-  "boosting", "marginal"), ...)
+vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm",
+  "OjaNewton", "svrg"), general_params = list(),
+  feature_params = list(), optimization_params = list(),
+  dir = tempdir(), model = NULL, option = c("", "binary", "oaa",
+  "ect", "csoaa", "wap", "log_multi", "recall_tree", "lda",
+  "multilabel_oaa", "classweight", "mf", "lrq", "stage_poly", "bootstrap",
+  "autolink", "replay", "explore_eval", "cb", "cb_explore", "cbify",
+  "multiworld_test_check", "nn", "topk", "search", "boosting", "marginal"),
+  ...)
 }
 \arguments{
 \item{algorithm}{Optimzation algorithm
@@ -76,7 +77,7 @@ vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaNewton",
 }
 Additional parameters depending on \code{algorithm} choice:
 \itemize{
- \item \code{sgd}: 
+ \item \code{sgd}:
    \itemize{
      \item \code{adaptive} - Use adaptive, individual learning rates (on by default)
      \item \code{normalized} - Use per feature normalized updates (on by default)
@@ -86,24 +87,24 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{l1_state} - use per feature normalized updates
      \item \code{l2_state} - use per feature normalized updates
    }
- \item \code{bfgs}: 
+ \item \code{bfgs}:
    \itemize{
      \item \code{conjugate_gradient} - Use conjugate gradient based optimization
      \item \code{hessian_on} - Use second derivative in line search
      \item \code{mem} - Memory in bfgs. default=15
      \item \code{termination} - Termination threshold. default=0.00100000005
    }
- \item \code{ftrl}: 
+ \item \code{ftrl}:
    \itemize{
      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
      \item \code{ftrl_beta} - FTRL beta parameter
    }
- \item \code{pistol}: 
+ \item \code{pistol}:
    \itemize{
      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
      \item \code{ftrl_beta} - FTRL beta parameter
    }
- \item \code{ksvm}: 
+ \item \code{ksvm}:
    \itemize{
      \item \code{reprocess} - number of reprocess steps for LASVM default=1
      \item \code{kernel} - type of kernel (rbf or linear (default))
@@ -111,7 +112,7 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{degree} - degree of poly kernel
      \item \code{lambda} - saving regularization for test time
    }
- \item \code{OjaNewton}: 
+ \item \code{OjaNewton}:
    \itemize{
      \item \code{sketch_size} - size of sketch
      \item \code{epoch_size} - size of epoch
@@ -121,7 +122,7 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{normalize} - normalize the features or not
      \item \code{random_init} - randomize initialization of Oja or not
    }
- \item \code{svrg}: 
+ \item \code{svrg}:
    \itemize{
      \item \code{stage_size} - Number of passes per SVRG stage
    }
@@ -131,7 +132,7 @@ Additional parameters depending on \code{algorithm} choice:
 
 \item{model}{File name for model weights or path to existng model file.}
 
-\item{option}{Add Learning algorithm / reduction option: 
+\item{option}{Add Learning algorithm / reduction option:
 \itemize{
  \item \code{binary} - Reports loss as binary classification with -1,1 labels
  \item \code{oaa} - One-against-all multiclass learning with  labels
@@ -164,15 +165,15 @@ Additional parameters depending on \code{algorithm} choice:
 \item{...}{Additional options for a learning algorithm / reduction
 \itemize{
  \item \code{oaa} or \code{ect}:
-   \itemize{ 
+   \itemize{
      \item \code{num_classes} - Number of classes
    }
  \item \code{multilabel_oaa}:
-   \itemize{ 
+   \itemize{
      \item \code{num_labels} - Number of labels
    }
  \item \code{csoaa} or \code{wap}:
-   \itemize{ 
+   \itemize{
      \item \code{num_classes} - Number of classes
      \item \code{csoaa_ldf} or \code{wap_ldf} - \code{singleline} (Default) or \code{multiline} label dependent features
    }
@@ -183,11 +184,11 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{swap_resistance} - Higher = more resistance to swap, default=4
    }
  \item \code{classweight}:
-   \itemize{ 
+   \itemize{
      \item \code{class_multiplier} - importance weight multiplier for class
    }
  \item \code{recall_tree}:
-   \itemize{ 
+   \itemize{
      \item \code{num_classes} - Number of classes
      \item \code{max_candidates} - Maximum number of labels per leaf in the tree
      \item \code{bern_hyper} - Recall tree depth penalty (default=1)
@@ -196,7 +197,7 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{randomized_routing} - Randomized routing (default = 0)
    }
  \item \code{lda}:
-   \itemize{ 
+   \itemize{
      \item \code{num_topics} - Number of topics
      \item \code{lda_alpha} - Prior on sparsity of per-document topic weights
      \item \code{lda_rho} - Prior on sparsity of topic distributions
@@ -321,7 +322,7 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{alg} - specify the boosting algorithm: BBM (default), logistic (AdaBoost.OL.W), adaptive (AdaBoost.OL)
    }
  \item \code{marginal}:
-   \itemize{ 
+   \itemize{
      \item \code{ids} - Substitute marginal label estimates for ids
      \item \code{initial_denominator} - Initial denominator (default=1)
      \item \code{initial_numerator} - Initial numerator (default=0.5)

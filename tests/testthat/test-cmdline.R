@@ -1,15 +1,15 @@
 context("Check predictions against command line version of VW")
-library(rvwgsoc)
+library(rvw)
 
 # Switch to temporary directory
 curr_dir <- getwd()
 setwd(tempdir())
 
-ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvwgsoc")
-ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvwgsoc")
+ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
+ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvw")
 
-multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package = "rvwgsoc")
-multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvwgsoc")
+multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package = "rvw")
+multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvw")
 
 test_that("empty vwsetup works as CL version", {
   # Package session
@@ -21,7 +21,7 @@ test_that("empty vwsetup works as CL version", {
   vw_pk_output <- vwtest(test_vwmodel, data = ext_test_data, quiet = T)
   vw_pk_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
   file.remove("pk_mdl.vw")
-  
+
   # Command Line session
   system(
     paste0("vw -d ", ext_train_data," -f ./cl_mdl.vw"),
@@ -37,7 +37,7 @@ test_that("empty vwsetup works as CL version", {
   )
   vw_cl_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
   file.remove("cl_mdl.vw")
-  
+
   # Results comparison
   expect_equal(vw_pk_mdl_checksum, vw_cl_mdl_checksum, tolerance=1e-7)
   expect_equal(vw_pk_output, vw_cl_output, tolerance=1e-7)
@@ -55,7 +55,7 @@ test_that("nn vwsetup works as CL version", {
   vw_pk_output <- vwtest(test_vwmodel, data = ext_test_data, quiet = T)
   vw_pk_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
   file.remove("pk_mdl.vw")
-  
+
   # Command Line session
   system(
     paste0("vw --nn 4 -d ", ext_train_data," -f ./cl_mdl.vw"),
@@ -71,7 +71,7 @@ test_that("nn vwsetup works as CL version", {
   )
   vw_cl_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
   file.remove("cl_mdl.vw")
-  
+
   # Results comparison
   expect_equal(vw_pk_mdl_checksum, vw_cl_mdl_checksum)
   expect_equal(vw_pk_output, vw_cl_output, tolerance=1e-7)
@@ -94,7 +94,7 @@ test_that("vwsetup with custom arguments and cache works as CL version", {
   vw_pk_output <- vwtest(test_vwmodel, data = ext_test_data, quiet = T)
   vw_pk_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
   file.remove("pk_mdl.vw","binary_train.vw.cache", "binary_valid.vw.cache")
-  
+
   # Command Line session
   system(
     paste0("vw --random_seed 42 --loss_function logistic --link logistic ",
@@ -112,7 +112,7 @@ test_that("vwsetup with custom arguments and cache works as CL version", {
   )
   vw_cl_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
   file.remove("cl_mdl.vw","binary_train.vw.cache", "binary_valid.vw.cache")
-  
+
   # Results comparison
   expect_equal(vw_pk_mdl_checksum, vw_cl_mdl_checksum)
   expect_equal(vw_pk_output, vw_cl_output, tolerance=1e-7)
@@ -132,7 +132,7 @@ test_that("Updating model with new data works as CL version", {
     vw_pk_updated_mdl_checksum <- unname(tools::md5sum(pk_mdl_file))
     vw_pk_output <- predict.vw(test_vwmodel, data = ext_test_data, quiet = T)
     file.remove(pk_mdl_file)
-    
+
     # Command Line session
     cl_mdl_file <- paste0(test_dir, "/", "cl_mdl.vw")
     system(
@@ -158,7 +158,7 @@ test_that("Updating model with new data works as CL version", {
         )
     )
     file.remove(cl_mdl_file)
-    
+
     # Results comparison
     expect_equal(vw_pk_initial_mdl_checksum, vw_cl_initial_mdl_checksum)
     expect_equal(vw_pk_updated_mdl_checksum, vw_cl_updated_mdl_checksum)
@@ -177,7 +177,7 @@ test_that("vwsetup with multiclass classification setup works as CL version", {
     vw_pk_output <- vwtest(test_vwmodel, data = multiclass_test_data, quiet = T)
     vw_pk_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
     file.remove("pk_mdl.vw","multiclass_train.vw.cache", "multiclass_valid.vw.cache")
-    
+
     # Command Line session
     system(
         paste0("vw --passes 4 --cache --ect 3",
@@ -195,7 +195,7 @@ test_that("vwsetup with multiclass classification setup works as CL version", {
     )
     vw_cl_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
     file.remove("cl_mdl.vw", "multiclass_train.vw.cache", "multiclass_valid.vw.cache")
-    
+
     # Results comparison
     expect_equal(vw_pk_mdl_checksum, vw_cl_mdl_checksum)
     expect_equal(vw_pk_output, vw_cl_output, tolerance=1e-7)
