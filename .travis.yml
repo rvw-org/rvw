@@ -12,7 +12,7 @@ services: docker
 env:
   global:
     - DOCKER_OPTS="--rm -ti -v $(pwd):/mnt -w /mnt"
-      DOCKER_CNTR="eddelbuettel/rvw"
+      DOCKER_CNTR="rvowalwabbit/rvowpalwabbit_test"
       R_BLD_CHK_OPTS="--no-build-vignettes --no-manual"
 
 before_install:
