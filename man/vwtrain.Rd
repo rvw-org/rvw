@@ -4,11 +4,11 @@
 \alias{vwtrain}
 \title{Train Vowpal Wabbit model}
 \usage{
-vwtrain(vwmodel, data, readable_model = NULL, quiet = FALSE,
-  update_model = FALSE, passes = 1L, cache = FALSE,
-  progress = NULL, namespaces = NULL, keep_space = NULL,
-  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
-  tag = NULL, multiline = NULL)
+vwtrain(vwmodel, data, readable_model = NULL, readable_model_path = "",
+  quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE,
+  progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL,
+  probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
+  multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
@@ -18,6 +18,8 @@ If \code{[data.frame]} then will be parsed using \code{df2vw} function.}
 
 \item{readable_model}{[string] Print trained model in human readable format ("hashed") 
 and also with human readable features ("inverted")}
+
+\item{readable_model_path}{[string] Path to file where to save readable model.}
 
 \item{quiet}{[logical] Do not print anything to the console}
 

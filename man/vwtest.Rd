@@ -6,13 +6,13 @@
 \title{Compute predictions using Vowpal Wabbit model}
 \usage{
 vwtest(vwmodel, data, probs_path = "", readable_model = NULL,
-  quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE,
-  progress = NULL, namespaces = NULL, keep_space = NULL,
+  readable_model_path = "", quiet = FALSE, passes = 1L, cache = FALSE,
+  raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL,
   targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
   tag = NULL, multiline = NULL)
 
-\method{predict}{vw}(object, data, probs_path = "",
-  readable_model = NULL, quiet = FALSE, ...)
+\method{predict}{vw}(object, data, probs_path = "", readable_model = NULL,
+  quiet = FALSE, ...)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train.}
@@ -24,6 +24,8 @@ If \code{[data.frame]} then will be parsed using \code{df2vw} function.}
 
 \item{readable_model}{[string] Print trained model in human readable format ("hashed") 
 and also with human readable features ("inverted").}
+
+\item{readable_model_path}{[string] Path to file where to save readable model.}
 
 \item{quiet}{[bool] Do not print anything to the console.}
 

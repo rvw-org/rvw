@@ -54,6 +54,7 @@ std::string get_vw_version() {
 //'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted")
+//'@param readable_model_path [string] Path to file where to save readable model.
 //'@param quiet [logical] Do not print anything to the console 
 //'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
@@ -84,8 +85,8 @@ std::string get_vw_version() {
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
-void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
-             int passes=1, bool cache=false, Rcpp::Nullable<float> progress=R_NilValue,
+void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
+             bool quiet=false, bool update_model=false, int passes=1, bool cache=false, Rcpp::Nullable<float> progress=R_NilValue,
              Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
              Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
@@ -112,7 +113,17 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     std::string readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
     Rcpp::List vwmodel_params = vwmodel["params"];
     Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
-
+    
+    // If no readable_model_path was provided we should create temporary here and then delete
+    if (readable_model_path.empty()) {
+        readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    } else {
+        // Check readable_model_path for whitespace
+        if(readable_model_path.find_first_of("\t\n ") != readable_model_path.npos) {
+            Rcpp::stop("Whitespace characters are not allowed in readable_model_path");
+        }
+        readable_model_str = readable_model_path;
+    }
     
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     train_init_str += " -d " + data_str + " -f " + model_str + " --passes " + std::to_string(passes);
@@ -210,10 +221,13 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
                     Rcpp::Rcout << readable_model_line << std::endl;
                 }
                 readable_model_stream.close();
-                // remove(readable_model_str.c_str());
                 Rcpp::Rcout << std::endl;
             }
         }
+    }
+    // Delete temporary readable_mode file
+    if (readable_model_str.empty()) {
+        remove(readable_model_str.c_str());
     }
     
 }
@@ -230,6 +244,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@param probs_path [string] Path to file where to save predictions.
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted").
+//'@param readable_model_path [string] Path to file where to save readable model.
 //'@param quiet [bool] Do not print anything to the console.
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 //'@param cache [bool] Use a cache for a data file.
@@ -265,8 +280,8 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'vwtest(test_vwmodel, data = ext_test_data)
 //'@rdname vwtest
 // [[Rcpp::export]]
-Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
-                           int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
+Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
+                           bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
                            Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
@@ -283,17 +298,12 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
                                       targets, probabilities,
                                       weight, base, tag, multiline);
     
-    // Check probs_path for whitespace
-    if(probs_path.find_first_of("\t\n ") != probs_path.npos) {
-        Rcpp::stop("Whitespace characters are not allowed in probs_path");
-    }
-    
     Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     Rcpp::List vwmodel_eval = vwmodel["eval"];
     std::string model_dir = Rcpp::as<std::string>(vwmodel["dir"]) + PATH_SEPARATOR;
     std::string model_str = model_dir + Rcpp::as<std::string>(vwmodel["model"]);
     std::string probs_str;
-    std::string readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    std::string readable_model_str;
     Rcpp::List vwmodel_params = vwmodel["params"];
     Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
     
@@ -302,7 +312,21 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         // probs_str = model_dir + std::to_string(std::time(nullptr)) + "_probs_out.vw";
         probs_str = model_dir + "temp_probs_out.vw";
     } else {
+        // Check probs_path for whitespace
+        if(probs_path.find_first_of("\t\n ") != probs_path.npos) {
+            Rcpp::stop("Whitespace characters are not allowed in probs_path");
+        }
         probs_str = probs_path;
+    }
+    // The same for readable_model_path
+    if (readable_model_path.empty()) {
+        readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    } else {
+        // Check readable_model_path for whitespace
+        if(readable_model_path.find_first_of("\t\n ") != readable_model_path.npos) {
+            Rcpp::stop("Whitespace characters are not allowed in readable_model_path");
+        }
+        readable_model_str = readable_model_path;
     }
     
     std::string test_init_str;
@@ -400,6 +424,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         remove(probs_str.c_str());
     }
     
+    
     if (!quiet)
     {
         if(read_model_file) {
@@ -414,10 +439,13 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
                     Rcpp::Rcout << readable_model_line << std::endl;
                 }
                 readable_model_stream.close();
-                // remove(readable_model_str.c_str());
                 Rcpp::Rcout << std::endl;
             }
         }
+    }
+    // Delete temporary readable_mode file
+    if (readable_model_str.empty()) {
+        remove(readable_model_str.c_str());
     }
     
     return data_vec;

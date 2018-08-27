@@ -16,7 +16,7 @@
 #'  \item \code{classweight} - Importance weight classes
 #'  \item \code{lda} - Latent Dirichlet Allocation
 #'  \item \code{recall_tree} - Use online tree for multiclass
-#'  \item \code{mf} - Matrix factorization mode
+#'  \item \code{new_mf} - Matrix factorization mode
 #'  \item \code{lrq} - Low rank quadratic features
 #'  \item \code{stage_poly} - Stagewise polynomial features
 #'  \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
@@ -186,7 +186,7 @@
 #'      \item \code{math_mode} - Math mode: simd, accuracy, fast-approx
 #'      \item \code{minibatch} - Minibatch size
 #'    }
-#'  \item \code{mf}:
+#'  \item \code{new_mf}:
 #'    \itemize{
 #'      \item \code{rank} - rank for matrix factorization
 #'    }
@@ -332,7 +332,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
                     option = c("", "binary", "oaa", "ect", "csoaa", "wap",
                                "log_multi", "recall_tree", "lda",
                                "multilabel_oaa", "classweight",
-                               "mf", "lrq", "stage_poly", "bootstrap",
+                               "new_mf", "lrq", "stage_poly", "bootstrap",
                                "autolink", "replay", "explore_eval", "cb",
                                "cb_explore", "cbify", "multiworld_test_check",
                                "nn", "topk", "search", "boosting", "marginal"),
@@ -446,7 +446,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
 add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap",
                                            "log_multi", "recall_tree", "lda",
                                            "multilabel_oaa", "classweight",
-                                           "mf", "lrq", "stage_poly", "bootstrap",
+                                           "new_mf", "lrq", "stage_poly", "bootstrap",
                                            "autolink", "replay", "explore_eval", "cb",
                                            "cb_explore", "cbify", "multiworld_test_check",
                                            "nn", "topk", "search", "boosting", "marginal"),
@@ -666,10 +666,15 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
     specChar      <- "\\(|\\)|\\||\\:|'"
     specCharSpace <- "\\(|\\)|\\||\\:| |'"
 
-    parsingNames <- function(x) {
+    parsingNames <- function(x, keepSpace=F) {
         ret <- c()
-        for (el in x)
-            ret <- append(ret, gsub(specCharSpace,'_', el))
+        if(keepSpace){
+            for (el in x)
+                ret <- append(ret, gsub(specChar,'_', el))
+        } else {
+            for (el in x)
+                ret <- append(ret, gsub(specCharSpace,'_', el))
+        }
         ret
     }
 
@@ -696,7 +701,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
 
     # replace all names to avoid conflicts with VW file format
     names(data) <- parsingNames(names(data))
-    names(namespaces) <- parsingNames(names(namespaces))
+    names(namespaces) <- parsingNames(names(namespaces), keepSpace = T)
     for (x in names(namespaces)) namespaces[[x]] <- parsingNames(namespaces[[x]])
     targets <- parsingNames(targets)
     if (!is.null(probabilities)) probabilities <- parsingNames(probabilities)

@@ -5,10 +5,10 @@
 \title{Add option to the model}
 \usage{
 add_option(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap",
-  "log_multi", "recall_tree", "lda", "multilabel_oaa", "classweight", "mf",
-  "lrq", "stage_poly", "bootstrap", "autolink", "replay", "explore_eval",
-  "cb", "cb_explore", "cbify", "multiworld_test_check", "nn", "topk",
-  "search", "boosting", "marginal"), ...)
+  "log_multi", "recall_tree", "lda", "multilabel_oaa", "classweight", "new_mf",
+  "lrq", "stage_poly", "bootstrap", "autolink", "replay", "explore_eval", "cb",
+  "cb_explore", "cbify", "multiworld_test_check", "nn", "topk", "search",
+  "boosting", "marginal"), ...)
 }
 \arguments{
 \item{vwmodel}{Model of vw class}

@@ -14,6 +14,7 @@
 #'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 #'@param readable_model [string] Print trained model in human readable format ("hashed") 
 #'and also with human readable features ("inverted")
+#'@param readable_model_path [string] Path to file where to save readable model.
 #'@param quiet [logical] Do not print anything to the console 
 #'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
 #'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
@@ -43,8 +44,8 @@
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
-vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    invisible(.Call(`_rvw_vwtrain`, vwmodel, data, readable_model, quiet, update_model, passes, cache, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
+vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = "", quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    invisible(.Call(`_rvw_vwtrain`, vwmodel, data, readable_model, readable_model_path, quiet, update_model, passes, cache, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
 }
 
 #'Compute predictions using Vowpal Wabbit model
@@ -59,6 +60,7 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'@param probs_path [string] Path to file where to save predictions.
 #'@param readable_model [string] Print trained model in human readable format ("hashed") 
 #'and also with human readable features ("inverted").
+#'@param readable_model_path [string] Path to file where to save readable model.
 #'@param quiet [bool] Do not print anything to the console.
 #'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 #'@param cache [bool] Use a cache for a data file.
@@ -93,8 +95,8 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, quiet = FALSE, update_
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtest(test_vwmodel, data = ext_test_data)
 #'@rdname vwtest
-vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    .Call(`_rvw_vwtest`, vwmodel, data, probs_path, readable_model, quiet, passes, cache, raw, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
+vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, readable_model_path = "", quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    .Call(`_rvw_vwtest`, vwmodel, data, probs_path, readable_model, readable_model_path, quiet, passes, cache, raw, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
 }
 
 #'Audit Vowpal Wabbit model
