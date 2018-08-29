@@ -486,13 +486,9 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
         std::string aud_init_str = "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
         vw* aud_model = VW::initialize(aud_init_str);
         VW::start_parser(*aud_model);
-        Rcpp::Rcout << "HI1" << std::cout;
         LEARNER::generic_driver(*aud_model);
-        Rcpp::Rcout << "HI2" << std::cout;
         VW::end_parser(*aud_model);
-        Rcpp::Rcout << "HI3" << std::cout;
         VW::finish(*aud_model);
-        Rcpp::Rcout << "HI4" << std::cout;
         
         std::ifstream audit_stream (audit_str);
         std::string audit_line;

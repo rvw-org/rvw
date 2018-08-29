@@ -4,14 +4,15 @@
 \alias{vwsetup}
 \title{Create Vowpal Wabbit model, setup model parameters and data}
 \usage{
-vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaNewton",
-  "svrg"), general_params = list(), feature_params = list(),
-  optimization_params = list(), dir = tempdir(), model = NULL,
-  option = c("", "binary", "oaa", "ect", "csoaa", "wap", "log_multi",
-  "recall_tree", "lda", "multilabel_oaa", "classweight", "new_mf", "lrq",
-  "stage_poly", "bootstrap", "autolink", "replay", "explore_eval", "cb",
-  "cb_explore", "cbify", "multiworld_test_check", "nn", "topk", "search",
-  "boosting", "marginal"), ...)
+vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm",
+  "OjaNewton", "svrg"), general_params = list(),
+  feature_params = list(), optimization_params = list(),
+  dir = tempdir(), model = NULL, option = c("", "binary", "oaa",
+  "ect", "csoaa", "wap", "log_multi", "recall_tree", "lda",
+  "multilabel_oaa", "classweight", "new_mf", "lrq", "stage_poly",
+  "bootstrap", "autolink", "replay", "explore_eval", "cb", "cb_explore",
+  "cbify", "multiworld_test_check", "nn", "topk", "search", "boosting",
+  "marginal"), ...)
 }
 \arguments{
 \item{algorithm}{Optimzation algorithm

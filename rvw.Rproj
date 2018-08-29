@@ -15,4 +15,4 @@ LaTeX: pdfLaTeX
 BuildType: Package
 PackageInstallArgs: --no-multiarch --with-keep.source --clean
 PackageCheckArgs: --as-cran
-PackageRoxygenize: rd,namespace
+PackageRoxygenize: rd
