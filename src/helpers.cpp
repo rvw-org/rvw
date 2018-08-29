@@ -49,6 +49,7 @@ std::string md5sum(char * char_x, uint32_t nChar) {
 
 Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP data, std::string mode,
                                  Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space,
+                                 Rcpp::Nullable<Rcpp::CharacterVector> fixed, 
                                  Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities,
                                  Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base,
                                  Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline) {
@@ -57,12 +58,13 @@ Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP
     //  no previous parser options are in the model
     //  OR
     //  any of passed parser options is NOT NULL (possible when using "predict.vw" function)
-    if(Rf_isNull(vwmodel["parser_opts"]) || (!Rf_isNull(namespaces) || !Rf_isNull(keep_space) || !Rf_isNull(targets) ||
+    if(Rf_isNull(vwmodel["parser_opts"]) || (!Rf_isNull(namespaces) || !Rf_isNull(keep_space) || !Rf_isNull(fixed) || !Rf_isNull(targets) ||
        !Rf_isNull(probabilities) || !Rf_isNull(weight) || !Rf_isNull(base) ||
        !Rf_isNull(tag) || !Rf_isNull(multiline))) { 
        
        // In this case we want to use parser options that were passed with "vwtest" so we save parser options
        vwmodel["parser_opts"] = Rcpp::List::create(Rcpp::Named("namespaces") = namespaces , Rcpp::Named("keep_space") = keep_space,
+                                                    Rcpp::Named("fixed") = fixed,
                                                     Rcpp::Named("targets") = targets, Rcpp::Named("probabilities") = probabilities,
                                                     Rcpp::Named("weight") = weight, Rcpp::Named("base") = base,
                                                     Rcpp::Named("tag") = tag, Rcpp::Named("multiline") = multiline);
@@ -123,7 +125,7 @@ Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP
             // Rcpp::Nullable<int> valid_multiline = saved_parser_opts["multiline"];
             
             r_df2vw(data, valid_data_str,
-                    saved_parser_opts["namespaces"], saved_parser_opts["keep_space"],
+                    saved_parser_opts["namespaces"], saved_parser_opts["keep_space"], saved_parser_opts["fixed"],
                     saved_parser_opts["targets"], saved_parser_opts["probabilities"],
                     saved_parser_opts["weight"], saved_parser_opts["base"], saved_parser_opts["tag"], saved_parser_opts["multiline"],
                     false

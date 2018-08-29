@@ -70,6 +70,10 @@ std::string get_vw_version() {
 //'Example:"FERRARI 4Si"
 //'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 //'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+//'@param fixed [string vector] fixed parsing for this features
+//'Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+//'Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+//'but should be used carefully, because special characters can ruin final VW format file.
 //'@param targets [string or string vector] For \code{df2vw}.
 //'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 //'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
@@ -88,6 +92,7 @@ std::string get_vw_version() {
 void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
              bool quiet=false, bool update_model=false, int passes=1, bool cache=false, Rcpp::Nullable<float> progress=R_NilValue,
              Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+             Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
              Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
              Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
@@ -100,7 +105,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
     Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, "train",
-                                      namespaces, keep_space,
+                                      namespaces, keep_space, fixed,
                                       targets, probabilities,
                                       weight, base, tag, multiline);
     // Update train data file name
@@ -149,22 +154,19 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     }
     
     // Check readable model output mode: hashed features and original features (invert hash)
-    bool read_model_file = false;
     if (readable_model.isNotNull()) {
         if (Rcpp::as<std::string>(readable_model) == "hashed")
         {
             train_init_str += " --readable_model " + readable_model_str;
-            read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
             if (passes == 1) {
                 train_init_str += " --invert_hash " + readable_model_str;
-                read_model_file = true;
             } else {
-                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+                Rcpp::stop("Invert hash is not supported with passes > 1");
             }
         } else {
-            Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
+            Rcpp::stop("Wrong readable_model argument. Should be \"hashed\" or \"inverted\"");
             return;
         }
     }
@@ -209,25 +211,25 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     
     if (!quiet)
     {
-        if(read_model_file){
+        if (readable_model_path.empty()){
             // Reading from temporary files and printing to console
             std::ifstream readable_model_stream (readable_model_str);
             std::string readable_model_line;
             if (readable_model_stream.is_open())
-            {
+            {   
                 Rcpp::Rcout << std::endl << "Readable model from file: " + readable_model_str << std::endl;
-                while(getline (readable_model_stream, readable_model_line))
+                while ( getline (readable_model_stream, readable_model_line) )
                 {
                     Rcpp::Rcout << readable_model_line << std::endl;
                 }
                 readable_model_stream.close();
+                // Delete temporary readable_mode file
+                remove(readable_model_str.c_str());
                 Rcpp::Rcout << std::endl;
             }
+        } else {
+            Rcpp::Rcout << "Readable model is written to file: " + readable_model_str << std::endl;
         }
-    }
-    // Delete temporary readable_mode file
-    if (readable_model_str.empty()) {
-        remove(readable_model_str.c_str());
     }
     
 }
@@ -260,6 +262,10 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'Example:"FERRARI 4Si"
 //'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 //'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+//'@param fixed [string vector] fixed parsing for this features
+//'Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+//'Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+//'but should be used carefully, because special characters can ruin final VW format file.
 //'@param targets [string or string vector] For \code{df2vw}.
 //'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 //'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
@@ -283,6 +289,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
                            bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+                           Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
                            Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
                            Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
@@ -294,7 +301,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
     Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, "test",
-                                      namespaces, keep_space,
+                                      namespaces, keep_space, fixed,
                                       targets, probabilities,
                                       weight, base, tag, multiline);
     
@@ -346,22 +353,19 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     }
     
     // Check readable model output mode: hashed features and original features (invert hash)
-    bool read_model_file = false;
     if (readable_model.isNotNull()) {
         if (Rcpp::as<std::string>(readable_model) == "hashed")
         {
             test_init_str += " --readable_model " + readable_model_str;
-            read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
             if (passes == 1) {
                 test_init_str += " --invert_hash " + readable_model_str;
-                read_model_file = true;
             } else {
-                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+                Rcpp::stop("Invert hash is not supported with passes > 1");
             }
         } else {
-            Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
+            Rcpp::stop("Wrong readable_model argument. Should be \"hashed\" or \"inverted\"");
             Rcpp::NumericVector data_vec(0);
             return data_vec;
         }
@@ -427,7 +431,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     
     if (!quiet)
     {
-        if(read_model_file) {
+        if (readable_model_path.empty()){
             // Reading from temporary files and printing to console
             std::ifstream readable_model_stream (readable_model_str);
             std::string readable_model_line;
@@ -439,13 +443,13 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
                     Rcpp::Rcout << readable_model_line << std::endl;
                 }
                 readable_model_stream.close();
+                // Delete temporary readable_mode file
+                remove(readable_model_str.c_str());
                 Rcpp::Rcout << std::endl;
             }
+        } else {
+            Rcpp::Rcout << "Readable model is written to file: " + readable_model_str << std::endl;
         }
-    }
-    // Delete temporary readable_mode file
-    if (readable_model_str.empty()) {
-        remove(readable_model_str.c_str());
     }
     
     return data_vec;
@@ -482,9 +486,13 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
         std::string aud_init_str = "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
         vw* aud_model = VW::initialize(aud_init_str);
         VW::start_parser(*aud_model);
+        Rcpp::Rcout << "HI1" << std::cout;
         LEARNER::generic_driver(*aud_model);
+        Rcpp::Rcout << "HI2" << std::cout;
         VW::end_parser(*aud_model);
+        Rcpp::Rcout << "HI3" << std::cout;
         VW::finish(*aud_model);
+        Rcpp::Rcout << "HI4" << std::cout;
         
         std::ifstream audit_stream (audit_str);
         std::string audit_line;

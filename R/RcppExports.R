@@ -30,6 +30,10 @@
 #'Example:"FERRARI 4Si"
 #'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 #'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+#'@param fixed [string vector] fixed parsing for this features
+#'Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+#'Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+#'but should be used carefully, because special characters can ruin final VW format file.
 #'@param targets [string or string vector] For \code{df2vw}.
 #'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 #'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
@@ -44,8 +48,8 @@
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
-vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = "", quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    invisible(.Call(`_rvw_vwtrain`, vwmodel, data, readable_model, readable_model_path, quiet, update_model, passes, cache, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline))
+vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = "", quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, fixed = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    invisible(.Call(`_rvw_vwtrain`, vwmodel, data, readable_model, readable_model_path, quiet, update_model, passes, cache, progress, namespaces, keep_space, fixed, targets, probabilities, weight, base, tag, multiline))
 }
 
 #'Compute predictions using Vowpal Wabbit model
@@ -76,6 +80,10 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = 
 #'Example:"FERRARI 4Si"
 #'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 #'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+#'@param fixed [string vector] fixed parsing for this features
+#'Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+#'Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+#'but should be used carefully, because special characters can ruin final VW format file.
 #'@param targets [string or string vector] For \code{df2vw}.
 #'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 #'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
@@ -95,8 +103,8 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = 
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtest(test_vwmodel, data = ext_test_data)
 #'@rdname vwtest
-vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, readable_model_path = "", quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    .Call(`_rvw_vwtest`, vwmodel, data, probs_path, readable_model, readable_model_path, quiet, passes, cache, raw, progress, namespaces, keep_space, targets, probabilities, weight, base, tag, multiline)
+vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, readable_model_path = "", quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, fixed = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    .Call(`_rvw_vwtest`, vwmodel, data, probs_path, readable_model, readable_model_path, quiet, passes, cache, raw, progress, namespaces, keep_space, fixed, targets, probabilities, weight, base, tag, multiline)
 }
 
 #'Audit Vowpal Wabbit model
