@@ -38,15 +38,15 @@ lda_data$features <- sapply(lda_data$text, function(x) {
     res_str
 })
 
-# Calculate required number of bits
+# Calculate required number of bits.
 bits <- ceiling(log2(length(lda_vocab)))
 
-# Now we can set up a LDA model
+# Now we can set up a LDA model.
 lda_model <- vwsetup(feature_params = list(bit_precision=bits),
     option = "lda", # Enable LDA algorithm
                      num_topics = 7) # Specify the number of topics to learn (the same as were manually classified)
 
-# And start learning a set of topics
+# And start learning a set of topics.
 vwtrain(vwmodel = lda_model,
         data = lda_data,
         namespaces = list(" " = "features"),
@@ -54,7 +54,36 @@ vwtrain(vwmodel = lda_model,
         readable_model = "hashed",
         readable_model_path = "r_mdl.vw")
 
+# Here we get our topic predictions for each word from regressor values.
+vwout <- vwaudit(vwmodel = lda_model)
+# Each line of vwout corresponds to a single feature (a single word in our case)
+# Output contains following columns:
+# Names - feature names
+# Hashes - feature hashes
+# V1-V7 - Regressor values for each topic
 
 
-# vwout <- vwaudit(vwmodel = lda_model)
+# Now we need to post-process this output to get final word - topic correspondences.
+# First, filter out zero valued features.
+selected_rows <- apply(vwout[, 3:9], 1, function(x) {
+    !all(x == 0)
+})
+vwout<- vwout[selected_rows,]
 
+# And finaly:
+# 1) Connect words from prepared vocabulary with feature hashes from our model.
+# 2) Connect words with a maximum valued topic prediction.
+lda_results <- data.frame(
+    word = lda_vocab,
+    topic = apply(vwout[order(vwout$Hashes), 3:9], 1, function(x) {
+        which.max(x)
+    }),
+    value = apply(vwout[order(vwout$Hashes), 3:9], 1, function(x) {
+        max(x)
+    })
+)
+
+head(lda_results)
+
+# Switch back.
+setwd(curr_dir)

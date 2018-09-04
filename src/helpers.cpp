@@ -338,3 +338,13 @@ bool copy_get_best_constant(vw& all, float& best_constant, float& best_constant_
     
     return true;
 }
+
+std::vector<std::string> split_str(const std::string &s, char del) {
+    std::stringstream s_stream(s);
+    std::string item;
+    std::vector<std::string> elems;
+    while ( getline(s_stream, item, del) ) {
+        elems.push_back(item);
+    }
+    return elems;
+}

@@ -105,9 +105,9 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
     Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, "train",
-                                      namespaces, keep_space, fixed,
-                                      targets, probabilities,
-                                      weight, base, tag, multiline);
+                                              namespaces, keep_space, fixed,
+                                              targets, probabilities,
+                                              weight, base, tag, multiline);
     // Update train data file name
     vwmodel["train_file"] = data_str;
     
@@ -301,9 +301,9 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
     Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, "test",
-                                      namespaces, keep_space, fixed,
-                                      targets, probabilities,
-                                      weight, base, tag, multiline);
+                                          namespaces, keep_space, fixed,
+                                          targets, probabilities,
+                                          weight, base, tag, multiline);
     
     Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     Rcpp::List vwmodel_eval = vwmodel["eval"];
@@ -492,37 +492,56 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
         
         std::ifstream audit_stream (audit_str);
         std::string audit_line;
-        std::stringstream audit_line_stream;
-        std::string audit_line_elem;
         std::vector<std::string> splitted_line;
-
-        Rcpp::CharacterVector feature_names;
-        Rcpp::NumericVector feature_hashes;
-        Rcpp::NumericVector model_values;
+        
+        int num_val_columns = 1;
+        std::vector<std::string> feature_names;
+        std::vector<float> feature_hashes;
         
         if (audit_stream.is_open())
         {   
             // Split lines from audit file and write results to vectors
+            // Also get the number of elements from the first row
+            getline(audit_stream, audit_line);
+            splitted_line = split_str(audit_line, ':');
+            // Number of feature value columns in the model
+            num_val_columns = splitted_line.size() - 2;
+            std::vector<std::vector<float>> model_values(num_val_columns);
+            
+            // Push line elements to vectors
+            feature_names.push_back(splitted_line[0]);
+            feature_hashes.push_back(std::stof(splitted_line[1]));
+            for (int i = 0; i < num_val_columns; i++) {
+                model_values[i].push_back(std::stof(splitted_line[i + 2]));
+            }
+            
             while ( getline(audit_stream, audit_line) )
             {
-                std::stringstream().swap(audit_line_stream);
-                audit_line_stream << audit_line;
-                while( getline(audit_line_stream, audit_line_elem, ':') )
-                {
-                    splitted_line.push_back(audit_line_elem);
-                }
+                splitted_line = split_str(audit_line, ':');
                 feature_names.push_back(splitted_line[0]);
                 feature_hashes.push_back(std::stof(splitted_line[1]));
-                model_values.push_back(std::stof(splitted_line[2]));
-                
-                splitted_line.clear();
-
+                for (int i = 0; i < num_val_columns; i++) {
+                    model_values[i].push_back(std::stof(splitted_line[i + 2]));
+                }
             }
             audit_stream.close();
             
-            Rcpp::DataFrame audit_output = Rcpp::DataFrame::create(Rcpp::Named("Names") = feature_names,
-                                                                   Rcpp::Named("Hashes") = feature_hashes,
-                                                                   Rcpp::Named("Model.values") = model_values);
+            // Temporary list (and its names) for DataFrame constructor
+            Rcpp::List tmp_audit_output(num_val_columns + 2);
+            Rcpp::CharacterVector column_names(num_val_columns + 2);
+            
+            tmp_audit_output[0] = feature_names;
+            column_names[0] = "Names";
+            tmp_audit_output[1] = feature_hashes;
+            column_names[1] = "Hashes";
+            for (int i = 0; i < num_val_columns; i++) {
+                tmp_audit_output[i + 2] = model_values[i];
+                column_names[i + 2] = "V" + std::to_string(i + 1);
+            }
+            
+            Rcpp::DataFrame audit_output(tmp_audit_output);
+            audit_output.attr("names") = column_names;
+            
             return(audit_output);
             
         } else {

@@ -31,3 +31,5 @@ Rcpp::List get_eval(vw& all);
 
 // Copy of get_best_constant function from best_constant.cc file
 bool copy_get_best_constant(vw& all, float& best_constant, float& best_constant_loss);
+
+std::vector<std::string> split_str(const std::string &s, char del);
