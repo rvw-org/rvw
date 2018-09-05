@@ -8,6 +8,8 @@ setwd(tempdir())
 ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 ext_test_data <- system.file("extdata", "binary_valid.vw", package = "rvw")
 
+lda_data <- system.file("extdata", "lda_data.vw", package = "rvw")
+
 multiclass_train_data <- system.file("extdata", "multiclass_train.vw", package = "rvw")
 multiclass_test_data <- system.file("extdata", "multiclass_valid.vw", package = "rvw")
 
@@ -199,6 +201,40 @@ test_that("vwsetup with multiclass classification setup works as CL version", {
     # Results comparison
     expect_equal(vw_pk_mdl_checksum, vw_cl_mdl_checksum)
     expect_equal(vw_pk_output, vw_cl_output, tolerance=1e-7)
+})
+
+test_that("vwsetup with lda setup works as CL version", {
+    # Package session
+    test_vwmodel <- vwsetup(
+        dir = "./",
+        model = "pk_mdl.vw",
+        option = "lda",
+        num_topics = 7,
+        lda_D = 100,
+        minibatch = 16
+    )
+    vwtrain(test_vwmodel, data = lda_data, quiet = T, passes = 2,
+            readable_model = "hashed", readable_model_path = "pk_readable_mdl.vw")
+    vw_pk_mdl_checksum <- unname(tools::md5sum("pk_mdl.vw"))
+    vw_pk_readable_mdl_checksum <- unname(tools::md5sum("pk_readable_mdl.vw"))
+    file.remove("pk_mdl.vw", "pk_readable_mdl.vw", "lda_data.vw.cache")
+    
+    # Command Line session
+    system(
+        paste0("vw --lda 7 --lda_D 100 --minibatch 16 --passes 2",
+               " --cache_file ./lda_data.vw.cache",
+               " --readable_model ./cl_readable_mdl.vw",
+               " -d ", lda_data, " -f ./cl_mdl.vw"),
+        intern = FALSE,
+        ignore.stderr = TRUE
+    )
+    vw_cl_mdl_checksum <- unname(tools::md5sum("cl_mdl.vw"))
+    vw_cl_readable_mdl_checksum <- unname(tools::md5sum("cl_readable_mdl.vw"))
+    file.remove("cl_mdl.vw", "cl_readable_mdl.vw", "lda_data.vw.cache")
+    
+    # Results comparison
+    expect_equal(vw_pk_mdl_checksum, vw_cl_mdl_checksum)
+    expect_equal(vw_pk_readable_mdl_checksum, vw_cl_readable_mdl_checksum)
 })
 
 # Return back

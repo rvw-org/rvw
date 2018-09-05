@@ -38,21 +38,24 @@ lda_data$features <- sapply(lda_data$text, function(x) {
     res_str
 })
 
-# Calculate required number of bits.
+# Calculate required number of bits (b) for feature hashes range: [0, 2^(b) - 1].
 bits <- ceiling(log2(length(lda_vocab)))
+# Total number of unique documents in data
+num_docs <- as.numeric(nrow(lda_data))
 
 # Now we can set up a LDA model.
 lda_model <- vwsetup(feature_params = list(bit_precision=bits),
-    option = "lda", # Enable LDA algorithm
-                     num_topics = 7) # Specify the number of topics to learn (the same as were manually classified)
+                     optimization_params = list(initial_t=1, power_t=0.5), # Parameters for learning rate schedule
+                     option = "lda", # Enable LDA algorithm
+                     num_topics = 7, # Specify the number of topics to learn (the same as were manually classified)
+                     lda_D = num_docs, 
+                     minibatch = 16) # Analyze 16 documents at a time
 
 # And start learning a set of topics.
 vwtrain(vwmodel = lda_model,
         data = lda_data,
         namespaces = list(" " = "features"),
-        fixed = "features",
-        readable_model = "hashed",
-        readable_model_path = "r_mdl.vw")
+        fixed = "features")
 
 # Here we get our topic predictions for each word from regressor values.
 vwout <- vwaudit(vwmodel = lda_model)
