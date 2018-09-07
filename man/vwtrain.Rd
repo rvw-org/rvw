@@ -4,11 +4,11 @@
 \alias{vwtrain}
 \title{Train Vowpal Wabbit model}
 \usage{
-vwtrain(vwmodel, data, readable_model = NULL, quiet = FALSE,
-  update_model = FALSE, passes = 1L, cache = FALSE,
+vwtrain(vwmodel, data, readable_model = NULL, readable_model_path = "",
+  quiet = FALSE, update_model = FALSE, passes = 1L, cache = FALSE,
   progress = NULL, namespaces = NULL, keep_space = NULL,
-  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
-  tag = NULL, multiline = NULL)
+  fixed = NULL, targets = NULL, probabilities = NULL,
+  weight = NULL, base = NULL, tag = NULL, multiline = NULL)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
@@ -18,6 +18,8 @@ If \code{[data.frame]} then will be parsed using \code{df2vw} function.}
 
 \item{readable_model}{[string] Print trained model in human readable format ("hashed") 
 and also with human readable features ("inverted")}
+
+\item{readable_model_path}{[string] Path to file where to save readable model.}
 
 \item{quiet}{[logical] Do not print anything to the console}
 
@@ -40,6 +42,11 @@ and petal) containing the features defined by elements of this lists.}
 Example:"FERRARI 4Si"
 With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature}
+
+\item{fixed}{[string vector] fixed parsing for this features
+Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+but should be used carefully, because special characters can ruin final VW format file.}
 
 \item{targets}{[string or string vector] For \code{df2vw}.
 If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 

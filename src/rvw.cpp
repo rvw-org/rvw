@@ -54,6 +54,7 @@ std::string get_vw_version() {
 //'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted")
+//'@param readable_model_path [string] Path to file where to save readable model.
 //'@param quiet [logical] Do not print anything to the console 
 //'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
@@ -69,6 +70,10 @@ std::string get_vw_version() {
 //'Example:"FERRARI 4Si"
 //'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 //'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+//'@param fixed [string vector] fixed parsing for this features
+//'Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+//'Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+//'but should be used carefully, because special characters can ruin final VW format file.
 //'@param targets [string or string vector] For \code{df2vw}.
 //'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 //'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
@@ -84,9 +89,10 @@ std::string get_vw_version() {
 //'test_vwmodel <- vwsetup()
 //'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
-void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false, bool update_model=false,
-             int passes=1, bool cache=false, Rcpp::Nullable<float> progress=R_NilValue,
+void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
+             bool quiet=false, bool update_model=false, int passes=1, bool cache=false, Rcpp::Nullable<float> progress=R_NilValue,
              Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+             Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
              Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
              Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
@@ -99,9 +105,9 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
     Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, "train",
-                                      namespaces, keep_space,
-                                      targets, probabilities,
-                                      weight, base, tag, multiline);
+                                              namespaces, keep_space, fixed,
+                                              targets, probabilities,
+                                              weight, base, tag, multiline);
     // Update train data file name
     vwmodel["train_file"] = data_str;
     
@@ -112,7 +118,17 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     std::string readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
     Rcpp::List vwmodel_params = vwmodel["params"];
     Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
-
+    
+    // If no readable_model_path was provided we should create temporary here and then delete
+    if (readable_model_path.empty()) {
+        readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    } else {
+        // Check readable_model_path for whitespace
+        if(readable_model_path.find_first_of("\t\n ") != readable_model_path.npos) {
+            Rcpp::stop("Whitespace characters are not allowed in readable_model_path");
+        }
+        readable_model_str = readable_model_path;
+    }
     
     std::string train_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
     train_init_str += " -d " + data_str + " -f " + model_str + " --passes " + std::to_string(passes);
@@ -138,22 +154,19 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     }
     
     // Check readable model output mode: hashed features and original features (invert hash)
-    bool read_model_file = false;
     if (readable_model.isNotNull()) {
         if (Rcpp::as<std::string>(readable_model) == "hashed")
         {
             train_init_str += " --readable_model " + readable_model_str;
-            read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
             if (passes == 1) {
                 train_init_str += " --invert_hash " + readable_model_str;
-                read_model_file = true;
             } else {
-                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+                Rcpp::stop("Invert hash is not supported with passes > 1");
             }
         } else {
-            Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
+            Rcpp::stop("Wrong readable_model argument. Should be \"hashed\" or \"inverted\"");
             return;
         }
     }
@@ -198,21 +211,24 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     
     if (!quiet)
     {
-        if(read_model_file){
+        if (readable_model_path.empty()){
             // Reading from temporary files and printing to console
             std::ifstream readable_model_stream (readable_model_str);
             std::string readable_model_line;
             if (readable_model_stream.is_open())
-            {
+            {   
                 Rcpp::Rcout << std::endl << "Readable model from file: " + readable_model_str << std::endl;
-                while(getline (readable_model_stream, readable_model_line))
+                while ( getline (readable_model_stream, readable_model_line) )
                 {
                     Rcpp::Rcout << readable_model_line << std::endl;
                 }
                 readable_model_stream.close();
-                // remove(readable_model_str.c_str());
+                // Delete temporary readable_mode file
+                remove(readable_model_str.c_str());
                 Rcpp::Rcout << std::endl;
             }
+        } else {
+            Rcpp::Rcout << "Readable model is written to file: " + readable_model_str << std::endl;
         }
     }
     
@@ -230,6 +246,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@param probs_path [string] Path to file where to save predictions.
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted").
+//'@param readable_model_path [string] Path to file where to save readable model.
 //'@param quiet [bool] Do not print anything to the console.
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 //'@param cache [bool] Use a cache for a data file.
@@ -245,6 +262,10 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'Example:"FERRARI 4Si"
 //'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 //'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+//'@param fixed [string vector] fixed parsing for this features
+//'Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+//'Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+//'but should be used carefully, because special characters can ruin final VW format file.
 //'@param targets [string or string vector] For \code{df2vw}.
 //'If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 
 //'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa 
@@ -265,9 +286,10 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'vwtest(test_vwmodel, data = ext_test_data)
 //'@rdname vwtest
 // [[Rcpp::export]]
-Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, bool quiet=false,
-                           int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
+Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
+                           bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
+                           Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
                            Rcpp::Nullable<Rcpp::String> weight=R_NilValue, Rcpp::Nullable<Rcpp::String> base=R_NilValue,
                            Rcpp::Nullable<Rcpp::String> tag=R_NilValue, Rcpp::Nullable<int> multiline=R_NilValue) {
@@ -279,21 +301,16 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
     Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, "test",
-                                      namespaces, keep_space,
-                                      targets, probabilities,
-                                      weight, base, tag, multiline);
-    
-    // Check probs_path for whitespace
-    if(probs_path.find_first_of("\t\n ") != probs_path.npos) {
-        Rcpp::stop("Whitespace characters are not allowed in probs_path");
-    }
+                                          namespaces, keep_space, fixed,
+                                          targets, probabilities,
+                                          weight, base, tag, multiline);
     
     Rcpp::List vwmodel_md5sums = vwmodel["data_md5sum"];
     Rcpp::List vwmodel_eval = vwmodel["eval"];
     std::string model_dir = Rcpp::as<std::string>(vwmodel["dir"]) + PATH_SEPARATOR;
     std::string model_str = model_dir + Rcpp::as<std::string>(vwmodel["model"]);
     std::string probs_str;
-    std::string readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    std::string readable_model_str;
     Rcpp::List vwmodel_params = vwmodel["params"];
     Rcpp::List vwmodel_general_params = vwmodel_params["general_params"];
     
@@ -302,7 +319,21 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         // probs_str = model_dir + std::to_string(std::time(nullptr)) + "_probs_out.vw";
         probs_str = model_dir + "temp_probs_out.vw";
     } else {
+        // Check probs_path for whitespace
+        if(probs_path.find_first_of("\t\n ") != probs_path.npos) {
+            Rcpp::stop("Whitespace characters are not allowed in probs_path");
+        }
         probs_str = probs_path;
+    }
+    // The same for readable_model_path
+    if (readable_model_path.empty()) {
+        readable_model_str = model_dir + "readable_" + Rcpp::as<std::string>(vwmodel["model"]);
+    } else {
+        // Check readable_model_path for whitespace
+        if(readable_model_path.find_first_of("\t\n ") != readable_model_path.npos) {
+            Rcpp::stop("Whitespace characters are not allowed in readable_model_path");
+        }
+        readable_model_str = readable_model_path;
     }
     
     std::string test_init_str;
@@ -322,22 +353,19 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     }
     
     // Check readable model output mode: hashed features and original features (invert hash)
-    bool read_model_file = false;
     if (readable_model.isNotNull()) {
         if (Rcpp::as<std::string>(readable_model) == "hashed")
         {
             test_init_str += " --readable_model " + readable_model_str;
-            read_model_file = true;
         } else if (Rcpp::as<std::string>(readable_model) == "inverted")
         {
             if (passes == 1) {
                 test_init_str += " --invert_hash " + readable_model_str;
-                read_model_file = true;
             } else {
-                Rcpp::Rcerr << "Invert hash is not supported with passes > 1" << std::endl;
+                Rcpp::stop("Invert hash is not supported with passes > 1");
             }
         } else {
-            Rcpp::Rcerr << "Wrong readable_model argument" << std::endl << "Should be \"hashed\" or \"inverted\"" << std::endl;
+            Rcpp::stop("Wrong readable_model argument. Should be \"hashed\" or \"inverted\"");
             Rcpp::NumericVector data_vec(0);
             return data_vec;
         }
@@ -400,9 +428,10 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         remove(probs_str.c_str());
     }
     
+    
     if (!quiet)
     {
-        if(read_model_file) {
+        if (readable_model_path.empty()){
             // Reading from temporary files and printing to console
             std::ifstream readable_model_stream (readable_model_str);
             std::string readable_model_line;
@@ -414,9 +443,12 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
                     Rcpp::Rcout << readable_model_line << std::endl;
                 }
                 readable_model_stream.close();
-                // remove(readable_model_str.c_str());
+                // Delete temporary readable_mode file
+                remove(readable_model_str.c_str());
                 Rcpp::Rcout << std::endl;
             }
+        } else {
+            Rcpp::Rcout << "Readable model is written to file: " + readable_model_str << std::endl;
         }
     }
     
@@ -460,37 +492,56 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
         
         std::ifstream audit_stream (audit_str);
         std::string audit_line;
-        std::stringstream audit_line_stream;
-        std::string audit_line_elem;
         std::vector<std::string> splitted_line;
-
-        Rcpp::CharacterVector feature_names;
-        Rcpp::NumericVector feature_hashes;
-        Rcpp::NumericVector model_values;
+        
+        int num_val_columns = 1;
+        std::vector<std::string> feature_names;
+        std::vector<float> feature_hashes;
         
         if (audit_stream.is_open())
         {   
             // Split lines from audit file and write results to vectors
+            // Also get the number of elements from the first row
+            getline(audit_stream, audit_line);
+            splitted_line = split_str(audit_line, ':');
+            // Number of feature value columns in the model
+            num_val_columns = splitted_line.size() - 2;
+            std::vector<std::vector<float>> model_values(num_val_columns);
+            
+            // Push line elements to vectors
+            feature_names.push_back(splitted_line[0]);
+            feature_hashes.push_back(std::stof(splitted_line[1]));
+            for (int i = 0; i < num_val_columns; i++) {
+                model_values[i].push_back(std::stof(splitted_line[i + 2]));
+            }
+            
             while ( getline(audit_stream, audit_line) )
             {
-                std::stringstream().swap(audit_line_stream);
-                audit_line_stream << audit_line;
-                while( getline(audit_line_stream, audit_line_elem, ':') )
-                {
-                    splitted_line.push_back(audit_line_elem);
-                }
+                splitted_line = split_str(audit_line, ':');
                 feature_names.push_back(splitted_line[0]);
                 feature_hashes.push_back(std::stof(splitted_line[1]));
-                model_values.push_back(std::stof(splitted_line[2]));
-                
-                splitted_line.clear();
-
+                for (int i = 0; i < num_val_columns; i++) {
+                    model_values[i].push_back(std::stof(splitted_line[i + 2]));
+                }
             }
             audit_stream.close();
             
-            Rcpp::DataFrame audit_output = Rcpp::DataFrame::create(Rcpp::Named("Names") = feature_names,
-                                                                   Rcpp::Named("Hashes") = feature_hashes,
-                                                                   Rcpp::Named("Model.values") = model_values);
+            // Temporary list (and its names) for DataFrame constructor
+            Rcpp::List tmp_audit_output(num_val_columns + 2);
+            Rcpp::CharacterVector column_names(num_val_columns + 2);
+            
+            tmp_audit_output[0] = feature_names;
+            column_names[0] = "Names";
+            tmp_audit_output[1] = feature_hashes;
+            column_names[1] = "Hashes";
+            for (int i = 0; i < num_val_columns; i++) {
+                tmp_audit_output[i + 2] = model_values[i];
+                column_names[i + 2] = "V" + std::to_string(i + 1);
+            }
+            
+            Rcpp::DataFrame audit_output(tmp_audit_output);
+            audit_output.attr("names") = column_names;
+            
             return(audit_output);
             
         } else {

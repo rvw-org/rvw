@@ -9,10 +9,10 @@ vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm",
   feature_params = list(), optimization_params = list(),
   dir = tempdir(), model = NULL, option = c("", "binary", "oaa",
   "ect", "csoaa", "wap", "log_multi", "recall_tree", "lda",
-  "multilabel_oaa", "classweight", "mf", "lrq", "stage_poly", "bootstrap",
-  "autolink", "replay", "explore_eval", "cb", "cb_explore", "cbify",
-  "multiworld_test_check", "nn", "topk", "search", "boosting", "marginal"),
-  ...)
+  "multilabel_oaa", "classweight", "new_mf", "lrq", "stage_poly",
+  "bootstrap", "autolink", "replay", "explore_eval", "cb", "cb_explore",
+  "cbify", "multiworld_test_check", "nn", "topk", "search", "boosting",
+  "marginal"), ...)
 }
 \arguments{
 \item{algorithm}{Optimzation algorithm
@@ -144,7 +144,7 @@ Additional parameters depending on \code{algorithm} choice:
  \item \code{classweight} - Importance weight classes
  \item \code{lda} - Latent Dirichlet Allocation
  \item \code{recall_tree} - Use online tree for multiclass
- \item \code{mf} - Matrix factorization mode
+ \item \code{new_mf} - Matrix factorization mode
  \item \code{lrq} - Low rank quadratic features
  \item \code{stage_poly} - Stagewise polynomial features
  \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
@@ -206,7 +206,7 @@ Additional parameters depending on \code{algorithm} choice:
      \item \code{math_mode} - Math mode: simd, accuracy, fast-approx
      \item \code{minibatch} - Minibatch size
    }
- \item \code{mf}:
+ \item \code{new_mf}:
    \itemize{
      \item \code{rank} - rank for matrix factorization
    }

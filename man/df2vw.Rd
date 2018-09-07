@@ -5,8 +5,9 @@
 \title{Create a VW data file from a R data.frame object}
 \usage{
 df2vw(data, file_path, namespaces = NULL, keep_space = NULL,
-  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
-  tag = NULL, multiline = NULL, append = FALSE)
+  fixed = NULL, targets = NULL, probabilities = NULL,
+  weight = NULL, base = NULL, tag = NULL, multiline = NULL,
+  append = FALSE)
 }
 \arguments{
 \item{data}{[data.frame] data.frame object to be converted}
@@ -25,6 +26,11 @@ and petal) containing the features defined by elements of this lists.}
 Example:"FERRARI 4Si"
 With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature}
+
+\item{fixed}{[string vector] fixed parsing for this features
+Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+but should be used carefully, because special characters can ruin final VW format file.}
 
 \item{targets}{[string or string vector]
 If \code{[string]} then will be treated as vector with real number labels for regular VW input format.

@@ -6,10 +6,11 @@
 \title{Compute predictions using Vowpal Wabbit model}
 \usage{
 vwtest(vwmodel, data, probs_path = "", readable_model = NULL,
-  quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE,
-  progress = NULL, namespaces = NULL, keep_space = NULL,
-  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
-  tag = NULL, multiline = NULL)
+  readable_model_path = "", quiet = FALSE, passes = 1L,
+  cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL,
+  keep_space = NULL, fixed = NULL, targets = NULL,
+  probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
+  multiline = NULL)
 
 \method{predict}{vw}(object, data, probs_path = "",
   readable_model = NULL, quiet = FALSE, ...)
@@ -24,6 +25,8 @@ If \code{[data.frame]} then will be parsed using \code{df2vw} function.}
 
 \item{readable_model}{[string] Print trained model in human readable format ("hashed") 
 and also with human readable features ("inverted").}
+
+\item{readable_model_path}{[string] Path to file where to save readable model.}
 
 \item{quiet}{[bool] Do not print anything to the console.}
 
@@ -46,6 +49,11 @@ and petal) containing the features defined by elements of this lists.}
 Example:"FERRARI 4Si"
 With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature}
+
+\item{fixed}{[string vector] fixed parsing for this features
+Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+but should be used carefully, because special characters can ruin final VW format file.}
 
 \item{targets}{[string or string vector] For \code{df2vw}.
 If \code{[string]} then will be treated as vector with real number labels for regular VW input format. 

@@ -16,7 +16,7 @@
 #'  \item \code{classweight} - Importance weight classes
 #'  \item \code{lda} - Latent Dirichlet Allocation
 #'  \item \code{recall_tree} - Use online tree for multiclass
-#'  \item \code{mf} - Matrix factorization mode
+#'  \item \code{new_mf} - Matrix factorization mode
 #'  \item \code{lrq} - Low rank quadratic features
 #'  \item \code{stage_poly} - Stagewise polynomial features
 #'  \item \code{bootstrap} - bootstrap with K rounds by online importance resampling
@@ -186,7 +186,7 @@
 #'      \item \code{math_mode} - Math mode: simd, accuracy, fast-approx
 #'      \item \code{minibatch} - Minibatch size
 #'    }
-#'  \item \code{mf}:
+#'  \item \code{new_mf}:
 #'    \itemize{
 #'      \item \code{rank} - rank for matrix factorization
 #'    }
@@ -332,7 +332,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
                     option = c("", "binary", "oaa", "ect", "csoaa", "wap",
                                "log_multi", "recall_tree", "lda",
                                "multilabel_oaa", "classweight",
-                               "mf", "lrq", "stage_poly", "bootstrap",
+                               "new_mf", "lrq", "stage_poly", "bootstrap",
                                "autolink", "replay", "explore_eval", "cb",
                                "cb_explore", "cbify", "multiworld_test_check",
                                "nn", "topk", "search", "boosting", "marginal"),
@@ -446,7 +446,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
 add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap",
                                            "log_multi", "recall_tree", "lda",
                                            "multilabel_oaa", "classweight",
-                                           "mf", "lrq", "stage_poly", "bootstrap",
+                                           "new_mf", "lrq", "stage_poly", "bootstrap",
                                            "autolink", "replay", "explore_eval", "cb",
                                            "cb_explore", "cbify", "multiworld_test_check",
                                            "nn", "topk", "search", "boosting", "marginal"),
@@ -632,6 +632,10 @@ vwparams <- function(vwmodel, name) {
 #'Example:"FERRARI 4Si"
 #'With \code{keep_space} will be "FERRARI 4Si" and will be treated as two features
 #'Without \code{keep_space} will be "FERRARI_4Si" and will be treated as one feature
+#'@param fixed [string vector] fixed parsing for this features
+#'Similar to \code{keep_space}, but parse features exactly without replacement of special characters ("(", ")", "|", ":", "'").
+#'Can be used for LDA ("word_1:2 word_2:3" will stay the same),
+#'but should be used carefully, because special characters can ruin final VW format file.
 #'@param targets [string or string vector]
 #'If \code{[string]} then will be treated as vector with real number labels for regular VW input format.
 #'If \code{[string vector]} then will be treated as vectors with class costs for wap and csoaa
@@ -644,7 +648,8 @@ vwparams <- function(vwmodel, name) {
 #'@param append [bool] data to be appended to the result file
 #'@import yaml
 #'@import tools
-df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
+df2vw <- function(data, file_path, namespaces = NULL,
+                  keep_space = NULL, fixed = NULL,
                   targets = NULL, probabilities = NULL,
                   weight = NULL, base = NULL, tag = NULL,
                   multiline = NULL, append = FALSE) {
@@ -662,28 +667,33 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
 
     data <- data.table::copy(data.table::setDT(data))
 
-    # parse variable names
+    # Special characters in VW input file format
     specChar      <- "\\(|\\)|\\||\\:|'"
     specCharSpace <- "\\(|\\)|\\||\\:| |'"
-
-    parsingNames <- function(x) {
+    
+    # parsing variable names
+    parsingNames <- function(x, keepSpace=F) {
         ret <- c()
-        for (el in x)
-            ret <- append(ret, gsub(specCharSpace,'_', el))
+        if(keepSpace){
+            for (el in x)
+                ret <- append(ret, gsub(specChar,'_', el))
+        } else {
+            for (el in x)
+                ret <- append(ret, gsub(specCharSpace,'_', el))
+        }
         ret
     }
 
-    # parse categorical variables
+    # parsing values of categorical variables
+    # "keepSpace=T" when we want to keep spaces for text variables
     parsingVar <- function(x, keepSpace) {
-        # remove leading and trailing spaces, then remove special characters
-        # then remove isolated underscores.
-        if (!keepSpace)
+        if (!keepSpace) # Replace special characters with "_"
             spch <- specCharSpace
-        else
+        else # Replace special characters, but keep spaces
             spch <- specChar
         gsub(spch, '_', x)
     }
-
+    
     # namespace load with a yaml file
     if (typeof(namespaces) == "character" && length(namespaces) == 1 &&
         grepl("yaml$", namespaces)) {
@@ -696,7 +706,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
 
     # replace all names to avoid conflicts with VW file format
     names(data) <- parsingNames(names(data))
-    names(namespaces) <- parsingNames(names(namespaces))
+    names(namespaces) <- parsingNames(names(namespaces), keepSpace = T)
     for (x in names(namespaces)) namespaces[[x]] <- parsingNames(namespaces[[x]])
     targets <- parsingNames(targets)
     if (!is.null(probabilities)) probabilities <- parsingNames(probabilities)
@@ -795,7 +805,7 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
             argexpr <- c(argexpr, base)
         }
         if(!is.null(tag)) {
-            formatDataVW <- paste0(formatDataVW, "%s ")
+            formatDataVW <- paste0(formatDataVW, "'%s ")
             argexpr <- c(argexpr, tag)
         }
     }
@@ -815,10 +825,14 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         Header[[nsN]] <- namespaces[[nsN]]
 
         ## ESCAPE THE CATEGORICAL VARIABLES
-        # Keep space for features stated in "keep_space" argument
-        Header[[nsN]][!Index[[nsN]]] <- paste0("eval(parse(text = 'parsingVar(",
-                                               Header[[nsN]][!Index[[nsN]]],
-                                               ", keepSpace = ", Header[[nsN]][!Index[[nsN]]] %in% keep_space, ")'))")
+        # Enable special parsing for features stated in "keep_space" and "fixed" arguments
+        Header[[nsN]][!Index[[nsN]]] <- ifelse(
+            test = Header[[nsN]][!Index[[nsN]]] %in% fixed,
+            yes = Header[[nsN]][!Index[[nsN]]],
+            no = paste0("eval(parse(text = 'parsingVar(",
+                        Header[[nsN]][!Index[[nsN]]],
+                        ", keepSpace = ", Header[[nsN]][!Index[[nsN]]] %in% keep_space, ")'))")
+        )
     }
 
     ## ADDING THE FORMAT FOR THE VARIABLES OF EACH NAMESPACE, AND CREATING THE ARGUMENT VECTOR
@@ -826,30 +840,19 @@ df2vw <- function(data, file_path, namespaces = NULL, keep_space = NULL,
         header <- namespaces[[nsN]]
         eval_header <- Header[[nsN]]
         index <- Index[[nsN]]
-        keep_space_index <- header[!index] %in% keep_space
+        special_parse_index <- header[!index] %in% c(keep_space, fixed)
         formatNumeric <- paste0(header[index], rep(":%s ", sum(index)), collapse = "")
-        # appending the name of the variable to its value for each categorical variable
-        # if(!is.null(multiline)) {
-        #     formatCategoricalNoSpace <- paste0(rep("%s ", sum(!keep_space_index)), collapse = " ")
-        # } else {
-        #     formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ")
-        # }
-        formatCategoricalNoSpace <- paste0(header[!index][!keep_space_index], rep("^%s ", sum(!keep_space_index)), collapse = " ")
-        formatCategoricalWithSpace <- paste0(rep("%s", sum(keep_space_index)), collapse = " ")
+        # Categorical features with regular and special parsing (in "keep_space" or "fixed")
+        formatCategoricalRegular <- paste0(header[!index][!special_parse_index], rep("^%s ", sum(!special_parse_index)), collapse = " ")
+        formatCategoricalSpecial <- paste0(rep("%s", sum(special_parse_index)), collapse = " ")
 
-        formatDataVW <- c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategoricalNoSpace, formatCategoricalWithSpace))
-        argexpr <- c(argexpr, eval_header[index], eval_header[!index][!keep_space_index], eval_header[!index][keep_space_index])
+        formatDataVW <- trimws(c(formatDataVW, paste0(nsN, ' ', formatNumeric, formatCategoricalRegular, formatCategoricalSpecial)), which = "right")
+        argexpr <- c(argexpr, eval_header[index], eval_header[!index][!special_parse_index], eval_header[!index][special_parse_index])
     }
 
     # Add namespaces saparator
-    if (!is.null(tag)) {
-        formatDataVW <- paste0(formatDataVW, collapse = '|')
-    } else {
-        formatDataVW_label <- formatDataVW[1]
-        formatDataVW <- paste0(formatDataVW[2:length(formatDataVW)], collapse = '|')
-        formatDataVW <- paste0(formatDataVW_label, ' |', formatDataVW)
-    }
-
+    formatDataVW <- paste0(formatDataVW, collapse = " |")
+    
     if(!is.null(multiline)) {
         formatDataVW <-
             writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))],

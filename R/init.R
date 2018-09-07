@@ -100,7 +100,7 @@
                           minibatch=1)
         multilabel_oaa_check <- list(num_labels=NA_real_)
         classweight_check <- list(class_multiplier=NA_character_)
-        mf_check <- list(rank=NA_real_)
+        new_mf_check <- list(rank=NA_real_)
         lrq_check <- list(features=NA_character_,
                           lrqdropout=FALSE)
         stage_poly_check <- list(sched_exponent = 1.0,
@@ -178,7 +178,7 @@
                                     OjaNewton_check=OjaNewton_check, svrg_check=svrg_check,
                                     binary_check=binary_check, oaa_check=oaa_check, ect_check=ect_check, csoaa_check=csoaa_check, wap_check=wap_check,
                                     log_multi_check=log_multi_check, recall_tree_check=recall_tree_check, lda_check=lda_check, multilabel_oaa_check=multilabel_oaa_check,
-                                    mf_check=mf_check, classweight_check=classweight_check, lrq_check=lrq_check, stage_poly_check=stage_poly_check,
+                                    new_mf_check=new_mf_check, classweight_check=classweight_check, lrq_check=lrq_check, stage_poly_check=stage_poly_check,
                                     bootstrap_check=bootstrap_check, autolink_check=autolink_check, replay_check=replay_check,
                                     cb_check=cb_check, explore_eval_check=explore_eval_check, cb_explore_check=cb_explore_check, cbify_check=cbify_check,
                                     multiworld_test_check=multiworld_test_check, nn_check=nn_check, topk_check=topk_check, search_check=search_check,

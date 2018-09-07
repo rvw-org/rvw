@@ -1,2 +1,3 @@
-example_1		Basic package usage
-example_2       Using data.frame as input data
+rvw_overview		Basic package usage
+rvw_df       Using data.frame as input data for CSOAA multiclass classification
+rvw_lda       LDA example
