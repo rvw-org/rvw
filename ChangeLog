@@ -1,3 +1,7 @@
+2018-09-10  Dirk Eddelbuettel  <edd@debian.org>
+
+	* .travis.yml: Updated container reference 
+
 2017-03-19  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll minor version 
