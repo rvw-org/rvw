@@ -1,6 +1,15 @@
+2018-09-11  Dirk Eddelbuettel  <edd@debian.org>
+
+	* docker/run/Dockerfile: Added for deployment
+
 2018-09-10  Dirk Eddelbuettel  <edd@debian.org>
 
-	* .travis.yml: Updated container reference 
+	* .travis.yml: Updated container reference
+
+2018-09-09  Dirk Eddelbuettel  <edd@debian.org>
+
+	* docker/ci/Dockerfile: Add Dockerfile for Travis
+	* .travis.yml: Use Docker container in tests
 
 2017-03-19  Dirk Eddelbuettel  <edd@debian.org>
 
