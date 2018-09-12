@@ -24,8 +24,7 @@ remotes::install_github("rvw-org/rvw")
 ### Using Docker
 
 We use [Docker](https://www.docker.com) for the [Travis CI](https://www.travis-ci.org) tests, and also provide a container
-for deployment. See [the corresponding Docker repository list](https://cloud.docker.com/swarm/rcppmlpack/repository/list) for more,
-and do 
+for deployment. Do 
 
 ```sh
 docker pull rvowpalwabbit/run                 ## one time 
