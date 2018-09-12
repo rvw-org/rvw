@@ -10,7 +10,7 @@ services: docker
 env:
   global:
     - DOCKER_OPTS="--rm -ti -v $(pwd):/mnt -w /mnt"
-      DOCKER_CNTR="rvowalwabbit/ci"
+      DOCKER_CNTR="rvowpalwabbit/ci"
       R_BLD_CHK_OPTS="--no-build-vignettes --no-manual"
 
 before_install:
