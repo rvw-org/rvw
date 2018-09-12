@@ -10,14 +10,31 @@ This package aims to bring its functionality to **R**.
 
 ## Installation
 
+### From Source 
+
 First you have to install **Vowpal Wabbit** from [here](https://github.com/JohnLangford/vowpal_wabbit#getting-the-code).
 
-And then install the **rvw** package using `devtools`:
+Next, once the required library isinstalled, you can install the **rvw** package using `remotes`:
 
 ```r
-install.packages("devtools")
-devtools::install_github("rvw-org/rvw")
+install.packages("remotes")  ## or devtools
+remotes::install_github("rvw-org/rvw")
 ```
+
+### Using Docker
+
+We use [Docker](https://www.docker.com) for the [Travis CI](https://www.travis-ci.org) tests, and also provide a container
+for deployment. See [the corresponding Docker repository list](https://cloud.docker.com/swarm/rcppmlpack/repository/list) for more,
+and do 
+
+```sh
+docker pull rvowpalwabbit/run                 ## one time 
+docker run --rm -ti rvowpalwabbit/run bash    ## launch container
+```
+
+to start the container with `rvw` installed.  See the 
+[Boettiger and Eddelbuettel RJournal paper](https://journal.r-project.org/archive/2017/RJ-2017-065/index.html)
+for more on Docker for R, and the [Rocker Project](https://www.rocker-project.org) uses here.
 
 ## Example 
 
