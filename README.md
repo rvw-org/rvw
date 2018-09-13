@@ -33,7 +33,7 @@ docker run --rm -ti rvowpalwabbit/run bash    ## launch container
 
 to start the container with `rvw` installed.  See the 
 [Boettiger and Eddelbuettel RJournal paper](https://journal.r-project.org/archive/2017/RJ-2017-065/index.html)
-for more on Docker for R, and the [Rocker Project](https://www.rocker-project.org) uses here.
+for more on Docker for R, and the [Rocker Project](https://www.rocker-project.org) used here.
 
 ## Example 
 
