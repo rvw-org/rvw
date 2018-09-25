@@ -4,6 +4,8 @@
 #'
 #'@param dir Working directory, default is tempdir()
 #'@param model File name for model weights or path to existng model file.
+#'@param params_str Pass cmd line parameters directly, bypassing the default approach.
+#'For compatibility, parameters from vwtrain,vwtest, predict.vw can't be used here and functions add_option, vwparams aren't supported.
 #'@param option Add Learning algorithm / reduction option:
 #'\itemize{
 #'  \item \code{binary} - Reports loss as binary classification with -1,1 labels
@@ -329,6 +331,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
                     optimization_params = list(),
                     dir = tempdir(),
                     model = NULL,
+                    params_str = NULL,
                     option = c("", "binary", "oaa", "ect", "csoaa", "wap",
                                "log_multi", "recall_tree", "lda",
                                "multilabel_oaa", "classweight",
@@ -343,6 +346,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
   train_md5sum = ""
   test_md5sum = ""
   train_file = ""
+  is_cl = FALSE
 
   empty_eval_list = list(
       num_examples = NA_integer_,
@@ -396,8 +400,6 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
       options <- setNames(list(list(...)), option)
   }
 
-
-
   params <- list(
       algorithm = algorithm,
       general_params = general_params,
@@ -406,28 +408,35 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
       options = options
       # input_mode = input_mode
   )
-  # Parse parameters and write them to string
-  # Check parameters
-  params <- .check_parameters(params)
-  # Write to string
-  params_str <- .create_parameters_string(params)
-  # Create cache
-  # if (params$general_params$cache) {
-  #   # If have data, create cache
-  #   if (nchar(train_data) != 0) {
-  #     train_cache <- paste0(train_data, ".cache")
-  #     .create_cache(dir=dir, data_file=train_data, cache_file=train_cache)
-  #   }
-  #   if (nchar(test_data) != 0) {
-  #     test_cache <- paste0(test_data, ".cache")
-  #     .create_cache(dir=dir, data_file=test_data, cache_file=test_cache)
-  #   }
-  # }
+  
+  if (!is.null(params_str)) {
+      is_cl = TRUE
+      params$algorithm <- NA
+      # Check params string
+      prohibited_params <- c("-d", "--data", "--readable_model", "-r",
+                             "--invert_hash", "--quiet", "--cache", "-c",
+                             "--cache_file", "-k", "--kill_cache", "-p",
+                             "--passes", "--save_resume", "--progress", "-P",
+                             "--audit_regressor")
+      if(grepl(paste0(prohibited_params, collapse = "|"),params_str)) {
+          stop(cat("Following cmd line parameters are defined in other functions:\n",
+                   paste0(prohibited_params, collapse = ", ")))
+      }
 
+      
+  } else {
+      # Parse parameters and write them to string
+      # Check parameters
+      params <- .check_parameters(params)
+      # Write to string
+      params_str <- .create_parameters_string(params)
+  }
+  
   vwmodel <- list(params = params,
                   dir = dir,
                   model = model,
                   params_str = params_str,
+                  is_cl = is_cl,
                   data_md5sum = list(train = train_md5sum,
                                test = test_md5sum),
                   train_file = train_file,
@@ -451,6 +460,11 @@ add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap
                                            "cb_explore", "cbify", "multiworld_test_check",
                                            "nn", "topk", "search", "boosting", "marginal"),
                        ...) {
+    
+    if (vwmodel$is_cl) {
+        stop("add_option can't be used when cmd line parameters are used")
+    }
+    
 
     option <- match.arg(option)
 
@@ -477,45 +491,48 @@ add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap
 #'
 print.vw <- function(x, ...) {
   cat("\tVowpal Wabbit model\n")
-  cat("Learning algorithm:  ", x$params$algorithm, "\n")
   cat("Working directory:  ", x$dir, "\n")
   cat("Model file:  ", file.path(x$dir, x$model), "\n")
-  cat("General parameters:", "\n")
-  sapply(names(x$params$general_params), FUN = function(i) {
-    if(is.na(x$params$general_params[[i]])) {
-      cat("\t", i, ":  Not defined\n")
-    } else {
-      cat("\t", i, ":  ", x$params$general_params[[i]], "\n")
-    }
-  })
-  cat("Feature parameters:", "\n")
-  sapply(names(x$params$feature_params), FUN = function(i) {
-      if(is.na(x$params$feature_params[[i]])) {
-          cat("\t", i, ":  Not defined\n")
-      } else {
-          cat("\t", i, ":  ", x$params$feature_params[[i]], "\n")
-      }
-  })
-  cat("Learning algorithms / Reductions:", "\n")
-  sapply(names(x$params$options), function(option_name) {
-      cat("\t", option_name, ":\n")
-      sapply(names(x$params$options[[option_name]]), FUN = function(i) {
-          if(is.na(x$params$options[[option_name]][[i]])) {
-              cat("\t\t", i, ":  Not defined\n")
+  
+  if (!x$is_cl) {
+      cat("Learning algorithm:  ", x$params$algorithm, "\n")
+      cat("General parameters:", "\n")
+      sapply(names(x$params$general_params), FUN = function(i) {
+          if(is.na(x$params$general_params[[i]])) {
+              cat("\t", i, ":  Not defined\n")
           } else {
-              cat("\t\t", i, ":  ", x$params$options[[option_name]][[i]], "\n")
+              cat("\t", i, ":  ", x$params$general_params[[i]], "\n")
           }
       })
-  })
-  cat("Optimization parameters:", "\n")
-  sapply(names(x$params$optimization_params), FUN = function(i) {
-    if(is.na(x$params$optimization_params[[i]])) {
-      cat("\t", i, ":  Not defined\n")
-    } else {
-      cat("\t", i, ":  ", x$params$optimization_params[[i]], "\n")
-    }
-  })
-
+      cat("Feature parameters:", "\n")
+      sapply(names(x$params$feature_params), FUN = function(i) {
+          if(is.na(x$params$feature_params[[i]])) {
+              cat("\t", i, ":  Not defined\n")
+          } else {
+              cat("\t", i, ":  ", x$params$feature_params[[i]], "\n")
+          }
+      })
+      cat("Learning algorithms / Reductions:", "\n")
+      sapply(names(x$params$options), function(option_name) {
+          cat("\t", option_name, ":\n")
+          sapply(names(x$params$options[[option_name]]), FUN = function(i) {
+              if(is.na(x$params$options[[option_name]][[i]])) {
+                  cat("\t\t", i, ":  Not defined\n")
+              } else {
+                  cat("\t\t", i, ":  ", x$params$options[[option_name]][[i]], "\n")
+              }
+          })
+      })
+      cat("Optimization parameters:", "\n")
+      sapply(names(x$params$optimization_params), FUN = function(i) {
+          if(is.na(x$params$optimization_params[[i]])) {
+              cat("\t", i, ":  Not defined\n")
+          } else {
+              cat("\t", i, ":  ", x$params$optimization_params[[i]], "\n")
+          }
+      })
+  }
+  
   if(!all(is.na(.flatten(x$eval$train)))) {
       cat("Model evaluation. Training:", "\n")
       sapply(names(x$eval$train), FUN = function(i) {
@@ -535,9 +552,9 @@ print.vw <- function(x, ...) {
 }
 
 #'@rdname vwtest
-predict.vw <- function(object, data, probs_path = "",
+predict.vw <- function(object, data, probs_path = "", full_probs = FALSE,
                        readable_model = NULL, quiet = FALSE, ...) {
-    vwtest(object, data = data, probs_path = probs_path,
+    vwtest(object, data = data, probs_path = probs_path, full_probs = full_probs,
            readable_model = readable_model, quiet = quiet)
 }
 
@@ -559,6 +576,9 @@ predict.vw <- function(object, data, probs_path = "",
 vwparams <- function(vwmodel, name) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
+    }
+    if (vwmodel$is_cl) {
+        stop("vwparams can't be used when cmd line parameters are used")
     }
 
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)
@@ -583,6 +603,9 @@ vwparams <- function(vwmodel, name) {
 `vwparams<-` <- function(vwmodel, name, value) {
     if(!inherits(vwmodel, "vw")) {
         stop("vwmodel should be of class vw")
+    }
+    if (vwmodel$is_cl) {
+        stop("vwparams can't be used when cmd line parameters are used")
     }
 
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)

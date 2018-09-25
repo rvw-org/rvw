@@ -62,6 +62,7 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = 
 #'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 #'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 #'@param probs_path [string] Path to file where to save predictions.
+#'@param full_probs [bool] Output full predictions in data.frame format. If not, force predictions into a single vector (default).
 #'@param readable_model [string] Print trained model in human readable format ("hashed") 
 #'and also with human readable features ("inverted").
 #'@param readable_model_path [string] Path to file where to save readable model.
@@ -103,8 +104,8 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = 
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwtest(test_vwmodel, data = ext_test_data)
 #'@rdname vwtest
-vwtest <- function(vwmodel, data, probs_path = "", readable_model = NULL, readable_model_path = "", quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, fixed = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
-    .Call(`_rvw_vwtest`, vwmodel, data, probs_path, readable_model, readable_model_path, quiet, passes, cache, raw, progress, namespaces, keep_space, fixed, targets, probabilities, weight, base, tag, multiline)
+vwtest <- function(vwmodel, data, probs_path = "", full_probs = FALSE, readable_model = NULL, readable_model_path = "", quiet = FALSE, passes = 1L, cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL, keep_space = NULL, fixed = NULL, targets = NULL, probabilities = NULL, weight = NULL, base = NULL, tag = NULL, multiline = NULL) {
+    .Call(`_rvw_vwtest`, vwmodel, data, probs_path, full_probs, readable_model, readable_model_path, quiet, passes, cache, raw, progress, namespaces, keep_space, fixed, targets, probabilities, weight, base, tag, multiline)
 }
 
 #'Audit Vowpal Wabbit model

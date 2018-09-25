@@ -244,6 +244,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 //'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 //'@param probs_path [string] Path to file where to save predictions.
+//'@param full_probs [bool] Output full predictions in data.frame format. If not, force predictions into a single vector (default).
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted").
 //'@param readable_model_path [string] Path to file where to save readable model.
@@ -286,7 +287,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'vwtest(test_vwmodel, data = ext_test_data)
 //'@rdname vwtest
 // [[Rcpp::export]]
-Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
+SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool full_probs=false, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
                            bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
@@ -410,25 +411,6 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     // Update eval list
     vwmodel_eval["test"] = eval_list;
     
-    Rcpp::NumericVector data_vec(num_of_examples);
-    std::ifstream probs_stream (probs_str);
-    std::string line;
-    for (int i = 0; i < num_of_examples; ++i)
-    {
-        getline(probs_stream, line);
-        if (!line.empty())
-        {
-            data_vec[i] = std::stof(line);
-        } else {
-            data_vec[i] = R_NaReal;
-        }
-    }
-    // Delete temporary probs file
-    if (probs_path.empty()) {
-        remove(probs_str.c_str());
-    }
-    
-    
     if (!quiet)
     {
         if (readable_model_path.empty()){
@@ -452,7 +434,123 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         }
     }
     
-    return data_vec;
+    // Write predictions to vector / data.frame
+    std::ifstream probs_stream (probs_str);
+    std::string probs_line;
+    std::vector<std::string> split_line;
+    
+    // std::vector<double> data_vec(num_of_examples);
+    if (probs_stream.is_open())
+    {
+        // Check first line for number of elements
+        getline(probs_stream, probs_line);
+        split_line = split_str(probs_line, ' ');
+        int preds_num_col = split_line.size();
+        // Rcpp::Rcout << preds_num_col << std::endl;
+        
+        if (!full_probs) 
+        {
+            // Default mode
+            // Single vector output
+            Rcpp::NumericVector preds_vec(num_of_examples);
+            preds_vec[0] = std::stof(split_line[0]);
+            if (preds_num_col > 1) 
+            {
+                Rcpp::Rcerr << "Predictions contain multiple elements per example." 
+                            << "\nTruncated results obtained. Use 'full_probs=T' for non-truncated results."
+                            << std::endl;
+            }
+            
+            for (int i = 1; i < num_of_examples; ++i) 
+            {
+                getline(probs_stream, probs_line);
+                if (!probs_line.empty())
+                {
+                    preds_vec[i] = std::stof(probs_line);
+                } else {
+                    preds_vec[i] = R_NaReal;
+                }
+            }
+            
+            probs_stream.close();
+            
+            // Delete temporary probs file
+            if (probs_path.empty()) {
+                remove(probs_str.c_str());
+            }
+            
+            return preds_vec;
+            
+        } else {
+            // Full mode
+            // Data.frame output
+            std::vector<std::vector<std::string>> pred_vectors(preds_num_col);
+            
+            // // For string to float conversion
+            // std::stringstream ss;
+            // float float_elem;
+            
+            // Write elements from the first line
+            for (int i = 0; i < preds_num_col; i++) {
+                pred_vectors[i].push_back(split_line[i]);
+            }
+            
+            for (int i = 1; i < num_of_examples; ++i) 
+            {
+                getline(probs_stream, probs_line);
+                if (!probs_line.empty())
+                {
+                    split_line = split_str(probs_line, ' ');
+                    for (int j = 0; j < preds_num_col; j++) {
+                        
+                        // // Try to convert element to float
+                        // float_elem =  std::numeric_limits<float>::quiet_NaN();
+                        // ss << split_line[j];
+                        // ss >> float_elem;
+                        // 
+                        // if(std::isnan(float_elem)) {
+                        //     pred_vectors[j].push_back(float_elem);
+                        // } else {
+                        //     pred_vectors[j].push_back(split_line[j]);
+                        // }
+                        
+                        pred_vectors[j].push_back(split_line[j]);
+                    }
+                } else {
+                    for (int j = 0; j < preds_num_col; j++) {
+                        pred_vectors[j].push_back("");
+                    }
+                }
+            }
+            
+            probs_stream.close();
+            
+            // Delete temporary probs file
+            if (probs_path.empty()) {
+                remove(probs_str.c_str());
+            }
+            
+            // Temporary list (and its names) for DataFrame constructor
+            Rcpp::List tmp_preds_output(preds_num_col);
+            Rcpp::CharacterVector column_names(preds_num_col);
+            
+            for (int i = 0; i < preds_num_col; i++) {
+                tmp_preds_output[i] = pred_vectors[i];
+                column_names[i] =  "V" + std::to_string(i + 1);
+            }
+            
+            // Rcpp::DataFrame preds_output(tmp_preds_output);
+            Rcpp::DataFrame preds_output = Rcpp::DataFrame::create(tmp_preds_output,
+                                                                   Rcpp::Named("stringsAsFactors") = false);
+            preds_output.attr("names") = column_names;
+            
+            return(preds_output);
+            
+        }
+    } else {
+        Rcpp::stop("Predictions file can not be opened");
+    }
+    
 }
 
 

@@ -43,14 +43,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtest
-Rcpp::NumericVector vwtest(Rcpp::List& vwmodel, SEXP data, std::string probs_path, Rcpp::Nullable<Rcpp::String> readable_model, std::string readable_model_path, bool quiet, int passes, bool cache, bool raw, Rcpp::Nullable<float> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> fixed, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
-RcppExport SEXP _rvw_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP readable_modelSEXP, SEXP readable_model_pathSEXP, SEXP quietSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP rawSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP fixedSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
+SEXP vwtest(Rcpp::List& vwmodel, SEXP data, std::string probs_path, bool full_probs, Rcpp::Nullable<Rcpp::String> readable_model, std::string readable_model_path, bool quiet, int passes, bool cache, bool raw, Rcpp::Nullable<float> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> fixed, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
+RcppExport SEXP _rvw_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP full_probsSEXP, SEXP readable_modelSEXP, SEXP readable_model_pathSEXP, SEXP quietSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP rawSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP fixedSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List& >::type vwmodel(vwmodelSEXP);
     Rcpp::traits::input_parameter< SEXP >::type data(dataSEXP);
     Rcpp::traits::input_parameter< std::string >::type probs_path(probs_pathSEXP);
+    Rcpp::traits::input_parameter< bool >::type full_probs(full_probsSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readable_model(readable_modelSEXP);
     Rcpp::traits::input_parameter< std::string >::type readable_model_path(readable_model_pathSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
@@ -67,7 +68,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type base(baseSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type tag(tagSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type multiline(multilineSEXP);
-    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data, probs_path, readable_model, readable_model_path, quiet, passes, cache, raw, progress, namespaces, keep_space, fixed, targets, probabilities, weight, base, tag, multiline));
+    rcpp_result_gen = Rcpp::wrap(vwtest(vwmodel, data, probs_path, full_probs, readable_model, readable_model_path, quiet, passes, cache, raw, progress, namespaces, keep_space, fixed, targets, probabilities, weight, base, tag, multiline));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -86,7 +87,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_rvw_get_vw_version", (DL_FUNC) &_rvw_get_vw_version, 0},
     {"_rvw_vwtrain", (DL_FUNC) &_rvw_vwtrain, 18},
-    {"_rvw_vwtest", (DL_FUNC) &_rvw_vwtest, 19},
+    {"_rvw_vwtest", (DL_FUNC) &_rvw_vwtest, 20},
     {"_rvw_vwaudit", (DL_FUNC) &_rvw_vwaudit, 1},
     {NULL, NULL, 0}
 };

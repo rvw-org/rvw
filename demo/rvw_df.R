@@ -32,7 +32,9 @@ vwtrain(vwmodel, data = df_train,
         namespaces = list(NS1 = list("sex", "rings"), NS2 = list("diameter", "length", "height")),
         targets = c("cost_class_1", "cost_class_2", "cost_class_3"), tag = "tag"
 )
-predict.vw(vwmodel, data = df_test)
+vwpreds <- predict(vwmodel, data = df_test, full_probs = T)
+
+head(vwpreds)
 
 setwd(curr_dir)
 

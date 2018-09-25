@@ -7,9 +7,9 @@
 vwsetup(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm",
   "OjaNewton", "svrg"), general_params = list(),
   feature_params = list(), optimization_params = list(),
-  dir = tempdir(), model = NULL, option = c("", "binary", "oaa",
-  "ect", "csoaa", "wap", "log_multi", "recall_tree", "lda",
-  "multilabel_oaa", "classweight", "new_mf", "lrq", "stage_poly",
+  dir = tempdir(), model = NULL, params_str = NULL, option = c("",
+  "binary", "oaa", "ect", "csoaa", "wap", "log_multi", "recall_tree",
+  "lda", "multilabel_oaa", "classweight", "new_mf", "lrq", "stage_poly",
   "bootstrap", "autolink", "replay", "explore_eval", "cb", "cb_explore",
   "cbify", "multiworld_test_check", "nn", "topk", "search", "boosting",
   "marginal"), ...)
@@ -131,6 +131,9 @@ Additional parameters depending on \code{algorithm} choice:
 \item{dir}{Working directory, default is tempdir()}
 
 \item{model}{File name for model weights or path to existng model file.}
+
+\item{params_str}{Pass cmd line parameters directly, bypassing the default approach.
+For compatibility, parameters from vwtrain,vwtest, predict.vw can't be used here and functions add_option, vwparams aren't supported.}
 
 \item{option}{Add Learning algorithm / reduction option:
 \itemize{
