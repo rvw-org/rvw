@@ -73,13 +73,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwaudit
-Rcpp::DataFrame vwaudit(Rcpp::List& vwmodel);
-RcppExport SEXP _rvw_vwaudit(SEXP vwmodelSEXP) {
+Rcpp::DataFrame vwaudit(Rcpp::List& vwmodel, bool quiet);
+RcppExport SEXP _rvw_vwaudit(SEXP vwmodelSEXP, SEXP quietSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List& >::type vwmodel(vwmodelSEXP);
-    rcpp_result_gen = Rcpp::wrap(vwaudit(vwmodel));
+    Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
+    rcpp_result_gen = Rcpp::wrap(vwaudit(vwmodel, quiet));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -88,7 +89,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rvw_get_vw_version", (DL_FUNC) &_rvw_get_vw_version, 0},
     {"_rvw_vwtrain", (DL_FUNC) &_rvw_vwtrain, 18},
     {"_rvw_vwtest", (DL_FUNC) &_rvw_vwtest, 20},
-    {"_rvw_vwaudit", (DL_FUNC) &_rvw_vwaudit, 1},
+    {"_rvw_vwaudit", (DL_FUNC) &_rvw_vwaudit, 2},
     {NULL, NULL, 0}
 };
 

@@ -104,7 +104,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     // check if data is in string or data.frame format
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
-    Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, "train",
+    Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, quiet, "train",
                                               namespaces, keep_space, fixed,
                                               targets, probabilities,
                                               weight, base, tag, multiline);
@@ -301,7 +301,7 @@ SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool ful
     // check if data is in string or data.frame format
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
-    Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, "test",
+    Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, quiet, "test",
                                           namespaces, keep_space, fixed,
                                           targets, probabilities,
                                           weight, base, tag, multiline);
@@ -456,7 +456,7 @@ SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool ful
             preds_vec[0] = std::stof(split_line[0]);
             if (preds_num_col > 1) 
             {
-                Rcpp::Rcerr << "Predictions contain multiple elements per example." 
+                Rcpp::Rcerr << "Warning: Predictions contain multiple elements per example." 
                             << "\nTruncated results obtained. Use 'full_probs=T' for non-truncated results."
                             << std::endl;
             }
@@ -559,6 +559,7 @@ SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool ful
 //'Get feature names and their model values. 
 //'
 //'@param vwmodel Model of vw class to train
+//'@param quiet [bool] Do not print anything to the console.
 //'@return Data.frame containing feature names, feature hashes and model values
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
@@ -566,7 +567,7 @@ SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool ful
 //'vwtrain(test_vwmodel, data = ext_train_data)
 //'vwaudit(test_vwmodel)
 // [[Rcpp::export]]
-Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
+Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel, bool quiet = false) {
     // vwmodel should be of class vw
     if(!Rf_inherits(vwmodel, "vw")) {
         Rcpp::stop("vwmodel should be of class vw");
@@ -582,6 +583,9 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
     if(file_exists(data_str)){
         // std::string aud_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
         std::string aud_init_str = "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
+        if (quiet) {
+            aud_init_str += " --quiet";
+        }
         vw* aud_model = VW::initialize(aud_init_str);
         VW::start_parser(*aud_model);
         LEARNER::generic_driver(*aud_model);

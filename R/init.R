@@ -76,12 +76,22 @@
         
         # Learning parameters/reductions default/check lists
         binary_check <- list(binary=TRUE)
-        oaa_check <- list(num_classes=NA_real_)
+        oaa_check <- list(num_classes=NA_real_,
+                          oaa_subsample=NA_real_
+                          # probabilities=FALSE,
+                          # scores=FALSE
+                          )
         ect_check <- list(num_classes=NA_real_)
         csoaa_check <- list(num_classes=NA_real_,
-                            csoaa_ldf="")
+                            csoaa_ldf=""
+                            # csoaa_rank=FALSE,
+                            # probabilities=FALSE
+                            )
         wap_check <- list(num_classes=NA_real_,
-                          wap_ldf="")
+                          wap_ldf=""
+                          # csoaa_rank=FALSE,
+                          # probabilities=FALSE
+                          )
         log_multi_check <- list(num_classes=NA_real_,
           no_progress=FALSE,
           swap_resistance=4)

@@ -1,0 +1,73 @@
+	Vowpal Wabbit model
+Working directory:   . 
+Model file:   ./pk_mdl.vw 
+Learning algorithm:   sgd 
+General parameters: 
+	 random_seed :   0 
+	 ring_size :  Not defined
+	 holdout_off :   FALSE 
+	 holdout_period :   10 
+	 holdout_after :   0 
+	 early_terminate :   3 
+	 loss_function :   squared 
+	 link :   identity 
+	 quantile_tau :   0.5 
+Feature parameters: 
+	 bit_precision :   18 
+	 quadratic :  Not defined
+	 cubic :  Not defined
+	 interactions :  Not defined
+	 permutations :   FALSE 
+	 leave_duplicate_interactions :   FALSE 
+	 noconstant :   FALSE 
+	 feature_limit :  Not defined
+	 ngram :  Not defined
+	 skips :  Not defined
+	 hash :  Not defined
+	 affix :  Not defined
+	 spelling :  Not defined
+	 interact :  Not defined
+Learning algorithms / Reductions: 
+	 boosting :
+		 num_learners :   10 
+		 gamma :   0.1 
+		 alg :   BBM 
+Optimization parameters: 
+	 adaptive :   TRUE 
+	 normalized :   TRUE 
+	 invariant :   TRUE 
+	 adax :   FALSE 
+	 sparse_l2 :   0 
+	 l1_state :   0 
+	 l2_state :   1 
+	 learning_rate :   0.5 
+	 initial_pass_length :  Not defined
+	 l1 :   0 
+	 l2 :   0 
+	 no_bias_regularization :  Not defined
+	 feature_mask :  Not defined
+	 decay_learning_rate :   1 
+	 initial_t :   0 
+	 power_t :   0.5 
+	 initial_weight :   0 
+	 random_weights :  Not defined
+	 normal_weights :  Not defined
+	 truncated_normal_weights :  Not defined
+	 sparse_weights :   FALSE 
+	 input_feature_regularizer :  Not defined
+Model evaluation. Training: 
+	 num_examples :   100 
+	 weighted_example_sum :   100 
+	 weighted_label_sum :   -10 
+	 avg_loss :   0.32 
+	 best_const :   -0.1 
+	 best_const_loss :   0.99 
+	 total_feature :   1000 
+Model evaluation. Testing: 
+	 num_examples :   100 
+	 weighted_example_sum :   100 
+	 weighted_label_sum :   100 
+	 avg_loss :   0.12 
+	 best_const :   1 
+	 best_const_loss :   0 
+	 total_feature :   1000 

@@ -149,6 +149,9 @@
 #'  \item \code{oaa} or \code{ect}:
 #'    \itemize{
 #'      \item \code{num_classes} - Number of classes
+#'      \item \code{oaa_subsample} - Subsample this number of negative examples when learning
+     # \item \code{probabilities} - Predict probabilites of all classes
+     # \item \code{scores} - Output raw scores per class
 #'    }
 #'  \item \code{multilabel_oaa}:
 #'    \itemize{
@@ -158,6 +161,8 @@
 #'    \itemize{
 #'      \item \code{num_classes} - Number of classes
 #'      \item \code{csoaa_ldf} or \code{wap_ldf} - \code{singleline} (Default) or \code{multiline} label dependent features
+     # \item \code{csoaa_rank} - Return actions sorted by score order
+     # \item \code{probabilities} - Predict probabilites of all classes
 #'    }
 #'  \item \code{log_multi}:
 #'    \itemize{

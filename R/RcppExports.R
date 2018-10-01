@@ -113,13 +113,14 @@ vwtest <- function(vwmodel, data, probs_path = "", full_probs = FALSE, readable_
 #'Get feature names and their model values. 
 #'
 #'@param vwmodel Model of vw class to train
+#'@param quiet [bool] Do not print anything to the console.
 #'@return Data.frame containing feature names, feature hashes and model values
 #'@examples
 #'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
 #'test_vwmodel <- vwsetup()
 #'vwtrain(test_vwmodel, data = ext_train_data)
 #'vwaudit(test_vwmodel)
-vwaudit <- function(vwmodel) {
-    .Call(`_rvw_vwaudit`, vwmodel)
+vwaudit <- function(vwmodel, quiet = FALSE) {
+    .Call(`_rvw_vwaudit`, vwmodel, quiet)
 }
 

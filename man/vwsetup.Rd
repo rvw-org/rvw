@@ -170,6 +170,7 @@ For compatibility, parameters from vwtrain,vwtest, predict.vw can't be used here
  \item \code{oaa} or \code{ect}:
    \itemize{
      \item \code{num_classes} - Number of classes
+     \item \code{oaa_subsample} - Subsample this number of negative examples when learning
    }
  \item \code{multilabel_oaa}:
    \itemize{

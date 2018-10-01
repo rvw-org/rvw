@@ -47,7 +47,7 @@ std::string md5sum(char * char_x, uint32_t nChar) {
     return(output_str);
 }
 
-Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP data, std::string mode,
+Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP data, bool quiet, std::string mode,
                                  Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space,
                                  Rcpp::Nullable<Rcpp::CharacterVector> fixed, 
                                  Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities,
@@ -108,7 +108,9 @@ Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP
         
         
         if (model_md5sum != data_md5sum) {
-            Rcpp::Rcout << "Converting data.frame to VW format" << std::endl;
+            if(!quiet){
+                Rcpp::Rcout << "Converting data.frame to VW format" << std::endl;
+            }
             Rcpp::Environment env("package:rvw");
             Rcpp::Function r_df2vw = env["df2vw"];
             // Convert data.frame to VW
