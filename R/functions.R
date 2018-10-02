@@ -424,8 +424,8 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
                              "--passes", "--save_resume", "--progress", "-P",
                              "--audit_regressor")
       if(grepl(paste0(prohibited_params, collapse = "|"),params_str)) {
-          stop(cat("Following cmd line parameters are defined in other functions:\n",
-                   paste0(prohibited_params, collapse = ", ")))
+          stop(paste0("Following cmd line parameters are defined in other functions:\n",
+                   paste0(prohibited_params, collapse = ", ")), call. = FALSE)
       }
 
       
@@ -466,15 +466,19 @@ add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap
                                            "nn", "topk", "search", "boosting", "marginal"),
                        ...) {
     
+    if(!inherits(vwmodel, "vw")) {
+        stop("vwmodel should be of class vw", call. = FALSE)
+    }
+    
     if (vwmodel$is_cl) {
-        stop("add_option can't be used when cmd line parameters are used")
+        stop("add_option can't be used when cmd line parameters are used", call. = FALSE)
     }
     
 
     option <- match.arg(option)
 
     if (option %in% names(vwmodel$params$options)) {
-        stop("Trying to overwrite option")
+        stop("Trying to overwrite option", call. = FALSE)
     }
 
     new_option <- setNames(list(list(...)), option)
@@ -536,6 +540,8 @@ print.vw <- function(x, ...) {
               cat("\t", i, ":  ", x$params$optimization_params[[i]], "\n")
           }
       })
+  } else {
+      cat("Command line parameters:  ", x$params_str, "\n")
   }
   
   if(!all(is.na(.flatten(x$eval$train)))) {
@@ -580,10 +586,10 @@ predict.vw <- function(object, data, probs_path = "", full_probs = FALSE,
 #'@rdname vwparams
 vwparams <- function(vwmodel, name) {
     if(!inherits(vwmodel, "vw")) {
-        stop("vwmodel should be of class vw")
+        stop("vwmodel should be of class vw", call. = FALSE)
     }
     if (vwmodel$is_cl) {
-        stop("vwparams can't be used when cmd line parameters are used")
+        stop("vwparams can't be used when cmd line parameters are used", call. = FALSE)
     }
 
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)
@@ -600,17 +606,17 @@ vwparams <- function(vwmodel, name) {
             return(vwmodel$params[[key_params[1]]])
         }
     } else {
-        stop("Wrong parameter name")
+        stop("Wrong parameter name", call. = FALSE)
     }
 }
 
 #'@rdname vwparams
 `vwparams<-` <- function(vwmodel, name, value) {
     if(!inherits(vwmodel, "vw")) {
-        stop("vwmodel should be of class vw")
+        stop("vwmodel should be of class vw", call. = FALSE)
     }
     if (vwmodel$is_cl) {
-        stop("vwparams can't be used when cmd line parameters are used")
+        stop("vwparams can't be used when cmd line parameters are used", call. = FALSE)
     }
 
     key_string <- grep(pattern = paste0("\\b", name, "\\b"), x = names(unlist(vwmodel$params)), value = T)
@@ -630,7 +636,7 @@ vwparams <- function(vwmodel, name) {
         # file.remove(paste0(vwmodel$dir, vwmodel$model))
         return(vwmodel)
     } else {
-        stop("Wrong parameter name")
+        stop("Wrong parameter name", call. = FALSE)
     }
 }
 
@@ -764,7 +770,7 @@ df2vw <- function(data, file_path, namespaces = NULL,
             if(!is.null(probabilities)) {
 
                 if(length(targets) != length(probabilities)) {
-                    stop("targets and probabilities should be of the same length")
+                    stop("targets and probabilities should be of the same length", call. = FALSE)
                 }
 
                 # Construct Labels for multilabel examples with probabilities (e.g. 1:0.6:0.3 2:0.4:0.7)
@@ -817,7 +823,7 @@ df2vw <- function(data, file_path, namespaces = NULL,
                         formatDataVW <- paste0(formatDataVW, ":%s")
                         argexpr <- c(argexpr, probabilities)
                     } else {
-                        stop("probabilities should be of length 1")
+                        stop("probabilities should be of length 1", call. = FALSE)
                     }
                 }
             } else {

@@ -96,7 +96,30 @@ test_that("vwaudit outputs correct audit data.frame", {
     expect_equal(aud_df, ref_df)
 })
 
-
+test_that("vwparams correctly returns and sets parameter values", {
+    
+    test_vwmodel <- vwsetup(general_params = list(link="identity", holdout_off=FALSE),
+                            feature_params = list(bit_precision=10),
+                            option = "nn", num_hidden = 5)
+    
+    
+    
+    # Character value
+    vwparams(test_vwmodel, name = "link") <- "logistic"
+    expect_equal(vwparams(test_vwmodel, name = "link"), "logistic")
+    
+    # Numerical value
+    vwparams(test_vwmodel, name = "bit_precision") <- 25
+    expect_equal(vwparams(test_vwmodel, name = "bit_precision"), 25)
+    
+    # Logical value
+    vwparams(test_vwmodel, name = "holdout_off") <- TRUE
+    expect_equal(vwparams(test_vwmodel, name = "holdout_off"), TRUE)
+    
+    # Option value
+    vwparams(test_vwmodel, name = "num_hidden") <- 10
+    expect_equal(vwparams(test_vwmodel, name = "num_hidden"), 10)
+})
 
 # Return back
 setwd(curr_dir)

@@ -88,7 +88,7 @@ test_that("vwsetup with custom arguments and cache works as CL version", {
     dir = "./",
     model = "pk_mdl.vw",
     general_params = list(random_seed = 42, loss_function="logistic", link="logistic"),
-    feature_params = list(bit_precision=20, ngram="A2"),
+    feature_params = list(bit_precision=20, ngram="A2", noconstant=T),
     optimization_params = list(adaptive=FALSE, l1=1E-8)
   )
   test_vwmodel <- add_option(test_vwmodel, option = "boosting", num_learners=4)
@@ -100,7 +100,7 @@ test_that("vwsetup with custom arguments and cache works as CL version", {
   # Command Line session
   system(
     paste0("vw --random_seed 42 --loss_function logistic --link logistic ",
-           "--bit_precision 20 --ngram A2 --l1 1e-08 --boosting 4 --passes 10 -c",
+           "--bit_precision 20 --ngram A2 --noconstant --l1 1e-08 --boosting 4 --passes 10 -c",
            " -d ", ext_train_data, " -f ./cl_mdl.vw"),
     intern = FALSE,
     ignore.stderr = TRUE
