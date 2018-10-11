@@ -1,9 +1,10 @@
 #include <fstream>
 #include <iostream>
 
-#include "helpers.h"
 #include "vowpalwabbit/vw.h"
 #include "vowpalwabbit/global_data.h"
+
+#include "helpers.h"
 #include <Rcpp.h>
 
 #ifdef _WIN32
@@ -49,7 +50,7 @@ std::string get_vw_version() {
 //'
 //'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 //'
-//'@param vwmodel Model of vw class to train
+//'@param vwmodel [vw] Model of vw class to train
 //'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 //'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
@@ -59,7 +60,7 @@ std::string get_vw_version() {
 //'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 //'@param cache [bool] Use a cache for a data file.
-//'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
+//'@param progress [int/real] Progress update frequency. int: additive, real: multiplicative
 //'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 //'  each variable for each namespace can be a R list, or a YAML
 //'  file example namespace with the IRIS database: namespaces =
@@ -90,7 +91,7 @@ std::string get_vw_version() {
 //'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
 void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
-             bool quiet=false, bool update_model=false, int passes=1, bool cache=false, Rcpp::Nullable<float> progress=R_NilValue,
+             bool quiet=false, bool update_model=false, int passes=1, bool cache=false, Rcpp::Nullable<SEXP *> progress=R_NilValue,
              Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
@@ -182,6 +183,17 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     }
     // Update model_md5sum
     vwmodel_md5sums["train"] = new_data_md5sum;
+    
+    if (progress.isNotNull()) {
+        if(TYPEOF(progress) == INTSXP) {
+            train_init_str += " --progress " + std::to_string(Rcpp::as<int>(progress));
+        } else if(TYPEOF(progress) == REALSXP) {
+            train_init_str += " --progress " + std::to_string(Rcpp::as<float>(progress));
+        } else {
+            Rcpp::stop("Wrong type for progress argument (should be integer or real)");
+        }
+    }
+    
     // Ignore output from VW
     if (!quiet)
     {
@@ -192,10 +204,6 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
         Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
     } else {
         train_init_str += " --quiet";
-    }
-    
-    if (progress.isNotNull()) {
-        train_init_str += " --progress " + Rcpp::as<std::string>(progress);
     }
     
     // Start VW run
@@ -239,7 +247,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'\code{vwtest} computes predictions using VW model from \code{\link{vwsetup}}
 //'\code{predict.vw} compute predictions using parser settings from \code{\link{vwtrain}}
 //'
-//'@param vwmodel Model of vw class to train.
+//'@param vwmodel [vw] Model of vw class to train.
 //'@param object Model of vw class to train for \code{predict.vw}
 //'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 //'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
@@ -252,7 +260,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 //'@param cache [bool] Use a cache for a data file.
 //'@param raw [bool] Output unnormalized predictions. Default is FALSE.
-//'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
+//'@param progress [int/real] Progress update frequency. int: additive, real: multiplicative
 //'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 //'  each variable for each namespace can be a R list, or a YAML
 //'  file example namespace with the IRIS database: namespaces =
@@ -288,7 +296,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@rdname vwtest
 // [[Rcpp::export]]
 SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool full_probs=false, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
-                           bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
+                           bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<SEXP *> progress=R_NilValue,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
@@ -383,6 +391,17 @@ SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool ful
     }
     // Update model_md5sum
     vwmodel_md5sums["test"] = data_md5sum;
+    
+    if (progress.isNotNull()) {
+        if(TYPEOF(progress) == INTSXP) {
+            test_init_str += " --progress " + std::to_string(Rcpp::as<int>(progress));
+        } else if(TYPEOF(progress) == REALSXP) {
+            test_init_str += " --progress " + std::to_string(Rcpp::as<float>(progress));
+        } else {
+            Rcpp::stop("Wrong type for progress argument (should be integer or real)");
+        }
+    }
+    
     // Ignore output from VW
     if (!quiet)
     {
@@ -393,10 +412,6 @@ SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool ful
         Rcpp::Rcout << "Command line parameters: " << std::endl << test_init_str << std::endl;
     } else {
         test_init_str += " --quiet";
-    }
-    
-    if (progress.isNotNull()) {
-        test_init_str += " --progress " + Rcpp::as<std::string>(progress);
     }
     
     // Start VW run

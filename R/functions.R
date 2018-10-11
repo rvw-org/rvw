@@ -2,11 +2,11 @@
 #'
 #'Sets up VW model together with parameters and data
 #'
-#'@param dir Working directory, default is tempdir()
-#'@param model File name for model weights or path to existng model file.
-#'@param params_str Pass cmd line parameters directly, bypassing the default approach.
+#'@param dir [string] Working directory path, default is tempdir()
+#'@param model [string] File name for model weights or path to existng model file.
+#'@param params_str [string] Pass cmd line parameters directly, bypassing the default approach.
 #'For compatibility, parameters from vwtrain,vwtest, predict.vw can't be used here and functions add_option, vwparams aren't supported.
-#'@param option Add Learning algorithm / reduction option:
+#'@param option [string] Add Learning algorithm / reduction option:
 #'\itemize{
 #'  \item \code{binary} - Reports loss as binary classification with -1,1 labels
 #'  \item \code{oaa} - One-against-all multiclass learning with  labels
@@ -35,7 +35,7 @@
 #'  \item \code{boosting} - Online boosting with weak learners
 #'  \item \code{marginal} - Substitute marginal label estimates for ids
 #'}
-#'@param algorithm Optimzation algorithm
+#'@param algorithm [string] Optimzation algorithm
 #'\itemize{
 #'  \item \code{sgd} - adaptive, normalized, invariant stochastic gradient descent
 #'  \item \code{bfgs} - Limited-memory Broyden-Fletcher-Goldfarb-Shanno optimization algorithm
@@ -47,280 +47,281 @@
 #'}
 #'@param general_params List of parameters:
 #'\itemize{
-#'  \item \code{random_seed} - Seed random number generator
-#'  \item \code{ring_size} - Size of example ring
-#'  \item \code{holdout_off} - No holdout data in multiple passes
-#'  \item \code{holdout_period} - Holdout period for test only
-#'  \item \code{holdout_after} - Holdout after n training examples, default off (disables holdout_period)
-#'  \item \code{early_terminate} - Specify the number of passes tolerated when holdout loss doesn't decrease before early termination
-#'  \item \code{loss_function} - Specify the loss function to be used, uses squared by default. Currently available ones are squared, classic, hinge, logistic, quantile and poisson. default = squared
-#'  \item \code{link} - Specify the link function: identity, logistic, glf1 or poisson. default = identity
-#'  \item \code{quantile_tau} - Parameter "tau" associated with Quantileloss. Defaults to 0.5
+#'  \item \code{random_seed} [int] - Seed random number generator (default: 0)
+#'  \item \code{ring_size} [int] - Size of example ring
+#'  \item \code{holdout_off} [bool] - No holdout data in multiple passes (default: FALSE)
+#'  \item \code{holdout_period} [int] - Holdout period for test only (default: 10)
+#'  \item \code{holdout_after} [int] - Holdout after n training examples, default off (disables holdout_period) (default: 0)
+#'  \item \code{early_terminate} [int] - Specify the number of passes tolerated when holdout loss doesn't decrease before early termination (default: 3)
+#'  \item \code{loss_function} [string] - Specify the loss function to be used, uses squared by default. Currently available ones are: squared, classic, hinge, logistic, quantile and poisson. (default: squared)
+#'  \item \code{link} [string] - Specify the link function: identity, logistic, glf1 or poisson. (default: identity)
+#'  \item \code{quantile_tau} [real] - Parameter "tau" associated with Quantileloss. (default: 0.5)
 #'}
 #'@param feature_params List of parameters:
+#'More information about "interactions" option (also "quadratic", "cubic") avaliable here \url{https://github.com/VowpalWabbit/vowpal_wabbit/wiki/Command-line-arguments#example-manipulation-options}
 #'\itemize{
-#'  \item \code{bit_precision} - Number of bits in the feature table
-#'  \item \code{quadratic} - Create and use quadratic features
-#'  \item \code{cubic} - Create and use cubic features
-#'  \item \code{interactions} - Use second derivative in line searchCreate feature interactions of any level between namespaces.
-#'  \item \code{permutations} - Use permutations instead of combinations for feature interactions of same namespace.
-#'  \item \code{leave_duplicate_interactions} - Don't remove interactions with duplicate combinations of namespaces. For ex. this is a duplicate: 'quadratic="ab", quadratic="ba"' and a lot more in 'quadratic="::"'.
-#'  \item \code{noconstant} - Don't add a constant feature
-#'  \item \code{feature_limit} - limit to N features. To apply to a single namespace 'foo', arg should be "fN"
-#'  \item \code{ngram} - Generate N grams. To generate N grams for a single namespace 'foo', arg should be "fN".
-#'  \item \code{skips} - Use second derivative in line searchGenerate skips in N grams. This in conjunction with the ngram tag can be used to generate generalized n-skip-k-gram. To generate n-skips for a single namespace 'foo', arg should be "fN".
-#'  \item \code{hash} - How to hash the features. Available options: "strings", "all"
-#'  \item \code{affix} - Generate prefixes/suffixes of features; argument "+2a,-3b,+1" means generate 2-char prefixes for namespace a, 3-char suffixes for b and 1 char prefixes for default namespace
-#'  \item \code{spelling} - Compute spelling features for a given namespace (use '_' for default namespace)
-#'  \item \code{interact} - Put weights on feature products from namespaces <n1> and <n2>
+#'  \item \code{bit_precision} [int] - Number of bits in the feature table (default: 18)
+#'  \item \code{quadratic} [string] - Create and use quadratic features (Specify 2 namespaces)
+#'  \item \code{cubic} [string] - Create and use cubic features (Specify 3 namespaces)
+#'  \item \code{interactions} [string] - Create feature interactions of any level between namespaces (Specify several namespaces)
+#'  \item \code{permutations} [bool] - Use permutations instead of combinations for feature interactions of same namespace (default: FALSE)
+#'  \item \code{leave_duplicate_interactions} [bool] - Don't remove interactions with duplicate combinations of namespaces. For ex. this is a duplicate: 'quadratic="ab", quadratic="ba"' and a lot more in 'quadratic="::"'. (default: FALSE)
+#'  \item \code{noconstant} [bool] - Don't add a constant feature (default: FALSE)
+#'  \item \code{feature_limit} [string] - limit to N features. To apply to a single namespace 'foo', arg should be "fN"
+#'  \item \code{ngram} [string] - Generate N grams. To generate N grams for a single namespace 'foo', arg should be "fN".
+#'  \item \code{skips} [string] - Use second derivative in line searchGenerate skips in N grams. This in conjunction with the ngram tag can be used to generate generalized n-skip-k-gram. To generate n-skips for a single namespace 'foo', arg should be "fN".
+#'  \item \code{hash} [string] - How to hash the features. Available options: "strings", "all" (default: "strings")
+#'  \item \code{affix} [string] - Generate prefixes/suffixes of features; argument "+2a,-3b,+1" means generate 2-char prefixes for namespace a, 3-char suffixes for b and 1 char prefixes for default namespace
+#'  \item \code{spelling} [string] - Compute spelling features for a given namespace (use '_' for default namespace)
+#'  \item \code{interact} [string] - Put weights on feature products from namespaces <n1> and <n2>
 #'}
 #'@param optimization_params List of parameters:
 #'\itemize{
-#'  \item \code{learning_rate} - Set initial learning Rate
-#'  \item \code{initial_pass_length} - Initial number of examples per pass
-#'  \item \code{l1} - L1 regularization
-#'  \item \code{l2} - L2 regularization
-#'  \item \code{no_bias_regularization} - no bias in regularization
-#'  \item \code{feature_mask} - Use existing regressor to determine which parameters may be updated.  If no initial_regressor given, also used for initial weights.
-#'  \item \code{decay_learning_rate} - Set Decay factor for learning_rate between passes
-#'  \item \code{initial_t} - initial t value
-#'  \item \code{power_t} - t power value
-#'  \item \code{initial_weight} - Set all weights to an initial value of arg.
-#'  \item \code{random_weights} - Make initial weights random.
-#'  \item \code{normal_weights} - Make initial weights normal.
-#'  \item \code{truncated_normal_weights} - Make initial weights truncated normal.
-#'  \item \code{sparse_weights} - Use a sparse datastructure for weights.
-#'  \item \code{input_feature_regularizer} - Per feature regularization input file.
+#'  \item \code{learning_rate} [real] - Set initial learning Rate (default: 0.5)
+#'  \item \code{initial_pass_length} [int] - Initial number of examples per pass
+#'  \item \code{l1} [real] - L1 regularization (default: 0)
+#'  \item \code{l2} [real] - L2 regularization (default: 0)
+#'  \item \code{no_bias_regularization} [string] - no bias in regularization (Available options: "on", "off")
+#'  \item \code{feature_mask} [string] - Use existing regressor to determine which parameters may be updated.  If no initial_regressor given, also used for initial weights.
+#'  \item \code{decay_learning_rate} [real] - Set Decay factor for learning_rate between passes (default: 1)
+#'  \item \code{initial_t} [real] - initial t value (default: 0)
+#'  \item \code{power_t} [real] - t power value (default: 0.5)
+#'  \item \code{initial_weight} [int] - Set all weights to an initial value of arg (default: 0)
+#'  \item \code{random_weights} [string] - Make initial weights random (Available options: "on", "off") (default: "off")
+#'  \item \code{normal_weights} [string] - Make initial weights normal (Available options: "on", "off") (default: "off")
+#'  \item \code{truncated_normal_weights} [string] - Make initial weights truncated normal (Available options: "on", "off") (default: "off")
+#'  \item \code{sparse_weights} [bool] - Use a sparse datastructure for weights.
+#'  \item \code{input_feature_regularizer} [string] - Per feature regularization input file.
 #'}
 #'Additional parameters depending on \code{algorithm} choice:
 #'\itemize{
 #'  \item \code{sgd}:
 #'    \itemize{
-#'      \item \code{adaptive} - Use adaptive, individual learning rates (on by default)
-#'      \item \code{normalized} - Use per feature normalized updates (on by default)
-#'      \item \code{invariant} - Use safe/importance aware updates (on by default)
-#'      \item \code{adax} - Use adaptive learning rates with x^2 instead of g^2x^2
-#'      \item \code{sparse_l2} - use per feature normalized updates
-#'      \item \code{l1_state} - use per feature normalized updates
-#'      \item \code{l2_state} - use per feature normalized updates
+#'      \item \code{adaptive} [bool] - Use adaptive, individual learning rates (default: TRUE)
+#'      \item \code{normalized} [bool] - Use per feature normalized updates (default: TRUE)
+#'      \item \code{invariant} [bool] - Use safe/importance aware updates (default: TRUE)
+#'      \item \code{adax} [bool] - Use adaptive learning rates with x^2 instead of g^2x^2 (default: FALSE)
+#'      \item \code{sparse_l2} [real] - use per feature normalized updates (default: 0)
+#'      \item \code{l1_state} [real] - use per feature normalized updates (default: 0)
+#'      \item \code{l2_state} [real] - use per feature normalized updates (default: 1)
 #'    }
 #'  \item \code{bfgs}:
 #'    \itemize{
-#'      \item \code{conjugate_gradient} - Use conjugate gradient based optimization
-#'      \item \code{hessian_on} - Use second derivative in line search
-#'      \item \code{mem} - Memory in bfgs. default=15
-#'      \item \code{termination} - Termination threshold. default=0.00100000005
+#'      \item \code{conjugate_gradient} [bool] - Use conjugate gradient based optimization (default: FALSE)
+#'      \item \code{hessian_on} [bool] - Use second derivative in line search (default: FALSE)
+#'      \item \code{mem} [int] - Memory in bfgs. (default: 15)
+#'      \item \code{termination} [real] - Termination threshold. (default: 0.00100000005)
 #'    }
 #'  \item \code{ftrl}:
 #'    \itemize{
-#'      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
-#'      \item \code{ftrl_beta} - FTRL beta parameter
+#'      \item \code{ftrl_alpha} [real] - Learning rate for FTRL optimization (default: 0.005)
+#'      \item \code{ftrl_beta} [real] - FTRL beta parameter (default: 0.1)
 #'    }
 #'  \item \code{pistol}:
 #'    \itemize{
-#'      \item \code{ftrl_alpha} - Learning rate for FTRL optimization
-#'      \item \code{ftrl_beta} - FTRL beta parameter
+#'      \item \code{ftrl_alpha} [real] - Learning rate for FTRL optimization (default: 0.005)
+#'      \item \code{ftrl_beta} [real] - FTRL beta parameter (default: 0.1)
 #'    }
 #'  \item \code{ksvm}:
 #'    \itemize{
-#'      \item \code{reprocess} - number of reprocess steps for LASVM default=1
-#'      \item \code{kernel} - type of kernel (rbf or linear (default))
-#'      \item \code{bandwidth} - bandwidth of rbf kernel
-#'      \item \code{degree} - degree of poly kernel
-#'      \item \code{lambda} - saving regularization for test time
+#'      \item \code{reprocess} [int] - number of reprocess steps for LASVM (default: 1)
+#'      \item \code{kernel} [string] - type of kernel (rbf or linear) (default: "linear")
+#'      \item \code{bandwidth} [real] - bandwidth of rbf kernel (default: 1.0)
+#'      \item \code{degree} [int] - degree of poly kernel (default: 2)
+#'      \item \code{lambda} [real] - saving regularization for test time (default: -1)
 #'    }
 #'  \item \code{OjaNewton}:
 #'    \itemize{
-#'      \item \code{sketch_size} - size of sketch
-#'      \item \code{epoch_size} - size of epoch
-#'      \item \code{alpha} - mutiplicative constant for indentiy
-#'      \item \code{alpha_inverse} - one over alpha, similar to learning rate
-#'      \item \code{learning_rate_cnt} - constant for the learning rate 1/t
-#'      \item \code{normalize} - normalize the features or not
-#'      \item \code{random_init} - randomize initialization of Oja or not
+#'      \item \code{sketch_size} [int] - size of sketch (default: 10)
+#'      \item \code{epoch_size} [int] - size of epoch (default: 1)
+#'      \item \code{alpha} [real] - multiplicative constant for identity (default: 1)
+#'      \item \code{alpha_inverse} [real] - one over alpha, similar to learning rate
+#'      \item \code{learning_rate_cnt} - constant for the learning rate 1/t (default: 2)
+#'      \item \code{normalize} [string] - normalize the features or not (Available options: "on", "off") (default: "on")
+#'      \item \code{random_init} [string] - randomize initialization of Oja or not (Available options: "on", "off") (default: "on")
 #'    }
 #'  \item \code{svrg}:
 #'    \itemize{
-#'      \item \code{stage_size} - Number of passes per SVRG stage
+#'      \item \code{stage_size} [int] - Number of passes per SVRG stage (default: 1)
 #'    }
 #'}
 #'@param ... Additional options for a learning algorithm / reduction
 #'\itemize{
 #'  \item \code{oaa} or \code{ect}:
 #'    \itemize{
-#'      \item \code{num_classes} - Number of classes
-#'      \item \code{oaa_subsample} - Subsample this number of negative examples when learning
+#'      \item \code{num_classes} [int] - Number of classes
+#'      \item \code{oaa_subsample} [int] - Subsample this number of negative examples when learning
      # \item \code{probabilities} - Predict probabilites of all classes
      # \item \code{scores} - Output raw scores per class
 #'    }
 #'  \item \code{multilabel_oaa}:
 #'    \itemize{
-#'      \item \code{num_labels} - Number of labels
+#'      \item \code{num_labels} [int] - Number of labels
 #'    }
 #'  \item \code{csoaa} or \code{wap}:
 #'    \itemize{
-#'      \item \code{num_classes} - Number of classes
+#'      \item \code{num_classes} [int] - Number of classes
 #'      \item \code{csoaa_ldf} or \code{wap_ldf} - \code{singleline} (Default) or \code{multiline} label dependent features
      # \item \code{csoaa_rank} - Return actions sorted by score order
      # \item \code{probabilities} - Predict probabilites of all classes
 #'    }
 #'  \item \code{log_multi}:
 #'    \itemize{
-#'      \item \code{num_classes} - Number of classes
-#'      \item \code{no_progress} - Disable progressive validation
-#'      \item \code{swap_resistance} - Higher = more resistance to swap, default=4
+#'      \item \code{num_classes} [int] - Number of classes
+#'      \item \code{no_progress} [bool] - Disable progressive validation (default: FALSE)
+#'      \item \code{swap_resistance} [int] - Higher = more resistance to swap, (default: 4)
 #'    }
 #'  \item \code{classweight}:
 #'    \itemize{
-#'      \item \code{class_multiplier} - importance weight multiplier for class
+#'      \item \code{class_multiplier} [real] - importance weight multiplier for class
 #'    }
 #'  \item \code{recall_tree}:
 #'    \itemize{
-#'      \item \code{num_classes} - Number of classes
-#'      \item \code{max_candidates} - Maximum number of labels per leaf in the tree
-#'      \item \code{bern_hyper} - Recall tree depth penalty (default=1)
-#'      \item \code{max_depth} - Maximum depth of the tree, default=log_2(number of classes)
-#'      \item \code{node_only} - Only use node features, not full path (default = 0)
-#'      \item \code{randomized_routing} - Randomized routing (default = 0)
+#'      \item \code{num_classes} [int] - Number of classes
+#'      \item \code{max_candidates} [int] - Maximum number of labels per leaf in the tree
+#'      \item \code{bern_hyper} [real] - Recall tree depth penalty (default: 1)
+#'      \item \code{max_depth} [int] - Maximum depth of the tree, (default: log_2(number of classes) )
+#'      \item \code{node_only} [string] - Only use node features, not full path (Available options: "on", "off") (default: "off")
+#'      \item \code{randomized_routing} [string] - Randomized routing (Available options: "on", "off") (default: "off")
 #'    }
 #'  \item \code{lda}:
 #'    \itemize{
-#'      \item \code{num_topics} - Number of topics
-#'      \item \code{lda_alpha} - Prior on sparsity of per-document topic weights
-#'      \item \code{lda_rho} - Prior on sparsity of topic distributions
-#'      \item \code{lda_D} - Number of documents
-#'      \item \code{lda_epsilon} - Loop convergence threshold
-#'      \item \code{math_mode} - Math mode: simd, accuracy, fast-approx
-#'      \item \code{minibatch} - Minibatch size
+#'      \item \code{num_topics} [int] - Number of topics
+#'      \item \code{lda_alpha} [real] - Prior on sparsity of per-document topic weights (default: 0.100000001)
+#'      \item \code{lda_rho} [real] - Prior on sparsity of topic distributions (default: 0.100000001)
+#'      \item \code{lda_D} [int] - Number of documents (default: 10000)
+#'      \item \code{lda_epsilon} [real] - Loop convergence threshold (default: 0.00100000005)
+#'      \item \code{math-mode} [string] - Math mode: simd, accuracy, fast-approx
+#'      \item \code{minibatch} [int] - Minibatch size (default: 1)
+#'      \item \code{metrics} [string] - Compute metrics (Available options: "on", "off") (default: "off")
 #'    }
 #'  \item \code{new_mf}:
 #'    \itemize{
-#'      \item \code{rank} - rank for matrix factorization
+#'      \item \code{rank} [int] - rank for matrix factorization
 #'    }
 #'  \item \code{lrq}:
 #'    \itemize{
-#'      \item \code{features} - low rank quadratic features
-#'      \item \code{lrqdropout} - use dropout training for low rank quadratic features
+#'      \item \code{features} [string] - low rank quadratic features
+#'      \item \code{lrqdropout} [bool] - use dropout training for low rank quadratic features (default: FALSE)
 #'    }
 #'  \item \code{stage_poly}:
 #'    \itemize{
-#'      \item \code{sched_exponent} - exponent controlling quantity of included features
-#'      \item \code{batch_sz} - multiplier on batch size before including more features
-#'      \item \code{batch_sz_no_doubling} - batch_sz does not double
+#'      \item \code{sched_exponent} [real] - exponent controlling quantity of included features (default: 1.0)
+#'      \item \code{batch_sz} [int] - multiplier on batch size before including more features (default: 1000)
+#'      \item \code{batch_sz_no_doubling} [bool] - batch_sz does not double (default: TRUE)
 #'    }
 #'  \item \code{bootstrap}:
 #'    \itemize{
-#'      \item \code{num_rounds} - number of rounds
-#'      \item \code{bs_type} - the bootstrap mode: 'mean' or 'vote'
+#'      \item \code{num_rounds} [int] - number of rounds
+#'      \item \code{bs_type} [string] - the bootstrap mode: 'mean' or 'vote' (default: "mean")
 #'    }
 #'  \item \code{autolink}:
 #'    \itemize{
-#'      \item \code{degree} - polynomial degree
+#'      \item \code{degree} [int] - polynomial degree (default: 2)
 #'    }
 #'  \item \code{replay}:
 #'    \itemize{
-#'      \item \code{level} - Use experience replay at a specified level (b=classification/regression, m=multiclass, c=cost sensitive)
-#'      \item \code{buffer} - Buffer size
-#'      \item \code{count} - how many times (in expectation) should each example be played (default: 1 = permuting)
+#'      \item \code{level} [string] - Use experience replay at a specified level (b=classification/regression, m=multiclass, c=cost sensitive)
+#'      \item \code{buffer} [int] - Buffer size (default: 100)
+#'      \item \code{count} [int] - how many times (in expectation) should each example be played (default: 1 = permuting)
 #'    }
 #'  \item \code{explore_eval}:
 #'    \itemize{
-#'      \item \code{multiplier} - Multiplier used to make all rejection sample probabilities <= 1
+#'      \item \code{multiplier} [real]  - Multiplier used to make all rejection sample probabilities <= 1
 #'    }
 #'  \item \code{cb}:
 #'    \itemize{
-#'      \item \code{num_costs} - number of num_costs If costs=0, contextual bandit learning
+#'      \item \code{num_costs} [int] - number of num_costs If costs=0, contextual bandit learning
 #'      with multiline action dependent features (ADF) is triggered ("--cb_adf").
-#'      \item \code{cb_type} - contextual bandit method to use in {ips,dm,dr, mtr (for ADF)} default=dr
-#'      \item \code{eval} - Evaluate a policy rather than optimizing.
-#'      \item \code{rank_all} - Return actions sorted by score order. (for ADF)
-#'      \item \code{no_predict} - Do not do a prediction when training. (for ADF)
+#'      \item \code{cb_type} [string] - contextual bandit method to use in {ips,dm,dr, mtr (for ADF)} (default: "dr")
+#'      \item \code{eval} [bool] - Evaluate a policy rather than optimizing (default: FALSE)
+#'      \item \code{rank_all} [bool] - Return actions sorted by score order. (for ADF) (default: FALSE)
+#'      \item \code{no_predict} [bool] - Do not do a prediction when training. (for ADF) (default: FALSE)
 #'    }
 #'  \item \code{cb_explore}:
 #'    \itemize{
-#'      \item \code{num_actions} - number of actions in online explore-exploit for a <k> action contextual bandit problem.
+#'      \item \code{num_actions} [bool] - number of actions in online explore-exploit for a <k> action contextual bandit problem.
 #'      If num_actions=0, online explore-exploit for a contextual bandit problem with multiline action dependent features (ADF) is triggered ("--cb_explore_adf").
-#'      \item \code{explore_type} - Type of exploration to use: "epsilon" (epsilon-greedy exploration) (default),
+#'      \item \code{explore_type} [string] - Type of exploration to use: "epsilon" (epsilon-greedy exploration) (default),
 #'       "first" (tau-first exploration), "bag" (bagging-based exploration), "cover" (Online cover based exploration), "softmax" (softmax exploration),
-#'       "regcb" (RegCB-elim exploration), "regcbopt" (RegCB optimistic exploration). "softmax", "regcb" and "regcbopt" types are only avaliable for exploration with ADF.
-#'      \item \code{explore_arg} - Parameter for exploration algorithm. Applicable for "epsilon", "first", "bag" and "cover" types of exploration.
-#'      \item \code{psi} - Disagreement parameter for "cover" algorithm. (default=1)
-#'      \item \code{nounif} - Do not explore uniformly on zero-probability actions in "cover" algorithm.
-#'      \item \code{mellowness} - "RegCB" mellowness parameter c_0. (default = 0.1)
-#'      \item \code{greedify} - Always update first policy once in "bag"
-#'      \item \code{lambda} - Parameter for "softmax". (default = -1)
-#'      \item \code{cb_min_cost} - Lower bound on cost. (default = 0) For ADF only
-#'      \item \code{cb_max_cost} - Upper bound on cost. (default = 1) For ADF only
-#'      \item \code{first_only} - Only explore the first action in a tie-breaking event. For ADF only
+#'       "regcb" (RegCB-elim exploration), "regcbopt" (RegCB optimistic exploration). "softmax", "regcb" and "regcbopt" types are only avaliable for exploration with ADF. (default: "epsilon")
+#'      \item \code{explore_arg} [real] - Parameter for exploration algorithm. Applicable for "epsilon", "first", "bag" and "cover" types of exploration. (default: 0.05)
+#'      \item \code{psi} [real] - Disagreement parameter for "cover" algorithm. (default: 1)
+#'      \item \code{nounif} [bool] - Do not explore uniformly on zero-probability actions in "cover" algorithm. (default: FALSE)
+#'      \item \code{mellowness} [real] - "RegCB" mellowness parameter c_0. (default: 0.1)
+#'      \item \code{greedify} [bool] - Always update first policy once in "bag" (default: FALSE)
+#'      \item \code{lambda} [real] - Parameter for "softmax". (default: -1)
+#'      \item \code{cb_min_cost} [real] - Lower bound on cost. (default: 0) For ADF only
+#'      \item \code{cb_max_cost} [real] - Upper bound on cost. (default: 1) For ADF only
+#'      \item \code{first_only} [bool] - Only explore the first action in a tie-breaking event. For ADF only (default: FALSE)
 #'    }
 #'  \item \code{cbify}:
 #'    \itemize{
-#'      \item \code{num_classes} - number of classes
-#'      \item \code{cbify_cs} - consume cost-sensitive classification examples instead of multiclass
-#'      \item \code{loss0} - loss for correct label
-#'      \item \code{loss1} - loss for incorrect label
+#'      \item \code{num_classes} [int] - number of classes
+#'      \item \code{cbify_cs} [bool] - consume cost-sensitive classification examples instead of multiclass (default: FALSE)
+#'      \item \code{loss0} [real] - loss for correct label (default: 0)
+#'      \item \code{loss1} [real] - loss for incorrect label (default: 1)
 #'    }
 #'  \item \code{multiworld_test}:
 #'    \itemize{
-#'      \item \code{features} - Evaluate features as a policies
-#'      \item \code{learn} - Do Contextual Bandit learning on <n> classes.
-#'      \item \code{num_classes} - Discard mwt policy features before learning
+#'      \item \code{features} [string] - Evaluate features as a policies
+#'      \item \code{learn} [int] - Do Contextual Bandit learning on <n> classes.
+#'      \item \code{num_classes} [bool] - Discard mwt policy features before learning (default: FALSE)
 #'    }
 #'  \item \code{nn}:
 #'    \itemize{
-#'      \item \code{num_hidden} - number of hidden units
-#'      \item \code{inpass} - Train or test sigmoidal feedforward network with input passthrough
-#'      \item \code{multitask} - Share hidden layer across all reduced tasks
-#'      \item \code{dropout} - Train or test sigmoidal feedforward network using dropout.
-#'      \item \code{meanfield} - Train or test sigmoidal feedforward network using mean field.
+#'      \item \code{num_hidden} [int] - number of hidden units
+#'      \item \code{inpass} [bool] - Train or test sigmoidal feedforward network with input passthrough (default: FALSE)
+#'      \item \code{multitask} [bool] - Share hidden layer across all reduced tasks (default: FALSE)
+#'      \item \code{dropout} [bool] - Train or test sigmoidal feedforward network using dropout (default: FALSE)
+#'      \item \code{meanfield} [bool] - Train or test sigmoidal feedforward network using mean field (default: FALSE)
 #'    }
 #'  \item \code{topk}:
 #'    \itemize{
-#'      \item \code{num_k} - number of top k recomendations
+#'      \item \code{num_k} [int] - number of top k recomendations
 #'    }
 #'  \item \code{struct_search}:
 #'    \itemize{
-#'      \item \code{id} - maximum action id or 0 for LDF
-#'      \item \code{search_task} - search task: sequence, sequencespan, sequence_ctg, argmax, sequence_demoldf, multiclasstask, dep_parser, entity_relation, hook, graph
-#'      \item \code{search_interpolation} - at what level should interpolation happen? (data or policy)
-#'      \item \code{search_rollout} - how should rollouts be executed? (policy, oracle, mix_per_state, mix_per_roll, none)
-#'      \item \code{search_rollin} - how should past trajectories be generated? (policy, oracle, mix_per_state, mix_per_roll)
-#'      \item \code{search_passes_per_policy} - number of passes per policy (only valid for search_interpolation=policy). default = 1
-#'      \item \code{search_beta} - interpolation rate for policies (only valid for search_interpolation=policy). default = 0.5
-#'      \item \code{search_alpha} - annealed beta = 1-(1-alpha)^t (only valid for search_interpolation=data). default = 1e-10
-#'      \item \code{search_total_nb_policies} - if we are going to train the policies through multiple separate calls to vw, we need to specify this parameter and tell vw how many policies are eventually going to be trained
-#'      \item \code{search_trained_nb_policies} - the number of trained policies in a file
-#'      \item \code{search_allowed_transitions} - read file of allowed transitions. default: all transitions are allowed
-#'      \item \code{search_subsample_time} - instead of training at all timesteps, use a subset. if value in (0,1), train on a random v%. if v>=1, train on precisely v steps per example, if v<=-1, use active learning
-#'      \item \code{search_neighbor_features} - copy features from neighboring lines. argument looks like: '-1:a,+2' meaning copy previous line from namespace "a" and next line from namespace "unnamed", where ',' separates them
-#'      \item \code{search_rollout_num_steps} - how many calls of "loss" before we stop really predicting on rollouts and switch to oracle (default means "infinite")
-#'      \item \code{search_history_length} - some tasks allow you to specify how much history their depend on; specify that here. default = 1
-#'      \item \code{search_no_caching} - turn off the built-in caching ability (makes things slower, but technically more safe) default = FALSE
-#'      \item \code{search_xv} - train two separate policies, alternating prediction/learning. default = FALSE
-#'      \item \code{search_perturb_oracle} - perturb the oracle on rollin with this probability. default = 0
-#'      \item \code{search_linear_ordering} - insist on generating examples in linear order. default = FALSE and using hoopla permutation
-#'      \item \code{search_active_verify} - verify that active learning is doing the right thing (arg = multiplier, should be = cost_range * range_c)
-#'      \item \code{search_save_every_k_runs} - save model every k runs
+#'      \item \code{id} [int] - maximum action id or 0 for LDF
+#'      \item \code{search_task} [string] - search task: sequence, sequencespan, sequence_ctg, argmax, sequence_demoldf, multiclasstask, dep_parser, entity_relation, hook, graph
+#'      \item \code{search_interpolation} [string] - at what level should interpolation happen? (data or policy)
+#'      \item \code{search_rollout} [string] - how should rollouts be executed? (policy, oracle, mix_per_state, mix_per_roll, none)
+#'      \item \code{search_rollin} [string] - how should past trajectories be generated? (policy, oracle, mix_per_state, mix_per_roll)
+#'      \item \code{search_passes_per_policy} [int] - number of passes per policy (only valid for search_interpolation=policy). (default: 1)
+#'      \item \code{search_beta} [real] - interpolation rate for policies (only valid for search_interpolation=policy). (default: 0.5)
+#'      \item \code{search_alpha} [real] - annealed beta = 1-(1-alpha)^t (only valid for search_interpolation=data). (default: 1e-10)
+#'      \item \code{search_total_nb_policies} [int] - if we are going to train the policies through multiple separate calls to vw, we need to specify this parameter and tell vw how many policies are eventually going to be trained
+#'      \item \code{search_trained_nb_policies} [int] - the number of trained policies in a file
+#'      \item \code{search_allowed_transitions} [string] - read file of allowed transitions. default: all transitions are allowed
+#'      \item \code{search_subsample_time} [real] - instead of training at all timesteps, use a subset. if value in (0,1), train on a random v%. if v>=1, train on precisely v steps per example, if v<=-1, use active learning
+#'      \item \code{search_neighbor_features} [string] - copy features from neighboring lines. argument looks like: '-1:a,+2' meaning copy previous line from namespace "a" and next line from namespace "unnamed", where ',' separates them
+#'      \item \code{search_rollout_num_steps} [int] - how many calls of "loss" before we stop really predicting on rollouts and switch to oracle (default means "infinite")
+#'      \item \code{search_history_length} [int] - some tasks allow you to specify how much history their depend on; specify that here. (default: 1)
+#'      \item \code{search_no_caching} [bool] - turn off the built-in caching ability (makes things slower, but technically more safe) (default: FALSE)
+#'      \item \code{search_xv} [bool] - train two separate policies, alternating prediction/learning. (default: FALSE)
+#'      \item \code{search_perturb_oracle} [real] - perturb the oracle on rollin with this probability. (default: 0)
+#'      \item \code{search_linear_ordering} [bool]  - insist on generating examples in linear order. (default: FALSE and using hoopla permutation)
+#'      \item \code{search_active_verify} [real] - verify that active learning is doing the right thing (arg = multiplier, should be = cost_range * range_c)
+#'      \item \code{search_save_every_k_runs} [int] - save model every k runs
 #'    }
 #'  \item \code{boosting}:
 #'    \itemize{
-#'      \item \code{num_learners} - number of weak learners
-#'      \item \code{gamma} - weak learner's edge (=0.1), used only by online BBM
-#'      \item \code{alg} - specify the boosting algorithm: BBM (default), logistic (AdaBoost.OL.W), adaptive (AdaBoost.OL)
+#'      \item \code{num_learners} [int] - number of weak learners
+#'      \item \code{gamma} [real] - weak learner's edge (=0.1), used only by online BBM (default: 0.100000001)
+#'      \item \code{alg} - specify the boosting algorithm: BBM (default), logistic (AdaBoost.OL.W), adaptive (AdaBoost.OL) (default: "BBM")
 #'    }
 #'  \item \code{marginal}:
 #'    \itemize{
-#'      \item \code{ids} - Substitute marginal label estimates for ids
-#'      \item \code{initial_denominator} - Initial denominator (default=1)
-#'      \item \code{initial_numerator} - Initial numerator (default=0.5)
-#'      \item \code{compete} - Enable competition with marginal features
-#'      \item \code{update_before_learn} - Update marginal values before learning (default=0)
-#'      \item \code{unweighted_marginals} - Ignore importance weights when computing marginals (default=0)
-#'      \item \code{decay} - Decay multiplier per event (1e-3 for example) (default=0)
+#'      \item \code{ids} [string] - Substitute marginal label estimates for ids
+#'      \item \code{initial_denominator} [real] - Initial denominator (default: 1)
+#'      \item \code{initial_numerator} [real] - Initial numerator (default: 0.5)
+#'      \item \code{compete} [bool] - Enable competition with marginal features (default: FALSE)
+#'      \item \code{update_before_learn} [string] - Update marginal values before learning (Available options: "on", "off") (default: "off")
+#'      \item \code{unweighted_marginals} [string] - Ignore importance weights when computing marginals (Available options: "on", "off") (default: "off")
+#'      \item \code{decay} [real] - Decay multiplier per event (1e-3 for example) (default=0)
 #'    }
 #'}
 #'@return vwmodel list class
-#'@import tools
 #'@examples
 #'vwsetup(
 #'  dir = tempdir(),
@@ -423,7 +424,7 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
                              "--cache_file", "-k", "--kill_cache", "-p",
                              "--passes", "--save_resume", "--progress", "-P",
                              "--audit_regressor")
-      if(grepl(paste0(prohibited_params, collapse = "|"),params_str)) {
+      if(grepl(paste0("\\b", prohibited_params, "\\b", collapse = "|"),params_str)) {
           stop(paste0("Following cmd line parameters are defined in other functions:\n",
                    paste0(prohibited_params, collapse = ", ")), call. = FALSE)
       }
@@ -454,8 +455,8 @@ vwsetup <- function(algorithm = c("sgd", "bfgs", "ftrl", "pistol", "ksvm", "OjaN
 #'Add option to the model
 #'
 #'@description Add a learning algorithm / reduction to the option stack inside model
-#'@param vwmodel Model of vw class
-#'@param option Name of an option
+#'@param vwmodel [vw] Model of vw class
+#'@param option [string] Name of an option
 #'@param ... Additional options for a learning algorithm / reduction
 add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap",
                                            "log_multi", "recall_tree", "lda",
@@ -492,7 +493,7 @@ add_option <- function(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap
 #'Print VW model
 #'
 #'@description Print information about Vowpal Wabbit model
-#'@param x Model of vw class
+#'@param x [vw] Model of vw class
 #'@param ... Not used currently
 #'@examples
 #'vwmodel <- vwsetup()
@@ -572,9 +573,9 @@ predict.vw <- function(object, data, probs_path = "", full_probs = FALSE,
 #'Access and modify parameters of VW model
 #'
 #'@description These functions allow to access VW model parameters by name and correctly modify them
-#'@param vwmodel Model of vw class
-#'@param name Name of VW parameter
-#'@param value Replacment value of a parameter
+#'@param vwmodel [vw] Model of vw class
+#'@param name [string] Name of VW parameter
+#'@param value [string/int/real/bool] Replacment value of a parameter
 #'@return Value of a parameter
 #'@examples
 #'vwmodel <- vwsetup()
@@ -887,14 +888,20 @@ df2vw <- function(data, file_path, namespaces = NULL,
     # Add namespaces saparator
     formatDataVW <- paste0(formatDataVW, collapse = " |")
     
+    # For debugging
+    # print("formatDataVW:")
+    # print(formatDataVW)
+    # print("argexpr:")
+    # print(argexpr)
+    
     if(!is.null(multiline)) {
         formatDataVW <-
-            writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))],
+            writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(.x) eval(parse(text=.x))))],
                                      c(rep("", multiline - 1), "\n"),
                                      collapse = '\n'),
                        con = vw_file)
     } else {
-        writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(x) eval(parse(text=x))))], collapse = '\n'),
+        writeLines(text = paste0(data[, .sprintf2(formatDataVW, lapply(argexpr, function(.x) eval(parse(text=.x))))], collapse = '\n'),
                    con = vw_file)
     }
 

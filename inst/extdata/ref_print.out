@@ -9,8 +9,8 @@ General parameters:
 	 holdout_period :   10 
 	 holdout_after :   0 
 	 early_terminate :   3 
-	 loss_function :   squared 
-	 link :   identity 
+	 loss_function :  Not defined
+	 link :  Not defined
 	 quantile_tau :   0.5 
 Feature parameters: 
 	 bit_precision :   18 
@@ -50,9 +50,9 @@ Optimization parameters:
 	 initial_t :   0 
 	 power_t :   0.5 
 	 initial_weight :   0 
-	 random_weights :  Not defined
-	 normal_weights :  Not defined
-	 truncated_normal_weights :  Not defined
+	 random_weights :   off 
+	 normal_weights :   off 
+	 truncated_normal_weights :   off 
 	 sparse_weights :   FALSE 
 	 input_feature_regularizer :  Not defined
 Model evaluation. Training: 

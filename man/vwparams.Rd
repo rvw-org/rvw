@@ -10,11 +10,11 @@ vwparams(vwmodel, name)
 vwparams(vwmodel, name) <- value
 }
 \arguments{
-\item{vwmodel}{Model of vw class}
+\item{vwmodel}{[vw] Model of vw class}
 
-\item{name}{Name of VW parameter}
+\item{name}{[string] Name of VW parameter}
 
-\item{value}{Replacment value of a parameter}
+\item{value}{[string/int/real/bool] Replacment value of a parameter}
 }
 \value{
 Value of a parameter

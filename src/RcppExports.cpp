@@ -16,7 +16,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtrain
-void vwtrain(Rcpp::List& vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model, std::string readable_model_path, bool quiet, bool update_model, int passes, bool cache, Rcpp::Nullable<float> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> fixed, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
+void vwtrain(Rcpp::List& vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model, std::string readable_model_path, bool quiet, bool update_model, int passes, bool cache, Rcpp::Nullable<SEXP *> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> fixed, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
 RcppExport SEXP _rvw_vwtrain(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP readable_modelSEXP, SEXP readable_model_pathSEXP, SEXP quietSEXP, SEXP update_modelSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP fixedSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -28,7 +28,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type update_model(update_modelSEXP);
     Rcpp::traits::input_parameter< int >::type passes(passesSEXP);
     Rcpp::traits::input_parameter< bool >::type cache(cacheSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<float> >::type progress(progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<SEXP *> >::type progress(progressSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<SEXP *> >::type namespaces(namespacesSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type keep_space(keep_spaceSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type fixed(fixedSEXP);
@@ -43,7 +43,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // vwtest
-SEXP vwtest(Rcpp::List& vwmodel, SEXP data, std::string probs_path, bool full_probs, Rcpp::Nullable<Rcpp::String> readable_model, std::string readable_model_path, bool quiet, int passes, bool cache, bool raw, Rcpp::Nullable<float> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> fixed, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
+SEXP vwtest(Rcpp::List& vwmodel, SEXP data, std::string probs_path, bool full_probs, Rcpp::Nullable<Rcpp::String> readable_model, std::string readable_model_path, bool quiet, int passes, bool cache, bool raw, Rcpp::Nullable<SEXP *> progress, Rcpp::Nullable<SEXP *> namespaces, Rcpp::Nullable<Rcpp::CharacterVector> keep_space, Rcpp::Nullable<Rcpp::CharacterVector> fixed, Rcpp::Nullable<Rcpp::CharacterVector> targets, Rcpp::Nullable<Rcpp::CharacterVector> probabilities, Rcpp::Nullable<Rcpp::String> weight, Rcpp::Nullable<Rcpp::String> base, Rcpp::Nullable<Rcpp::String> tag, Rcpp::Nullable<int> multiline);
 RcppExport SEXP _rvw_vwtest(SEXP vwmodelSEXP, SEXP dataSEXP, SEXP probs_pathSEXP, SEXP full_probsSEXP, SEXP readable_modelSEXP, SEXP readable_model_pathSEXP, SEXP quietSEXP, SEXP passesSEXP, SEXP cacheSEXP, SEXP rawSEXP, SEXP progressSEXP, SEXP namespacesSEXP, SEXP keep_spaceSEXP, SEXP fixedSEXP, SEXP targetsSEXP, SEXP probabilitiesSEXP, SEXP weightSEXP, SEXP baseSEXP, SEXP tagSEXP, SEXP multilineSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -58,7 +58,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type passes(passesSEXP);
     Rcpp::traits::input_parameter< bool >::type cache(cacheSEXP);
     Rcpp::traits::input_parameter< bool >::type raw(rawSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<float> >::type progress(progressSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<SEXP *> >::type progress(progressSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<SEXP *> >::type namespaces(namespacesSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type keep_space(keep_spaceSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type fixed(fixedSEXP);

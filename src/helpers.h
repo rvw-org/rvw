@@ -1,4 +1,5 @@
 #include "vowpalwabbit/vw.h"
+
 #include <Rcpp.h>
 
 

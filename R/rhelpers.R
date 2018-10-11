@@ -209,6 +209,12 @@
     
     # Flatten option
     flat_params <- .flatten(temp_params$options)
+    
+    # Exception for "--math_mode" -> "--math-mode"
+    if("math_mode" %in% names(flat_params)) {
+        names(flat_params) <- gsub(pattern = "math_mode", replacement = "math-mode", x = names(flat_params))
+    }
+    
     # Convert option parameters list to "--arg _" list
     flat_option_params <- sapply(names(flat_params), FUN = params_to_strings)
     # Filter empty strings

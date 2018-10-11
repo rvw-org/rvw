@@ -9,7 +9,7 @@
 #'
 #'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 #'
-#'@param vwmodel Model of vw class to train
+#'@param vwmodel [vw] Model of vw class to train
 #'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 #'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 #'@param readable_model [string] Print trained model in human readable format ("hashed") 
@@ -19,7 +19,7 @@
 #'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
 #'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 #'@param cache [bool] Use a cache for a data file.
-#'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
+#'@param progress [int/real] Progress update frequency. int: additive, real: multiplicative
 #'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 #'  each variable for each namespace can be a R list, or a YAML
 #'  file example namespace with the IRIS database: namespaces =
@@ -57,7 +57,7 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = 
 #'\code{vwtest} computes predictions using VW model from \code{\link{vwsetup}}
 #'\code{predict.vw} compute predictions using parser settings from \code{\link{vwtrain}}
 #'
-#'@param vwmodel Model of vw class to train.
+#'@param vwmodel [vw] Model of vw class to train.
 #'@param object Model of vw class to train for \code{predict.vw}
 #'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 #'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
@@ -70,7 +70,7 @@ vwtrain <- function(vwmodel, data, readable_model = NULL, readable_model_path = 
 #'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 #'@param cache [bool] Use a cache for a data file.
 #'@param raw [bool] Output unnormalized predictions. Default is FALSE.
-#'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
+#'@param progress [int/real] Progress update frequency. int: additive, real: multiplicative
 #'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 #'  each variable for each namespace can be a R list, or a YAML
 #'  file example namespace with the IRIS database: namespaces =

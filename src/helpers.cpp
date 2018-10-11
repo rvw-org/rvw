@@ -1,4 +1,5 @@
 #include "vowpalwabbit/vw.h"
+
 #include <Rcpp.h>
 #include "helpers.h"
 
@@ -69,6 +70,11 @@ Rcpp::String check_data(Rcpp::List & vwmodel, std::string & valid_data_str, SEXP
                                                     Rcpp::Named("weight") = weight, Rcpp::Named("base") = base,
                                                     Rcpp::Named("tag") = tag, Rcpp::Named("multiline") = multiline);
        
+    } else {
+        // In this case we use previously saved parser options
+        if(!quiet){
+            Rcpp::Rcout << "Using parser options from the previous session" << std::endl;
+        }
     }
     
     Rcpp::String data_md5sum("");

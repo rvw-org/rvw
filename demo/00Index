@@ -1,3 +1,4 @@
 rvw_overview		Basic package usage
 rvw_df       Using data.frame as input data for CSOAA multiclass classification
 rvw_lda       LDA example
+rvw_bin       Simple binary classification

@@ -11,7 +11,7 @@ vwtrain(vwmodel, data, readable_model = NULL, readable_model_path = "",
   weight = NULL, base = NULL, tag = NULL, multiline = NULL)
 }
 \arguments{
-\item{vwmodel}{Model of vw class to train}
+\item{vwmodel}{[vw] Model of vw class to train}
 
 \item{data}{[string or data.frame] Path to training data in .vw plain text format or data.frame.
 If \code{[data.frame]} then will be parsed using \code{df2vw} function.}
@@ -29,7 +29,7 @@ and also with human readable features ("inverted")}
 
 \item{cache}{[bool] Use a cache for a data file.}
 
-\item{progress}{[integer/real] Progress update frequency. int: additive, real: multiplicative}
+\item{progress}{[int/real] Progress update frequency. int: additive, real: multiplicative}
 
 \item{namespaces}{[list or yaml file] For \code{df2vw}. Name of each namespace and
 each variable for each namespace can be a R list, or a YAML

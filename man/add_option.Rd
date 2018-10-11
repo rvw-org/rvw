@@ -11,9 +11,9 @@ add_option(vwmodel, option = c("binary", "oaa", "ect", "csoaa", "wap",
   "nn", "topk", "search", "boosting", "marginal"), ...)
 }
 \arguments{
-\item{vwmodel}{Model of vw class}
+\item{vwmodel}{[vw] Model of vw class}
 
-\item{option}{Name of an option}
+\item{option}{[string] Name of an option}
 
 \item{...}{Additional options for a learning algorithm / reduction}
 }

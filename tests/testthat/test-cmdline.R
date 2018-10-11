@@ -211,7 +211,8 @@ test_that("vwsetup with lda setup works as CL version", {
         option = "lda",
         num_topics = 7,
         lda_D = 100,
-        minibatch = 16
+        minibatch = 16,
+        math_mode = "accuracy"
     )
     vwtrain(test_vwmodel, data = lda_data, quiet = T, passes = 2,
             readable_model = "hashed", readable_model_path = "pk_readable_mdl.vw")
@@ -221,7 +222,7 @@ test_that("vwsetup with lda setup works as CL version", {
     
     # Command Line session
     system(
-        paste0("vw --lda 7 --lda_D 100 --minibatch 16 --passes 2",
+        paste0("vw --lda 7 --lda_D 100 --math-mode accuracy --minibatch 16 --passes 2",
                " --cache_file ./lda_data.vw.cache",
                " --readable_model ./cl_readable_mdl.vw",
                " -d ", lda_data, " -f ./cl_mdl.vw"),
