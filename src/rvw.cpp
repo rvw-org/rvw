@@ -1,8 +1,8 @@
 #include <fstream>
 #include <iostream>
 
-#include "vowpalwabbit/vw.h"
-#include "vowpalwabbit/global_data.h"
+#include "vw.h"
+#include "global_data.h"
 
 #include "helpers.h"
 #include <Rcpp.h>

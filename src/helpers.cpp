@@ -1,4 +1,4 @@
-#include "vowpalwabbit/vw.h"
+#include "vw.h"
 
 #include <Rcpp.h>
 #include "helpers.h"
