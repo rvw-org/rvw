@@ -1,9 +1,10 @@
 #include <fstream>
 #include <iostream>
 
+#include "vw.h"
+#include "global_data.h"
+
 #include "helpers.h"
-#include "vowpalwabbit/vw.h"
-#include "vowpalwabbit/global_data.h"
 #include <Rcpp.h>
 
 #ifdef _WIN32
@@ -49,7 +50,7 @@ std::string get_vw_version() {
 //'
 //'vwtrain is an interface to train VW model from \code{\link{vwsetup}}
 //'
-//'@param vwmodel Model of vw class to train
+//'@param vwmodel [vw] Model of vw class to train
 //'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 //'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
@@ -59,7 +60,7 @@ std::string get_vw_version() {
 //'@param update_model [logical] Update an existing model, when training with new data. \code{FALSE} by default.
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 //'@param cache [bool] Use a cache for a data file.
-//'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
+//'@param progress [int/real] Progress update frequency. int: additive, real: multiplicative
 //'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 //'  each variable for each namespace can be a R list, or a YAML
 //'  file example namespace with the IRIS database: namespaces =
@@ -90,7 +91,7 @@ std::string get_vw_version() {
 //'vwtrain(test_vwmodel, data = ext_train_data)
 // [[Rcpp::export]]
 void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
-             bool quiet=false, bool update_model=false, int passes=1, bool cache=false, Rcpp::Nullable<float> progress=R_NilValue,
+             bool quiet=false, bool update_model=false, int passes=1, bool cache=false, Rcpp::Nullable<SEXP *> progress=R_NilValue,
              Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
              Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
@@ -104,7 +105,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     // check if data is in string or data.frame format
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
-    Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, "train",
+    Rcpp::String new_data_md5sum = check_data(vwmodel, data_str, data, quiet, "train",
                                               namespaces, keep_space, fixed,
                                               targets, probabilities,
                                               weight, base, tag, multiline);
@@ -182,6 +183,17 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
     }
     // Update model_md5sum
     vwmodel_md5sums["train"] = new_data_md5sum;
+    
+    if (progress.isNotNull()) {
+        if(TYPEOF(progress) == INTSXP) {
+            train_init_str += " --progress " + std::to_string(Rcpp::as<int>(progress));
+        } else if(TYPEOF(progress) == REALSXP) {
+            train_init_str += " --progress " + std::to_string(Rcpp::as<float>(progress));
+        } else {
+            Rcpp::stop("Wrong type for progress argument (should be integer or real)");
+        }
+    }
+    
     // Ignore output from VW
     if (!quiet)
     {
@@ -192,10 +204,6 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
         Rcpp::Rcout << "Command line parameters: " << std::endl << train_init_str << std::endl;
     } else {
         train_init_str += " --quiet";
-    }
-    
-    if (progress.isNotNull()) {
-        train_init_str += " --progress " + Rcpp::as<std::string>(progress);
     }
     
     // Start VW run
@@ -239,11 +247,12 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'\code{vwtest} computes predictions using VW model from \code{\link{vwsetup}}
 //'\code{predict.vw} compute predictions using parser settings from \code{\link{vwtrain}}
 //'
-//'@param vwmodel Model of vw class to train.
+//'@param vwmodel [vw] Model of vw class to train.
 //'@param object Model of vw class to train for \code{predict.vw}
 //'@param data [string or data.frame] Path to training data in .vw plain text format or data.frame.
 //'If \code{[data.frame]} then will be parsed using \code{df2vw} function.
 //'@param probs_path [string] Path to file where to save predictions.
+//'@param full_probs [bool] Output full predictions in data.frame format. If not, force predictions into a single vector (default).
 //'@param readable_model [string] Print trained model in human readable format ("hashed") 
 //'and also with human readable features ("inverted").
 //'@param readable_model_path [string] Path to file where to save readable model.
@@ -251,7 +260,7 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'@param passes [int] Number of times the algorithm will cycle over the data (epochs).
 //'@param cache [bool] Use a cache for a data file.
 //'@param raw [bool] Output unnormalized predictions. Default is FALSE.
-//'@param progress [integer/real] Progress update frequency. int: additive, real: multiplicative
+//'@param progress [int/real] Progress update frequency. int: additive, real: multiplicative
 //'@param namespaces [list or yaml file] For \code{df2vw}. Name of each namespace and
 //'  each variable for each namespace can be a R list, or a YAML
 //'  file example namespace with the IRIS database: namespaces =
@@ -286,8 +295,8 @@ void vwtrain(Rcpp::List & vwmodel, SEXP data, Rcpp::Nullable<Rcpp::String> reada
 //'vwtest(test_vwmodel, data = ext_test_data)
 //'@rdname vwtest
 // [[Rcpp::export]]
-Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path = "", Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
-                           bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<float> progress=R_NilValue,
+SEXP vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_path="", bool full_probs=false, Rcpp::Nullable<Rcpp::String> readable_model=R_NilValue, std::string readable_model_path = "",
+                           bool quiet=false, int passes=1, bool cache=false, bool raw=false, Rcpp::Nullable<SEXP *> progress=R_NilValue,
                            Rcpp::Nullable<SEXP *> namespaces=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> keep_space=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> fixed=R_NilValue,
                            Rcpp::Nullable<Rcpp::CharacterVector> targets=R_NilValue, Rcpp::Nullable<Rcpp::CharacterVector> probabilities=R_NilValue,
@@ -300,7 +309,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     // check if data is in string or data.frame format
     // if in data.frame format then convert it to VW format
     std::string data_str = "";
-    Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, "test",
+    Rcpp::String data_md5sum = check_data(vwmodel, data_str, data, quiet, "test",
                                           namespaces, keep_space, fixed,
                                           targets, probabilities,
                                           weight, base, tag, multiline);
@@ -382,6 +391,17 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     }
     // Update model_md5sum
     vwmodel_md5sums["test"] = data_md5sum;
+    
+    if (progress.isNotNull()) {
+        if(TYPEOF(progress) == INTSXP) {
+            test_init_str += " --progress " + std::to_string(Rcpp::as<int>(progress));
+        } else if(TYPEOF(progress) == REALSXP) {
+            test_init_str += " --progress " + std::to_string(Rcpp::as<float>(progress));
+        } else {
+            Rcpp::stop("Wrong type for progress argument (should be integer or real)");
+        }
+    }
+    
     // Ignore output from VW
     if (!quiet)
     {
@@ -392,10 +412,6 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         Rcpp::Rcout << "Command line parameters: " << std::endl << test_init_str << std::endl;
     } else {
         test_init_str += " --quiet";
-    }
-    
-    if (progress.isNotNull()) {
-        test_init_str += " --progress " + Rcpp::as<std::string>(progress);
     }
     
     // Start VW run
@@ -409,25 +425,6 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
     
     // Update eval list
     vwmodel_eval["test"] = eval_list;
-    
-    Rcpp::NumericVector data_vec(num_of_examples);
-    std::ifstream probs_stream (probs_str);
-    std::string line;
-    for (int i = 0; i < num_of_examples; ++i)
-    {
-        getline(probs_stream, line);
-        if (!line.empty())
-        {
-            data_vec[i] = std::stof(line);
-        } else {
-            data_vec[i] = R_NaReal;
-        }
-    }
-    // Delete temporary probs file
-    if (probs_path.empty()) {
-        remove(probs_str.c_str());
-    }
-    
     
     if (!quiet)
     {
@@ -452,7 +449,123 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
         }
     }
     
-    return data_vec;
+    // Write predictions to vector / data.frame
+    std::ifstream probs_stream (probs_str);
+    std::string probs_line;
+    std::vector<std::string> split_line;
+    
+    // std::vector<double> data_vec(num_of_examples);
+    if (probs_stream.is_open())
+    {
+        // Check first line for number of elements
+        getline(probs_stream, probs_line);
+        split_line = split_str(probs_line, ' ');
+        int preds_num_col = split_line.size();
+        // Rcpp::Rcout << preds_num_col << std::endl;
+        
+        if (!full_probs) 
+        {
+            // Default mode
+            // Single vector output
+            Rcpp::NumericVector preds_vec(num_of_examples);
+            preds_vec[0] = std::stof(split_line[0]);
+            if (preds_num_col > 1) 
+            {
+                Rcpp::Rcerr << "Warning: Predictions contain multiple elements per example." 
+                            << "\nTruncated results obtained. Use 'full_probs=T' for non-truncated results."
+                            << std::endl;
+            }
+            
+            for (int i = 1; i < num_of_examples; ++i) 
+            {
+                getline(probs_stream, probs_line);
+                if (!probs_line.empty())
+                {
+                    preds_vec[i] = std::stof(probs_line);
+                } else {
+                    preds_vec[i] = R_NaReal;
+                }
+            }
+            
+            probs_stream.close();
+            
+            // Delete temporary probs file
+            if (probs_path.empty()) {
+                remove(probs_str.c_str());
+            }
+            
+            return preds_vec;
+            
+        } else {
+            // Full mode
+            // Data.frame output
+            std::vector<std::vector<std::string>> pred_vectors(preds_num_col);
+            
+            // // For string to float conversion
+            // std::stringstream ss;
+            // float float_elem;
+            
+            // Write elements from the first line
+            for (int i = 0; i < preds_num_col; i++) {
+                pred_vectors[i].push_back(split_line[i]);
+            }
+            
+            for (int i = 1; i < num_of_examples; ++i) 
+            {
+                getline(probs_stream, probs_line);
+                if (!probs_line.empty())
+                {
+                    split_line = split_str(probs_line, ' ');
+                    for (int j = 0; j < preds_num_col; j++) {
+                        
+                        // // Try to convert element to float
+                        // float_elem =  std::numeric_limits<float>::quiet_NaN();
+                        // ss << split_line[j];
+                        // ss >> float_elem;
+                        // 
+                        // if(std::isnan(float_elem)) {
+                        //     pred_vectors[j].push_back(float_elem);
+                        // } else {
+                        //     pred_vectors[j].push_back(split_line[j]);
+                        // }
+                        
+                        pred_vectors[j].push_back(split_line[j]);
+                    }
+                } else {
+                    for (int j = 0; j < preds_num_col; j++) {
+                        pred_vectors[j].push_back("");
+                    }
+                }
+            }
+            
+            probs_stream.close();
+            
+            // Delete temporary probs file
+            if (probs_path.empty()) {
+                remove(probs_str.c_str());
+            }
+            
+            // Temporary list (and its names) for DataFrame constructor
+            Rcpp::List tmp_preds_output(preds_num_col);
+            Rcpp::CharacterVector column_names(preds_num_col);
+            
+            for (int i = 0; i < preds_num_col; i++) {
+                tmp_preds_output[i] = pred_vectors[i];
+                column_names[i] =  "V" + std::to_string(i + 1);
+            }
+            
+            // Rcpp::DataFrame preds_output(tmp_preds_output);
+            Rcpp::DataFrame preds_output = Rcpp::DataFrame::create(tmp_preds_output,
+                                                                   Rcpp::Named("stringsAsFactors") = false);
+            preds_output.attr("names") = column_names;
+            
+            return(preds_output);
+            
+        }
+    } else {
+        Rcpp::stop("Predictions file can not be opened");
+    }
+    
 }
 
 
@@ -461,6 +574,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
 //'Get feature names and their model values. 
 //'
 //'@param vwmodel Model of vw class to train
+//'@param quiet [bool] Do not print anything to the console.
 //'@return Data.frame containing feature names, feature hashes and model values
 //'@examples
 //'ext_train_data <- system.file("extdata", "binary_train.vw", package = "rvw")
@@ -468,7 +582,7 @@ Rcpp::NumericVector vwtest(Rcpp::List & vwmodel, SEXP data, std::string probs_pa
 //'vwtrain(test_vwmodel, data = ext_train_data)
 //'vwaudit(test_vwmodel)
 // [[Rcpp::export]]
-Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
+Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel, bool quiet = false) {
     // vwmodel should be of class vw
     if(!Rf_inherits(vwmodel, "vw")) {
         Rcpp::stop("vwmodel should be of class vw");
@@ -484,6 +598,9 @@ Rcpp::DataFrame vwaudit(Rcpp::List & vwmodel) {
     if(file_exists(data_str)){
         // std::string aud_init_str = Rcpp::as<std::string>(vwmodel["params_str"]);
         std::string aud_init_str = "-d " + data_str + " --audit_regressor " + audit_str + " -i " + model_str;
+        if (quiet) {
+            aud_init_str += " --quiet";
+        }
         vw* aud_model = VW::initialize(aud_init_str);
         VW::start_parser(*aud_model);
         LEARNER::generic_driver(*aud_model);

@@ -7,7 +7,7 @@
 \method{print}{vw}(x, ...)
 }
 \arguments{
-\item{x}{Model of vw class}
+\item{x}{[vw] Model of vw class}
 
 \item{...}{Not used currently}
 }

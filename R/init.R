@@ -9,8 +9,8 @@
                           holdout_period=10,
                           holdout_after=0,
                           early_terminate=3,
-                          loss_function="squared",
-                          link="identity",
+                          loss_function=NA_character_,
+                          link=NA_character_,
                           quantile_tau=0.5)
     feature_check <- list(bit_precision=18,
                           quadratic=NA_character_,
@@ -37,9 +37,9 @@
                                initial_t=0,
                                power_t=0.5,
                                initial_weight=0,
-                               random_weights=NA_character_,
-                               normal_weights=NA_character_,
-                               truncated_normal_weights=NA_character_,
+                               random_weights="off",
+                               normal_weights="off",
+                               truncated_normal_weights="off",
                                sparse_weights=FALSE,
                                input_feature_regularizer=NA_character_)
     
@@ -70,18 +70,28 @@
                                 alpha=1,
                                 alpha_inverse=NA_real_,
                                 learning_rate_cnt=2,
-                                normalize=1,
-                                random_init=1)
+                                normalize="on",
+                                random_init="on")
         svrg_check <- list(stage_size=1)
         
         # Learning parameters/reductions default/check lists
         binary_check <- list(binary=TRUE)
-        oaa_check <- list(num_classes=NA_real_)
+        oaa_check <- list(num_classes=NA_real_,
+                          oaa_subsample=NA_real_
+                          # probabilities=FALSE,
+                          # scores=FALSE
+                          )
         ect_check <- list(num_classes=NA_real_)
         csoaa_check <- list(num_classes=NA_real_,
-                            csoaa_ldf="")
+                            csoaa_ldf=""
+                            # csoaa_rank=FALSE,
+                            # probabilities=FALSE
+                            )
         wap_check <- list(num_classes=NA_real_,
-                          wap_ldf="")
+                          wap_ldf=""
+                          # csoaa_rank=FALSE,
+                          # probabilities=FALSE
+                          )
         log_multi_check <- list(num_classes=NA_real_,
           no_progress=FALSE,
           swap_resistance=4)
@@ -96,10 +106,11 @@
                           lda_rho=0.100000001,
                           lda_D=10000,
                           lda_epsilon=0.00100000005,
-                          math_mode=0,
-                          minibatch=1)
+                          math_mode=NA_character_,
+                          minibatch=1,
+                          metrics=0)
         multilabel_oaa_check <- list(num_labels=NA_real_)
-        classweight_check <- list(class_multiplier=NA_character_)
+        classweight_check <- list(class_multiplier=NA_real_)
         new_mf_check <- list(rank=NA_real_)
         lrq_check <- list(features=NA_character_,
                           lrqdropout=FALSE)
@@ -143,10 +154,11 @@
                          dropout=FALSE,
                          meanfield=FALSE)
         topk_check <- list(num_k=NA_real_)
-        search_check <- list(id=0,
+        search_check <- list(id=NA_real_,
                        search_task=NA_character_,
                        search_interpolation=NA_character_,
                        search_rollout=NA_character_,
+                       search_rollin=NA_character_,
                        search_passes_per_policy=1,
                        search_beta=0.5,
                        search_alpha=1e-10,

@@ -29,6 +29,9 @@ for (search_path in search_path_list) {
 
     if (all(headers_in_path)) { # All headers are found
         valid_path <- search_path
+        # Drop "/vowpalwabbit" terminal part of a path
+        # valid_path <- dirname(valid_path)
+        
         break
     } else if ( (sum(headers_in_path) < length(headers_in_path)) && (sum(headers_in_path) > 0) ) { # Some headers are found
         valid_path <- NULL
@@ -46,6 +49,7 @@ if(is.null(valid_path)) {
     
     # Valid path found
     cat(paste0("Valid path: ", valid_path, "\n"))
+    # cat(paste0("Valid path: ", file.path(valid_path, "vowpalwabbit"), "\n"))
 
     if(!file.exists(file.path("src", "Makevars.in"))){ 
         stop("No 'Makevars.in' file", call. = FALSE)

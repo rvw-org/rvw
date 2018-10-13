@@ -41,13 +41,13 @@ test_that("vwtrain and vwtest output correct readable model", {
     vw_cl_train_inverted_mdl_checksum = unname(tools::md5sum("readable_cl_mdl.vw"))
     # test
     system(
-        paste0("vw -t -d ", ext_test_data, " -i ./cl_mdl.vw -p /dev/stdout --readable_model ./readable_cl_mdl.vw"),
+        paste0("vw -t -d ", ext_test_data, " -i ./cl_mdl.vw --readable_model ./readable_cl_mdl.vw"),
         intern = FALSE,
         ignore.stderr = TRUE
     )
     vw_cl_test_hashed_mdl_checksum = unname(tools::md5sum("readable_cl_mdl.vw"))
     system(
-        paste0("vw -t -d ", ext_test_data, " -i ./cl_mdl.vw -p /dev/stdout --invert_hash ./readable_cl_mdl.vw"),
+        paste0("vw -t -d ", ext_test_data, " -i ./cl_mdl.vw --invert_hash ./readable_cl_mdl.vw"),
         intern = FALSE,
         ignore.stderr = TRUE
     )
@@ -90,10 +90,35 @@ test_that("vwaudit outputs correct audit data.frame", {
                                           0.451092004776001, -0.148938998579979))
 
     test_vwmodel <- vwsetup()
-    vwtrain(test_vwmodel, data = ext_train_data)
-    aud_df <- vwaudit(test_vwmodel)
+    vwtrain(test_vwmodel, data = ext_train_data, quiet = T)
+    aud_df <- vwaudit(test_vwmodel, quiet = T)
 
     expect_equal(aud_df, ref_df)
+})
+
+test_that("vwparams correctly returns and sets parameter values", {
+    
+    test_vwmodel <- vwsetup(general_params = list(link="identity", holdout_off=FALSE),
+                            feature_params = list(bit_precision=10),
+                            option = "nn", num_hidden = 5)
+    
+    
+    
+    # Character value
+    vwparams(test_vwmodel, name = "link") <- "logistic"
+    expect_equal(vwparams(test_vwmodel, name = "link"), "logistic")
+    
+    # Numerical value
+    vwparams(test_vwmodel, name = "bit_precision") <- 25
+    expect_equal(vwparams(test_vwmodel, name = "bit_precision"), 25)
+    
+    # Logical value
+    vwparams(test_vwmodel, name = "holdout_off") <- TRUE
+    expect_equal(vwparams(test_vwmodel, name = "holdout_off"), TRUE)
+    
+    # Option value
+    vwparams(test_vwmodel, name = "num_hidden") <- 10
+    expect_equal(vwparams(test_vwmodel, name = "num_hidden"), 10)
 })
 
 # Return back

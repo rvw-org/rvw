@@ -5,23 +5,25 @@
 \alias{predict.vw}
 \title{Compute predictions using Vowpal Wabbit model}
 \usage{
-vwtest(vwmodel, data, probs_path = "", readable_model = NULL,
-  readable_model_path = "", quiet = FALSE, passes = 1L,
-  cache = FALSE, raw = FALSE, progress = NULL, namespaces = NULL,
-  keep_space = NULL, fixed = NULL, targets = NULL,
-  probabilities = NULL, weight = NULL, base = NULL, tag = NULL,
-  multiline = NULL)
+vwtest(vwmodel, data, probs_path = "", full_probs = FALSE,
+  readable_model = NULL, readable_model_path = "", quiet = FALSE,
+  passes = 1L, cache = FALSE, raw = FALSE, progress = NULL,
+  namespaces = NULL, keep_space = NULL, fixed = NULL,
+  targets = NULL, probabilities = NULL, weight = NULL, base = NULL,
+  tag = NULL, multiline = NULL)
 
-\method{predict}{vw}(object, data, probs_path = "",
+\method{predict}{vw}(object, data, probs_path = "", full_probs = FALSE,
   readable_model = NULL, quiet = FALSE, ...)
 }
 \arguments{
-\item{vwmodel}{Model of vw class to train.}
+\item{vwmodel}{[vw] Model of vw class to train.}
 
 \item{data}{[string or data.frame] Path to training data in .vw plain text format or data.frame.
 If \code{[data.frame]} then will be parsed using \code{df2vw} function.}
 
 \item{probs_path}{[string] Path to file where to save predictions.}
+
+\item{full_probs}{[bool] Output full predictions in data.frame format. If not, force predictions into a single vector (default).}
 
 \item{readable_model}{[string] Print trained model in human readable format ("hashed") 
 and also with human readable features ("inverted").}
@@ -36,7 +38,7 @@ and also with human readable features ("inverted").}
 
 \item{raw}{[bool] Output unnormalized predictions. Default is FALSE.}
 
-\item{progress}{[integer/real] Progress update frequency. int: additive, real: multiplicative}
+\item{progress}{[int/real] Progress update frequency. int: additive, real: multiplicative}
 
 \item{namespaces}{[list or yaml file] For \code{df2vw}. Name of each namespace and
 each variable for each namespace can be a R list, or a YAML

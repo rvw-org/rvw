@@ -4,10 +4,12 @@
 \alias{vwaudit}
 \title{Audit Vowpal Wabbit model}
 \usage{
-vwaudit(vwmodel)
+vwaudit(vwmodel, quiet = FALSE)
 }
 \arguments{
 \item{vwmodel}{Model of vw class to train}
+
+\item{quiet}{[bool] Do not print anything to the console.}
 }
 \value{
 Data.frame containing feature names, feature hashes and model values

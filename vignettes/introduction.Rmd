@@ -125,14 +125,25 @@ vwmodel <- vwsetup(general_params = list(random_seed=1),
                    optimization_params = list(learning_rate=0.05, l1=1E-7),
                    option = "ect", num_classes = 3)
 ```
-
+  
 Arguments we use here:
 
 * *general_params* - list of parameters that define general behavior of `vwmodel`. Here we specify *random_seed=1* - seed for random number generator
 * *feature_params* - list of parameters associated with feature hashing and interactions. Here we use *quadratic="bc"*. This will create an interaction feature for every pair of features from namespace *b* and namespace *c*. You can read more about feature interactions [here](https://github.com/JohnLangford/vowpal_wabbit/wiki/Command-line-arguments#example-manipulation-options)
 * *optimization_params* - list of parameters for optimization process. *learning_rate=0.05* sets initial learning rate and *l2=1E-7* defines L2 regularization
 * *option* - specify learning algorithm/reduction to use. Here we will use *ect* - [Error Correcting Tournament](https://github.com/JohnLangford/vowpal_wabbit/wiki/Error-Correcting-Tournament-(ect)-multi-class-example) algorithm to train multiclass classification model;
-* *...* - additional arguments for *option*. *num_classes = 3* - number of classes in our data;
+* *...* - additional arguments for *option*. *num_classes = 3* - number of classes in our data;  
+
+***
+It is also possible to specify parameters directly, like in CL version of **Vowpal Wabbit**:
+```{r cl_setup, error=FALSE, message=FALSE, results="hide"}
+vwsetup(
+    params_str = "--random_seed 1 --quadratic bc --learning_rate 0.05 --l1 1E-7 --ect 3"
+)
+```
+This mode is generally not recomended, as it doesn't have parameters checking. Also, parameters from other vw functions can't be specified via "params_str".
+
+***
 
 Now we are ready to start training our model:
 
@@ -291,9 +302,9 @@ vwmodel
 #>   initial_t :   0 
 #>   power_t :   0.5 
 #>   initial_weight :   0 
-#>   random_weights :  Not defined
-#>   normal_weights :  Not defined
-#>   truncated_normal_weights :  Not defined
+#>   random_weights :  off
+#>   normal_weights :  off
+#>   truncated_normal_weights :  off
 #>   sparse_weights :   FALSE 
 #>   input_feature_regularizer :  Not defined
 #> Model evaluation. Training: 
