@@ -1,3 +1,7 @@
+2018-10-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* docker/ci/Dockerfile: Install mltools (and r-cran-matrix)
+
 2018-09-12  Dirk Eddelbuettel  <edd@debian.org>
 
 	* README.md: Added brief Docker documentation
