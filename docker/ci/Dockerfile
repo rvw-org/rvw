@@ -17,7 +17,7 @@ RUN apt-get update \
                 libvw-dev \
                 vowpal-wabbit \
                 libboost-program-options-dev \
-                r-cran-matrix 
+                r-cran-matrix \
         && install.r RApiSerialize mltools \
         && mkdir ~/.R \
         && echo _R_CHECK_FORCE_SUGGESTS_=FALSE > ~/.R/check.Renviron 
