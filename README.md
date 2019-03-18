@@ -35,6 +35,16 @@ to start the container with `rvw` installed.  See the
 [Boettiger and Eddelbuettel RJournal paper](https://journal.r-project.org/archive/2017/RJ-2017-065/index.html)
 for more on Docker for R, and the [Rocker Project](https://www.rocker-project.org) used here.
 
+## Getting Started
+[Introduction](https://github.com/rvw-org/rvw/wiki/Introduction)
+
+Examples:
+
+* [Binary classification](https://github.com/rvw-org/rvw/wiki/Binary-classification)
+* [CSOAA multiclass classification](https://github.com/rvw-org/rvw/wiki/CSOAA-multiclass-classification)
+* [Topic modeling with Latent Dirichlet Allocation (LDA)](https://github.com/rvw-org/rvw/wiki/Topic-modeling-with-Latent-Dirichlet-Allocation-(LDA))
+
+
 ## Example 
 
 In this example we will try to predict age groups (based on number of abalone shell rings) from physical measurements. We will use Abalone Data Set from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Abalone).
