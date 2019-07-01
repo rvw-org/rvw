@@ -12,14 +12,25 @@ This package aims to bring its functionality to **R**.
 
 ### From Source 
 
-First you have to install **Vowpal Wabbit** from [here](https://github.com/JohnLangford/vowpal_wabbit#getting-the-code).
+First, you have to install **Vowpal Wabbit** itself [here](https://github.com/JohnLangford/vowpal_wabbit#getting-the-code).
 
-Next, once the required library isinstalled, you can install the **rvw** package using `remotes`:
+Next, once the required library is installed, you can install the **rvw** package using `remotes`:
 
 ```r
 install.packages("remotes")  ## or devtools
 remotes::install_github("rvw-org/rvw")
 ```
+
+or (in case you have the package sources) via a standard `R CMD INSTALL .`.
+
+This installation from source currently works best on Linux; on macOS you
+have to locally compile using the R-compatible toolchain (and not the
+brew-based one as the Vowpal Wabbit documentation suggests).
+
+There is one possible shortcut: you can use the Debian/Ubuntu package as our
+Docker container does: `sudo apt-get install libvw-dev vowpal-wabbit
+libboost-program-options-dev`. 
+
 
 ### Using Docker
 
